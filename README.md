@@ -7,3 +7,6 @@ A nslfmt is a code fomatter for [NSL](http://www.overtone.co.jp/products/overtur
 
 ##### references
 - [Writting a Simple Parser in Rust](https://adriann.github.io/rust_parser.html)
+
+##### License
+[MIT](./LICENSE)
