@@ -1,4 +1,4 @@
-use lexical::utils::{get_word, get_number};
+use lexer::utils::{get_word, get_number};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum LexItem

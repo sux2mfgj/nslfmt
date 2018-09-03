@@ -1,6 +1,6 @@
-mod lexical;
+mod lexer;
 
-use lexical::LexItem;
+use lexer::LexItem;
 use std::iter::Peekable;
 
 #[derive(Debug)]

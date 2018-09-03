@@ -1,6 +1,6 @@
 use std::iter::Peekable;
 
-use lexical::LexItem;
+use lexer::LexItem;
 
 pub fn get_word<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> LexItem
 {
