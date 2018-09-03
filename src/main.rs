@@ -31,7 +31,7 @@ enum LexItem{
     Other,
 }
 
-fn lex(input: &String) -> Result<Vec<LexItem>, String>
+fn lexical_analyzer(input: &String) -> Result<Vec<LexItem>, String>
 {
     let mut result = Vec::new();
 
@@ -39,7 +39,7 @@ fn lex(input: &String) -> Result<Vec<LexItem>, String>
     while let Some(&c) = it.peek() {
         match c {
             'a' ... 'z' | 'A' ... 'Z' => {
-                let n = get_lex(&mut it);
+                let n = get_lexical_type(&mut it);
                 result.push(n);
             }
             ' ' | '\t' | '\n' => {
@@ -61,7 +61,7 @@ fn lex(input: &String) -> Result<Vec<LexItem>, String>
     Ok(result)
 }
 
-fn get_lex<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> LexItem
+fn get_lexical_type<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> LexItem
 {
 
     let mut word = String::new();
@@ -95,46 +95,46 @@ mod tests {
     fn lex_test_01() {
         let s = "module".to_string();
         let mut it = s.chars().peekable();
-        assert_eq!(LexItem::Module, get_lex(&mut it));
+        assert_eq!(LexItem::Module, get_lexical_type(&mut it));
     }
 
     #[test]
     fn lex_test_02() {
         let s = "module ".to_string();
         let mut it = s.chars().peekable();
-        assert_eq!(LexItem::Module, get_lex(&mut it));
+        assert_eq!(LexItem::Module, get_lexical_type(&mut it));
     }
 
     #[test]
     fn lex_test_03() {
         let s = "declare".to_string();
         let mut it = s.chars().peekable();
-        assert_eq!(LexItem::Declare, get_lex(&mut it));
+        assert_eq!(LexItem::Declare, get_lexical_type(&mut it));
     }
     #[test]
     fn lex_test_04() {
         let s = "declare {}".to_string();
         let mut it = s.chars().peekable();
-        assert_eq!(LexItem::Declare, get_lex(&mut it));
+        assert_eq!(LexItem::Declare, get_lexical_type(&mut it));
     }
 
     #[test]
     fn lex_test_05() {
         let s = "aaa".to_string();
         let mut it = s.chars().peekable();
-        assert_eq!(LexItem::Other, get_lex(&mut it));
+        assert_eq!(LexItem::Other, get_lexical_type(&mut it));
     }
 
     #[test]
     fn lex_test_06() {
         let s = "aa\n{}".to_string();
         let mut it = s.chars().peekable();
-        assert_eq!(LexItem::Other, get_lex(&mut it));
+        assert_eq!(LexItem::Other, get_lexical_type(&mut it));
     }
 }
 
 fn main() {
-    let result = lex(&String::from("module \n{}"));
+    let result = lexical_analyzer(&String::from("module \n{}"));
     for val in result.unwrap().iter() {
         println!("{:?}", val);
     }
