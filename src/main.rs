@@ -88,7 +88,7 @@ fn get_lexical_type<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> LexItem
 }
 
 #[cfg(test)]
-mod tests {
+mod lex_tests {
     use super::*;
 
     #[test]
@@ -131,12 +131,45 @@ mod tests {
         let mut it = s.chars().peekable();
         assert_eq!(LexItem::Other, get_lexical_type(&mut it));
     }
+
+    #[test]
+    fn la_test_01() {
+        let result = lexical_analyzer(
+            &String::from(
+                "module
+                {
+                }
+                "
+                ));
+        assert_eq!(result.unwrap(),
+                   [LexItem::Module,
+                    LexItem::CurlyBracketL,
+                    LexItem::CurlyBracketR]);
+    }
+    #[test]
+    fn la_test_02() {
+        let result = lexical_analyzer(
+            &String::from(
+                "declare {}"
+                ));
+        assert_eq!(result.unwrap(),
+                   [LexItem::Declare,
+                    LexItem::CurlyBracketL,
+                    LexItem::CurlyBracketR]);
+    }
+    #[test]
+    fn la_test_03() {
+        let result = lexical_analyzer(
+            &String::from(
+                "reg rxd"
+                //"reg rx_d"
+                ));
+        assert_eq!(result.unwrap(),
+                   [LexItem::Other,
+                    LexItem::Other]);
+    }
 }
 
 fn main() {
-    let result = lexical_analyzer(&String::from("module \n{}"));
-    for val in result.unwrap().iter() {
-        println!("{:?}", val);
-    }
 }
 
