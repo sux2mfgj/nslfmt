@@ -22,8 +22,17 @@ pub fn get_word<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> LexItem
         "module" => {
             return LexItem::Module;
         }
+        "input" => {
+            return LexItem::Input;
+        }
+        "output" => {
+            return LexItem::Output;
+        }
+        "inout" => {
+            return LexItem::InOut;
+        }
         _ => {
-            return LexItem::Other;
+            return LexItem::Word;
         }
     }
 }
@@ -64,14 +73,35 @@ mod get_word
     fn other() {
         let s = "aaa".to_string();
         let mut it = s.chars().peekable();
-        assert_eq!(LexItem::Other, get_word(&mut it));
+        assert_eq!(LexItem::Word, get_word(&mut it));
     }
 
     #[test]
     fn other_newline() {
         let s = "aa\n{}".to_string();
         let mut it = s.chars().peekable();
-        assert_eq!(LexItem::Other, get_word(&mut it));
+        assert_eq!(LexItem::Word, get_word(&mut it));
+    }
+
+    #[test]
+    fn input() {
+        let s = "input".to_string();
+        let mut it = s.chars().peekable();
+        assert_eq!(LexItem::Input, get_word(&mut it));
+    }
+
+    #[test]
+    fn output() {
+        let s = "output".to_string();
+        let mut it = s.chars().peekable();
+        assert_eq!(LexItem::Output, get_word(&mut it));
+    }
+
+    #[test]
+    fn inout() {
+        let s = "inout".to_string();
+        let mut it = s.chars().peekable();
+        assert_eq!(LexItem::InOut, get_word(&mut it));
     }
 }
 

@@ -12,7 +12,10 @@ pub enum LexItem
     SquareBracketR,
     Number(i64),
     Equal,
-    Other,
+    Word,
+    Input,
+    Output,
+    InOut,
 }
 
 pub fn lexical_analyzer(input: &String) -> Result<Vec<LexItem>, String>
@@ -103,8 +106,8 @@ mod lexical_analyzer {
                 "reg rxd"
                 ));
         assert_eq!(result.unwrap(),
-                   [LexItem::Other,
-                    LexItem::Other]);
+                   [LexItem::Word,
+                    LexItem::Word]);
     }
 
     #[test]
@@ -114,8 +117,8 @@ mod lexical_analyzer {
                 "reg rx_d"
                 ));
         assert_eq!(result.unwrap(),
-                   [LexItem::Other,
-                    LexItem::Other]);
+                   [LexItem::Word,
+                    LexItem::Word]);
     }
 
     #[test]
@@ -125,8 +128,8 @@ mod lexical_analyzer {
                 "reg _rx_d"
                 ));
         assert_eq!(result.unwrap(),
-                   [LexItem::Other,
-                    LexItem::Other]);
+                   [LexItem::Word,
+                    LexItem::Word]);
     }
 
     #[test]
@@ -136,8 +139,8 @@ mod lexical_analyzer {
                 "reg _rx_d;"
                 ));
         assert_eq!(result.unwrap(),
-                   [LexItem::Other,
-                    LexItem::Other,
+                   [LexItem::Word,
+                    LexItem::Word,
                     LexItem::Semicolon]);
     }
 
@@ -148,8 +151,8 @@ mod lexical_analyzer {
                 "reg _rx_d[0];"
                 ));
         assert_eq!(result.unwrap(),
-                   [LexItem::Other,
-                    LexItem::Other,
+                   [LexItem::Word,
+                    LexItem::Word,
                     LexItem::SquareBracketL,
                     LexItem::Number(0),
                     LexItem::SquareBracketR,
@@ -167,8 +170,8 @@ mod lexical_analyzer {
         assert_eq!(result.unwrap(),
                    [LexItem::Module,
                     LexItem::CurlyBracketL,
-                    LexItem::Other,
-                    LexItem::Other,
+                    LexItem::Word,
+                    LexItem::Word,
                     LexItem::SquareBracketL,
                     LexItem::Number(12),
                     LexItem::SquareBracketR,
@@ -187,13 +190,42 @@ mod lexical_analyzer {
         assert_eq!(result.unwrap(),
                    [LexItem::Module,
                     LexItem::CurlyBracketL,
-                    LexItem::Other,
-                    LexItem::Other,
+                    LexItem::Word,
+                    LexItem::Word,
                     LexItem::SquareBracketL,
                     LexItem::Number(10),
                     LexItem::SquareBracketR,
                     LexItem::Equal,
                     LexItem::Number(0),
+                    LexItem::Semicolon,
+                    LexItem::CurlyBracketR,
+                   ] )
+    }
+
+    #[test]
+    fn in_out_inout() {
+         let result = lexical_analyzer(
+            &String::from(
+                "declare
+                {
+                    output scl;
+                    inout sda;
+                    input address[8];
+                }"));
+        assert_eq!(result.unwrap(),
+                   [LexItem::Declare,
+                    LexItem::CurlyBracketL,
+                    LexItem::Output,
+                    LexItem::Word,
+                    LexItem::Semicolon,
+                    LexItem::InOut,
+                    LexItem::Word,
+                    LexItem::Semicolon,
+                    LexItem::Input,
+                    LexItem::Word,
+                    LexItem::SquareBracketL,
+                    LexItem::Number(8),
+                    LexItem::SquareBracketR,
                     LexItem::Semicolon,
                     LexItem::CurlyBracketR,
                    ] )
