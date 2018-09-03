@@ -1,17 +1,14 @@
 use std::iter::Peekable;
 
-use lexer::LexItem;
+use lexer::analyzer::LexItem;
 
-pub fn get_word<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> LexItem
-{
-
+pub fn get_word<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> LexItem {
     let mut word = String::new();
     while let Some(&c_next) = iter.peek() {
         if c_next.is_alphanumeric() | (c_next == '_') {
             word.push_str(&c_next.to_string());
             iter.next();
-        }
-        else {
+        } else {
             break;
         }
     }
@@ -32,15 +29,15 @@ pub fn get_word<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> LexItem
             return LexItem::InOut;
         }
         _ => {
-            return LexItem::Word;
+            return LexItem::Word(word);
         }
     }
 }
 
 #[cfg(test)]
-mod get_word
-{
+mod get_word {
     use super::*;
+    use lexer::analyzer::create_lex_item_word;
 
     #[test]
     fn module() {
@@ -73,14 +70,14 @@ mod get_word
     fn other() {
         let s = "aaa".to_string();
         let mut it = s.chars().peekable();
-        assert_eq!(LexItem::Word, get_word(&mut it));
+        assert_eq!(create_lex_item_word("aaa"), get_word(&mut it));
     }
 
     #[test]
     fn other_newline() {
         let s = "aa\n{}".to_string();
         let mut it = s.chars().peekable();
-        assert_eq!(LexItem::Word, get_word(&mut it));
+        assert_eq!(create_lex_item_word("aa"), get_word(&mut it));
     }
 
     #[test]
@@ -105,8 +102,7 @@ mod get_word
     }
 }
 
-pub fn get_number<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> LexItem
-{
+pub fn get_number<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> LexItem {
     let mut number = 0;
     /*
      * === TODO ===
@@ -122,12 +118,11 @@ pub fn get_number<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> LexItem
 }
 
 #[cfg(test)]
-mod get_number
-{
+mod get_number {
     use super::*;
 
     #[test]
-	fn digit() {
+    fn digit() {
         let s = "10".to_string();
         let mut it = s.chars().peekable();
         assert_eq!(LexItem::Number(10), get_number(&mut it));

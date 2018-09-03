@@ -1,4 +1,4 @@
 mod analyzer;
-pub use self::analyzer::{LexItem, lexical_analyzer};
+pub use self::analyzer::{lexical_analyzer, LexItem};
 
 mod utils;
