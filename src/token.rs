@@ -16,6 +16,8 @@ pub enum Symbol {
     InOut,
     FuncIn,
     FuncOut,
+    //TODO
+    // lack some symbols
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -28,8 +30,10 @@ pub enum TokenClass {
     Number(String),
     Symbol(Symbol),
     Newline,
+    EndOfProgram,
 }
 
+#[derive(PartialEq, Debug)]
 pub struct Token {
     pub class: TokenClass,
     pub line: usize
