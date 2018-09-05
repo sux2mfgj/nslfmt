@@ -1,0 +1,8 @@
+# document
+# https://github.com/rust-lang-nursery/rustfmt/blob/master/Configurations.md
+
+indent_style = "Block"
+binop_separator = "Front"
+control_brace_style = "AlwaysNextLine"
+brace_style = "AlwaysNextLine"
+max_width = 90
