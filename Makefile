@@ -1,5 +1,4 @@
 
-
 build:
 	cargo build
 
@@ -14,3 +13,6 @@ test:
 
 debug:
 	rust-gdb -tui ./target/debug/nslfmt
+
+fmt:
+	cargo-fmt --all

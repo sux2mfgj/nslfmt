@@ -1,23 +1,23 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum Symbol {
-    Module,
-    Declare,
-    OpeningBrace,
-    ClosingBrace,
-    LeftParen,
-    RightParen,
-    LeftSquareBracket,
-    RightSquareBracket,
-    Semicolon,
-    Colon,
-    Comma,
-    Input,
-    Output,
-    InOut,
-    FuncIn,
-    FuncOut,
-    //TODO
-    // lack some symbols
+    Module,             // module
+    Declare,            // declare
+    OpeningBrace,       // {
+    ClosingBrace,       // }
+    LeftParen,          // (
+    RightParen,         // )
+    LeftSquareBracket,  // [
+    RightSquareBracket, // ]
+    Semicolon,          // ;
+    Colon,              // :
+    Comma,              // ,
+    Input,              // input
+    Output,             // output
+    InOut,              // inout
+    FuncIn,             // func_in
+    FuncOut,            // func_out
+                        //TODO
+                        // lack some symbols
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -36,7 +36,7 @@ pub enum TokenClass {
 #[derive(PartialEq, Debug)]
 pub struct Token {
     pub class: TokenClass,
-    pub line: usize
+    pub line: usize,
 }
 
 impl Token {

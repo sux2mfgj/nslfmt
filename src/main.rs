@@ -1,5 +1,5 @@
-mod token;
 mod lexer;
+mod token;
 
 use lexer::Lexer;
 
