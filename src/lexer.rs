@@ -49,6 +49,12 @@ impl<'a> Lexer<'a> {
                         self.tokens.push_back(
                                 Token::new(Lexer::get_token_from_char(&mut it), self.line));
                     }
+                    '\n' => {
+                        self.tokens.push_back(
+                                Token::new(TokenClass::Newline, self.line));
+                        self.line += 1;
+                        it.next();
+                    }
                     _ => {
                         panic!("invalid input");
                     }
@@ -111,9 +117,16 @@ mod lexer_test{
     }
 
     #[test]
-    fn get_token() {
+    fn get_token_str() {
         let mut b = "declare".as_bytes();
         let mut l = Lexer::new(&mut b);
+        assert_eq!(l.get_next_token(), Token::new(TokenClass::Symbol(Symbol::Declare), 1));
+    }
+
+    #[test]
+    fn get_token_file() {
+        let mut f = BufReader::new(File::open("test_code/declare.nsl").unwrap());
+        let mut l = Lexer::new(&mut f);
         assert_eq!(l.get_next_token(), Token::new(TokenClass::Symbol(Symbol::Declare), 1));
     }
 }
