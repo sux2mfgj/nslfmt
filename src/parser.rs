@@ -10,6 +10,7 @@ pub enum GrammerItem {
     //Proc
     //Func
     Paren,
+    Interface,
 }
 
 #[derive(Debug, PartialEq)]
@@ -25,6 +26,28 @@ impl ParseNode {
             entry: item,
         }
     }
+}
+
+fn parse_interface(tokens: &Vec<LexItem>, mut pos: usize) -> Result<(ParseNode, usize), String> {
+
+    let t = tokens.get(pos).unwrap();
+    if t != LexItem::Input & t != Some(LexItem::Output) & t != Some(LexItem::InOut)
+    {
+        return Err(format!("unexpected word"));
+    }
+    let mut interface = ParseNode::new(t);
+    /*
+    match tokens.get(pos)
+    {
+        Some(&LexItem::Input) | Some(&LexItem::InOut) | Some(&LexItem::Output)=> {
+
+        }
+        _ => {
+            return Err(format!("unexpected word"));
+        }
+    }
+    */
+    Err(format!("unexpected word"))
 }
 
 fn parse_declare(tokens: &Vec<LexItem>, mut pos: usize) -> Result<(ParseNode, usize), String> {
@@ -78,8 +101,9 @@ mod parse_declare {
         let (node, _) = parse_declare(&tokens, 0).unwrap();
 
         let mut result = ParseNode::new(GrammerItem::Declare);
-        result.children.push(
-            ParseNode::new(GrammerItem::Word(String::from("hello"))));
+        result
+            .children
+            .push(ParseNode::new(GrammerItem::Word(String::from("hello"))));
         result.children.push(ParseNode::new(GrammerItem::Paren));
         result.children.push(ParseNode::new(GrammerItem::Paren));
 
@@ -88,13 +112,18 @@ mod parse_declare {
 
     #[test]
     fn goodmorning_newline() {
-        let tokens = lexical_analyzer(&String::from("goodmorning
-                                                    {}")).unwrap();
+        let tokens = lexical_analyzer(&String::from(
+            "goodmorning
+                                                    {}",
+        )).unwrap();
         let (node, _) = parse_declare(&tokens, 0).unwrap();
 
         let mut result = ParseNode::new(GrammerItem::Declare);
-        result.children.push(
-            ParseNode::new(GrammerItem::Word(String::from("goodmorning"))));
+        result
+            .children
+            .push(ParseNode::new(GrammerItem::Word(String::from(
+                "goodmorning",
+            ))));
         result.children.push(ParseNode::new(GrammerItem::Paren));
         result.children.push(ParseNode::new(GrammerItem::Paren));
 
@@ -103,15 +132,18 @@ mod parse_declare {
 
     #[test]
     fn reg() {
-        let tokens = lexical_analyzer(&String::from("helo
+        let tokens = lexical_analyzer(&String::from(
+            "helo
                                                     {
                                                         input a[2];
-                                                        }")).unwrap();
+                                                        }",
+        )).unwrap();
         let (node, _) = parse_declare(&tokens, 0).unwrap();
 
         let mut result = ParseNode::new(GrammerItem::Declare);
-        result.children.push(
-            ParseNode::new(GrammerItem::Word(String::from("helo"))));
+        result
+            .children
+            .push(ParseNode::new(GrammerItem::Word(String::from("helo"))));
         result.children.push(ParseNode::new(GrammerItem::Paren));
         result.children.push(ParseNode::new(GrammerItem::Paren));
 
@@ -146,8 +178,7 @@ fn parse_expression(tokens: &Vec<LexItem>, mut pos: usize) -> Result<(ParseNode,
 }
 
 #[cfg(test)]
-mod parse_expression
-{
+mod parse_expression {
     use super::*;
 
     #[test]
@@ -157,8 +188,8 @@ mod parse_expression
 
         let mut result = ParseNode::new(GrammerItem::Top);
         let mut dec = ParseNode::new(GrammerItem::Declare);
-        dec.children.push(
-            ParseNode::new(GrammerItem::Word(String::from("hello"))));
+        dec.children
+            .push(ParseNode::new(GrammerItem::Word(String::from("hello"))));
         dec.children.push(ParseNode::new(GrammerItem::Paren));
         dec.children.push(ParseNode::new(GrammerItem::Paren));
         result.children.push(dec);
@@ -168,16 +199,18 @@ mod parse_expression
 
     #[test]
     fn declare_newline() {
-        let tokens = lexical_analyzer(&String::from("declare hello
+        let tokens = lexical_analyzer(&String::from(
+            "declare hello
         {
 
-            }")).unwrap();
+            }",
+        )).unwrap();
         let (node, _) = parse_expression(&tokens, 0).unwrap();
 
         let mut result = ParseNode::new(GrammerItem::Top);
         let mut dec = ParseNode::new(GrammerItem::Declare);
-        dec.children.push(
-            ParseNode::new(GrammerItem::Word(String::from("hello"))));
+        dec.children
+            .push(ParseNode::new(GrammerItem::Word(String::from("hello"))));
         dec.children.push(ParseNode::new(GrammerItem::Paren));
         dec.children.push(ParseNode::new(GrammerItem::Paren));
         result.children.push(dec);
@@ -201,8 +234,7 @@ pub fn parse(input: &String) -> Result<ParseNode, String> {
 }
 
 #[cfg(test)]
-mod parse
-{
+mod parse {
     use super::*;
 
     #[test]
@@ -212,11 +244,13 @@ mod parse
 
         let mut result = ParseNode::new(GrammerItem::Top);
         let mut dec = ParseNode::new(GrammerItem::Declare);
-        dec.children.push(
-            ParseNode::new(GrammerItem::Word(String::from("hello"))));
+        dec.children
+            .push(ParseNode::new(GrammerItem::Word(String::from("hello"))));
         dec.children.push(ParseNode::new(GrammerItem::Paren));
         dec.children.push(ParseNode::new(GrammerItem::Paren));
         result.children.push(dec);
+
+        assert_eq!(node, result);
     }
 
     #[test]
@@ -226,11 +260,11 @@ mod parse
 
         let mut result = ParseNode::new(GrammerItem::Top);
         let mut dec = ParseNode::new(GrammerItem::Declare);
-        dec.children.push(
-            ParseNode::new(GrammerItem::Word(String::from("hello"))));
+        dec.children
+            .push(ParseNode::new(GrammerItem::Word(String::from("hello"))));
         dec.children.push(ParseNode::new(GrammerItem::Paren));
         dec.children.push(ParseNode::new(GrammerItem::Paren));
         result.children.push(dec);
+        assert_eq!(node, result);
     }
 }
-
