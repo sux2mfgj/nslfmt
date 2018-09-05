@@ -1,0 +1,51 @@
+declare fetch
+{
+    // for memory;
+    output address[32];
+    input data[32];
+
+    // for internal
+    output instruction[32];
+    input next_pc[32];
+
+    // for memory
+    func_out request_to_bus(address);
+    func_in enable(data);
+
+    // for internal
+    func_in request(next_pc);
+    func_out done(instruction);
+}
+
+module fetch
+{
+    state_name idle, waiting;
+
+    state idle
+    {
+        if(request)
+        {
+            request_to_bus(next_pc);
+            if(enable)
+            {
+                done(data);
+            }
+            else
+            {
+                goto waiting;
+            }
+        }
+    }
+
+    state waiting
+    {
+        if(enable)
+        {
+            done(data);
+            goto idle;
+            //TODO
+            if(request){}
+        }
+    }
+}
+

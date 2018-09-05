@@ -1,33 +1,41 @@
 use std::io::Read;
-use std::iter::Peekable;
-use std::str::{from_utf8, Chars};
-use token::Token;
+
+//use token::Token;
 
 pub struct Lexer<'a> {
     pub line: usize,
-    reader: &'a Peekable<Chars<'a>>,
+    reader: &'a Read,
 }
 
-impl<'a> Lexer<'a> {
-    pub fn new(reader: &Read) -> Lexer {
+impl <'a>Lexer<'a> {
+    pub fn new<T: Read>(reader: &T) -> Lexer {
         Lexer {
             line: 1,
-            reader: from_utf8(reader).peekable(),
+            reader: reader,
         }
     }
 
-    pub fn read_next_token(self) -> Token {
-
-    }
+    //pub fn read_next_token(self) -> Token {
+    //}
 }
 
 #[cfg(test)]
 mod lexer_test{
     use super::*;
+    use std::io::BufReader;
+    use std::fs::File;
 
     #[test]
-    fn create_instance() {
+    fn create_instance_with_string() {
         let b = "declare hello {input ok; func_in(ok);}".as_bytes();
         let _l = Lexer::new(&b);
     }
+
+    #[test]
+    fn create_instance_with_file() {
+        let f = File::open("test_code/fetch.nsl").unwrap();
+        //let f = BufReader::new(File::open("test_code/fetch.nsl").unwrap());
+        let _l = Lexer::new(&f);
+    }
+
 }
