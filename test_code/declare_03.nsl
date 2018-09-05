@@ -1,0 +1,9 @@
+declare hel
+{
+    input ok;
+    input ggrks;
+    output jk;
+
+    func_in sugoi(ok);
+    func_out majika(jk) : ggrks;
+}

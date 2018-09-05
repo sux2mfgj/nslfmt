@@ -1,0 +1,5 @@
+declare hello_google2
+{
+    input ok;
+    func_in sugoi(ok);
+}
