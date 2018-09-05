@@ -128,5 +128,6 @@ mod lexer_test{
         let mut f = BufReader::new(File::open("test_code/declare.nsl").unwrap());
         let mut l = Lexer::new(&mut f);
         assert_eq!(l.get_next_token(), Token::new(TokenClass::Symbol(Symbol::Declare), 1));
+        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 1));
     }
 }
