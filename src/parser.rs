@@ -61,14 +61,18 @@ impl<'a> Parser<'a> {
                     let node = ASTNode::new(ASTClass::Input(id, number));
                     io_vec.push(node);
                 }
-                /*
                 TokenClass::Symbol(Symbol::Output) => {
-
+                    let id = self.get_id().unwrap();
+                    let number = self.get_width().unwrap();
+                    let node = ASTNode::new(ASTClass::Output(id, number));
+                    io_vec.push(node);
                 }
                 TokenClass::Symbol(Symbol::InOut) => {
-
+                    let id = self.get_id().unwrap();
+                    let number = self.get_width().unwrap();
+                    let node = ASTNode::new(ASTClass::InOut(id, number));
+                    io_vec.push(node);
                 }
-                */
                 _ => {
                     return Err(ASTError::UnExpectedToken);
                 }
@@ -131,7 +135,6 @@ impl<'a> Parser<'a> {
         else {
             return Err(ASTError::UnExpectedToken);
         }
-
     }
 }
 
@@ -166,6 +169,20 @@ mod parser_test {
 
         let mut io_vec = Vec::new();
         io_vec.push(ASTNode::new(ASTClass::Input("a".to_string(), "2".to_string())));
+        let func_vec = Vec::new();
+        assert_eq!(p.next_ast().unwrap(),
+                   ASTNode::new(ASTClass::Declare("ok".to_string(), io_vec, func_vec)));
+    }
+
+    #[test]
+    fn output_inout() {
+        let mut b = "declare ok{ output a[2]; inout b[12];}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let mut io_vec = Vec::new();
+        io_vec.push(ASTNode::new(ASTClass::Output("a".to_string(), "2".to_string())));
+        io_vec.push(ASTNode::new(ASTClass::InOut("b".to_string(), "12".to_string())));
         let func_vec = Vec::new();
         assert_eq!(p.next_ast().unwrap(),
                    ASTNode::new(ASTClass::Declare("ok".to_string(), io_vec, func_vec)));
