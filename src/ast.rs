@@ -1,8 +1,8 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum ASTClass {
     Declare(String, Vec<ASTNode>, Vec<ASTNode>),
-    FuncIn(String, String, String),
-    FuncOut(String, String, String),
+    FuncIn(String, Vec<String>, String),
+    FuncOut(String, Vec<String>, String),
     Input(String, String),
     Output(String, String),
     InOut(String, String),

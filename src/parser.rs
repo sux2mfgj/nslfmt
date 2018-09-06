@@ -73,6 +73,13 @@ impl<'a> Parser<'a> {
                     let node = ASTNode::new(ASTClass::InOut(id, number));
                     io_vec.push(node);
                 }
+                TokenClass::Symbol(Symbol::FuncIn) => {
+                    let id = self.get_id().unwrap();
+                    let args = self.get_arguments().unwrap();
+                    let return_port = self.get_return_port().unwrap();
+                    let node = ASTNode::new(ASTClass::FuncIn(id, args, return_port));
+                    func_vec.push(node);
+                }
                 _ => {
                     return Err(ASTError::UnExpectedToken);
                 }
@@ -96,6 +103,17 @@ impl<'a> Parser<'a> {
         else
         {
             return Err(ASTError::UnExpectedToken);
+        }
+    }
+
+    fn get_semicolon(&mut self) -> Option<ASTError> {
+        let token = self.lexer.get_next_token();
+        if let TokenClass::Symbol(Symbol::Semicolon) = token.class {
+            return None;
+        }
+        else
+        {
+            return Some(ASTError::UnExpectedToken);
         }
     }
 
@@ -134,6 +152,50 @@ impl<'a> Parser<'a> {
         }
         else {
             return Err(ASTError::UnExpectedToken);
+        }
+    }
+
+    fn get_arguments(&mut self) -> Result<Vec<String>, ASTError> {
+        let left_paren = self.lexer.get_next_token();
+        if let TokenClass::Symbol(Symbol::LeftParen) = left_paren.class {
+        } else { return Err(ASTError::UnExpectedToken); }
+
+        let mut args = Vec::new();
+
+        loop {
+            let t = self.lexer.get_next_token();
+            match t.class {
+                TokenClass::Identifire(id) => {
+                    args.push(id);
+                }
+                TokenClass::Symbol(Symbol::RightParen) => {
+                    return Ok(args);
+                }
+                _ => {
+                    return Err(ASTError::UnExpectedToken);
+                }
+            }
+        }
+    }
+
+    fn get_return_port(&mut self) -> Result<String, ASTError> {
+        let colon_of_semicolon = self.lexer.get_next_token();
+
+        if let TokenClass::Symbol(Symbol::Semicolon) = colon_of_semicolon.class {
+            return Ok("".to_string());
+        }
+
+        if let TokenClass::Symbol(Symbol::Colon) = colon_of_semicolon.class {
+            let id = self.get_id();
+            if let Some(e) = self.get_semicolon() {
+                return Err(e)
+            }
+            else {
+                return id;
+            }
+        }
+        else {
+            Err(ASTError::UnExpectedToken)
         }
     }
 }
@@ -184,6 +246,23 @@ mod parser_test {
         io_vec.push(ASTNode::new(ASTClass::Output("a".to_string(), "2".to_string())));
         io_vec.push(ASTNode::new(ASTClass::InOut("b".to_string(), "12".to_string())));
         let func_vec = Vec::new();
+        assert_eq!(p.next_ast().unwrap(),
+                   ASTNode::new(ASTClass::Declare("ok".to_string(), io_vec, func_vec)));
+    }
+
+    #[test]
+    fn func_in() {
+        let mut b = "declare ok{ input a; func_in ok(a);}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let mut io_vec = Vec::new();
+        io_vec.push(ASTNode::new(ASTClass::Input("a".to_string(), "1".to_string())));
+        let mut func_vec = Vec::new();
+        let mut arg_vec = Vec::new();
+        arg_vec.push("a".to_string());
+        func_vec.push(ASTNode::new(
+                ASTClass::FuncIn("ok".to_string(), arg_vec, "".to_string())));
         assert_eq!(p.next_ast().unwrap(),
                    ASTNode::new(ASTClass::Declare("ok".to_string(), io_vec, func_vec)));
     }
