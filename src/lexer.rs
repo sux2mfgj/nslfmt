@@ -48,6 +48,12 @@ impl<'a> Lexer<'a> {
                             self.line,
                         ));
                     }
+                    // TODO
+                    '0' ... '9' => {
+                        self.tokens.push_back(Token::new(
+                                Lexer::get_number_token(&mut it),
+                                self.line))
+                    }
                     '{' => {
                         self.tokens.push_back(Token::new(
                             TokenClass::Symbol(Symbol::OpeningBrace),
@@ -74,6 +80,18 @@ impl<'a> Lexer<'a> {
                             TokenClass::Symbol(Symbol::RightParen),
                             self.line,
                         ));
+                        it.next();
+                    }
+                    '[' => {
+                        self.tokens.push_back(Token::new(
+                                TokenClass::Symbol(Symbol::LeftSquareBracket),
+                                self.line));
+                        it.next();
+                    }
+                    ']' => {
+                        self.tokens.push_back(Token::new(
+                                TokenClass::Symbol(Symbol::RightSquareBracket),
+                                self.line));
                         it.next();
                     }
                     ';' => {
@@ -130,6 +148,24 @@ impl<'a> Lexer<'a> {
             //TODO
             _ => TokenClass::Identifire(word),
         }
+    }
+    fn get_number_token<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> TokenClass {
+        let mut number = String::new();
+        while let Some(&c_next) = iter.peek() {
+            /* TODO
+             * now, this function can receive the digit value.
+             * have to consider hex, oct, bin formats.
+             */
+            if c_next.is_numeric() | (c_next == '_') {
+                number.push_str(&c_next.to_string());
+                iter.next();
+            }
+            else {
+                break;
+            }
+        }
+
+        TokenClass::Number(number)
     }
 }
 
@@ -347,5 +383,30 @@ mod lexer_test {
             Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 9));
         assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 9));
         assert_eq!(l.get_next_token(), Token::new(TokenClass::EndOfProgram, 10));
+    }
+
+    #[test]
+    fn number() {
+        let mut b = "declare ok {input a[12];}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        assert_eq!(l.get_next_token(), Token::new(TokenClass::Symbol(Symbol::Declare), 1));
+        assert_eq!(l.get_next_token(),
+                   Token::new(TokenClass::Identifire("ok".to_string()), 1));
+        assert_eq!(l.get_next_token(),
+                   Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 1));
+        assert_eq!(l.get_next_token(),
+                   Token::new(TokenClass::Symbol(Symbol::Input), 1));
+        assert_eq!(l.get_next_token(),
+                   Token::new(TokenClass::Identifire("a".to_string()), 1));
+        assert_eq!(l.get_next_token(),
+                   Token::new(TokenClass::Symbol(Symbol::LeftSquareBracket), 1));
+        assert_eq!(l.get_next_token(),
+                   Token::new(TokenClass::Number("12".to_string()), 1));
+        assert_eq!(l.get_next_token(),
+                   Token::new(TokenClass::Symbol(Symbol::RightSquareBracket), 1));
+        assert_eq!(l.get_next_token(),
+                   Token::new(TokenClass::Symbol(Symbol::Semicolon), 1));
+        assert_eq!(l.get_next_token(),
+                   Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 1));
     }
 }
