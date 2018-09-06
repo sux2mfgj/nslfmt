@@ -9,7 +9,7 @@ run:
 	cargo run
 
 test:
-	cargo test
+	RUST_BACKTRACE=1 cargo test
 
 debug:
 	rust-gdb -tui ./target/debug/nslfmt

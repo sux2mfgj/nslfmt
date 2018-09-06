@@ -1,12 +1,14 @@
+#[derive(Debug, Clone, PartialEq)]
 pub enum ASTClass {
-    Declare(String, Vec<ASTNode>),
+    Declare(String, Vec<ASTNode>, Vec<ASTNode>),
     FuncIn(String, String, String),
     FuncOut(String, String, String),
-    Input(String, usize),
-    Output(String, usize),
-    InOut(String, usize),
+    Input(String, String),
+    Output(String, String),
+    InOut(String, String),
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct ASTNode {
     pub class: ASTClass,
 }
