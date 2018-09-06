@@ -20,7 +20,8 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn get_next_token(&mut self) -> Token {
-        if self.tokens.len() == 0 {
+
+        while self.tokens.len() == 0 {
             self.supply_tokens();
         }
         match self.tokens.pop_front() {
@@ -112,8 +113,8 @@ impl<'a> Lexer<'a> {
                         it.next();
                     }
                     '\n' => {
-                        self.tokens
-                            .push_back(Token::new(TokenClass::Newline, self.line));
+                        //self.tokens
+                        //    .push_back(Token::new(TokenClass::Newline, self.line));
                         self.line += 1;
                         it.next();
                     }
@@ -205,7 +206,6 @@ mod lexer_test {
             l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Declare), 1)
         );
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 1));
     }
 
     #[test]
@@ -220,7 +220,6 @@ mod lexer_test {
             l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 1)
         );
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 1));
         assert_eq!(
             l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 2)
@@ -239,12 +238,10 @@ mod lexer_test {
             l.get_next_token(),
             Token::new(TokenClass::Identifire("hello".to_string()), 1)
         );
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 1));
         assert_eq!(
             l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 2)
         );
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 2));
         assert_eq!(
             l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Input), 3)
@@ -257,7 +254,6 @@ mod lexer_test {
             l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Semicolon), 3)
         );
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 3));
         assert_eq!(
             l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 4)
@@ -274,11 +270,9 @@ mod lexer_test {
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Identifire("hello_google2".to_string()), 1)
         );
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 1));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 2)
         );
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 2));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Input), 3)
         );
@@ -287,7 +281,6 @@ mod lexer_test {
         assert_eq!(
             l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Semicolon), 3));
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 3));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::FuncIn), 4));
         assert_eq!(l.get_next_token(),
@@ -301,7 +294,6 @@ mod lexer_test {
         assert_eq!(
             l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Semicolon), 4));
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 4));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 5));
     }
@@ -316,11 +308,9 @@ mod lexer_test {
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Identifire("hel".to_string()), 1)
         );
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 1));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 2)
         );
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 2));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Input), 3)
         );
@@ -329,22 +319,18 @@ mod lexer_test {
         assert_eq!(
             l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Semicolon), 3));
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 3));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Input), 4));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Identifire("ggrks".to_string()), 4));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Semicolon), 4));
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 4));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Output), 5));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Identifire("jk".to_string()), 5));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Semicolon), 5));
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 5));
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 6));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::FuncIn), 7));
         assert_eq!(l.get_next_token(),
@@ -357,7 +343,6 @@ mod lexer_test {
             Token::new(TokenClass::Symbol(Symbol::RightParen), 7));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Semicolon), 7));
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 7));
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::FuncOut), 8));
 
@@ -378,10 +363,7 @@ mod lexer_test {
         assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Semicolon), 8));
         assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Newline, 8));
-        assert_eq!(l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 9));
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Newline, 9));
         assert_eq!(l.get_next_token(), Token::new(TokenClass::EndOfProgram, 10));
     }
 

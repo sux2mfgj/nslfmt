@@ -211,6 +211,8 @@ impl<'a> Parser<'a> {
 mod parser_test {
 
     use super::*;
+    use std::fs::File;
+    use std::io::BufReader;
 
     #[test]
     fn end_of_program() {
@@ -310,4 +312,29 @@ mod parser_test {
                    ASTNode::new(ASTClass::Declare("ok".to_string(), io_vec, func_vec)));
     }
 
+    #[test]
+    fn declare_03() {
+        let mut b = BufReader::new(File::open("test_code/declare_03.nsl").unwrap());
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let mut io_vec = Vec::new();
+        io_vec.push(ASTNode::new(ASTClass::Input("ok".to_string(), "1".to_string())));
+        io_vec.push(ASTNode::new(ASTClass::Input("ggrks".to_string(), "1".to_string())));
+        io_vec.push(ASTNode::new(ASTClass::Output("jk".to_string(), "1".to_string())));
+        let mut func_vec = Vec::new();
+        let mut f1_arg_vec = Vec::new();
+        f1_arg_vec.push("ok".to_string());
+        func_vec.push(ASTNode::new(
+                ASTClass::FuncIn("sugoi".to_string(), f1_arg_vec, "".to_string())));
+
+        let mut f2_arg_vec = Vec::new();
+        f2_arg_vec.push("jk".to_string());
+        func_vec.push(ASTNode::new(
+                ASTClass::FuncOut("majika".to_string(), f2_arg_vec, "ggrks".to_string())));
+
+        assert_eq!(p.next_ast().unwrap(),
+                   ASTNode::new(ASTClass::Declare("hel".to_string(), io_vec, func_vec)));
+
+    }
 }
