@@ -266,4 +266,22 @@ mod parser_test {
         assert_eq!(p.next_ast().unwrap(),
                    ASTNode::new(ASTClass::Declare("ok".to_string(), io_vec, func_vec)));
     }
+
+    #[test]
+    fn func_in_return() {
+        let mut b = "declare ok{ input a; output c[2]; func_in ok(a): c;}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let mut io_vec = Vec::new();
+        io_vec.push(ASTNode::new(ASTClass::Input("a".to_string(), "1".to_string())));
+        io_vec.push(ASTNode::new(ASTClass::Output("c".to_string(), "2".to_string())));
+        let mut func_vec = Vec::new();
+        let mut arg_vec = Vec::new();
+        arg_vec.push("a".to_string());
+        func_vec.push(ASTNode::new(
+                ASTClass::FuncIn("ok".to_string(), arg_vec, "c".to_string())));
+        assert_eq!(p.next_ast().unwrap(),
+                   ASTNode::new(ASTClass::Declare("ok".to_string(), io_vec, func_vec)));
+    }
 }
