@@ -20,17 +20,3 @@ impl ASTNode {
         }
     }
 }
-
-//pub struct FuncNode {
-//    pub class: ASTClass,
-//    pub name: String,
-//    pub in_port: String,
-//    pub out_port: String,
-//}
-//
-//pub struct DeclareNode<'a> {
-//    pub class: ASTClass,
-//    pub name: String,
-//    pub io  : &'a Vec<IONode>,
-//    pub func: &'a Vec<FuncNode>,
-//}
