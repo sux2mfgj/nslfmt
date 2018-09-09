@@ -28,7 +28,7 @@ impl<'a> Parser<'a> {
             //TokenClass::Symbol(Symbol::Module) => {
             //}
             TokenClass::EndOfProgram => {
-                Err(ASTError::EndOfProgram)
+                return Ok(ASTNode::new(ASTClass::EndOfProgram));
             }
             _ => {
                 Err(ASTError::UnExpectedToken)
@@ -220,7 +220,7 @@ mod parser_test {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        assert_eq!(p.next_ast().err(), Some(ASTError::EndOfProgram));
+        assert_eq!(p.next_ast().err(), None);
     }
 
     #[test]

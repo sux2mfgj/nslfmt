@@ -12,7 +12,7 @@ use std::io::{self, BufWriter, Write};
 use std::fs::File;
 
 fn main() {
-    let mut b = "declare hello {input ok; func_in(ok);}".as_bytes();
+    let mut b = "declare hello {input ok; func_in gg (ok);}".as_bytes();
     let mut l = Lexer::new(&mut b);
 
     let p = Parser::new(&mut l);
@@ -22,5 +22,6 @@ fn main() {
     //let _io = BufWriter::new(Box::new(f));
 
 
-    let _g = Generator::new(p, Box::new(io));
+    let mut g = Generator::new(p, Box::new(io));
+    g.output_node();
 }

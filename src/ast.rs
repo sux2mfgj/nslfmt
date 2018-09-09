@@ -6,6 +6,7 @@ pub enum ASTClass {
     Input(String, String),
     Output(String, String),
     InOut(String, String),
+    EndOfProgram,
 }
 
 #[derive(Debug, Clone, PartialEq)]
