@@ -5,12 +5,14 @@ use ast::*;
 
 pub struct Generator<'a> {
     parser: Parser<'a>,
-    writer: Box<Write>,
+    //pub writer: Box<Write>,
+    writer: &'a Write,
 
 }
 
 impl<'a> Generator<'a> {
-    pub fn new(parser: Parser<'a>, writer: Box<Write>) -> Generator<'a> {
+    //pub fn new(parser: Parser<'a>, writer: Box<Write>) -> Generator<'a> {
+    pub fn new(parser: Parser<'a>, writer: &'a Write) -> Generator<'a> {
         Generator {
             parser: parser,
             writer: writer,
@@ -54,7 +56,16 @@ impl<'a> Generator<'a> {
                 }
                 ASTClass::FuncIn(ref name, ref args, ref result) => {
                     self.writer.write(
-                            format!("    func_in {}", name).as_bytes());
+                            format!("    func_in {} (", name).as_bytes());
+                    self.func_args(args);
+                    self.writer.write(b")");
+
+                    if !result.is_empty() {
+                        self.writer.write(format!(": {};\n", result).as_bytes());
+                    }
+                    else {
+                        self.writer.write(b";\n");
+                    }
                 }
                 //TODO
                 _ => {
@@ -64,6 +75,19 @@ impl<'a> Generator<'a> {
         }
         Some("ok".to_string())
     }
+
+    fn func_args(&mut self, args: &Vec<String>) {
+        let mut iter = args.iter().peekable();
+
+        while let Some(&arg) = iter.peek() {
+            self.writer.write(format!("{}", arg).as_bytes());
+            iter.next();
+
+            if None != iter.peek() {
+                self.writer.write(b", ");
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -72,7 +96,7 @@ mod generator_test {
     use token::*;
     use lexer::*;
 
-    use std::io::{self, BufWriter, Write};
+    use std::io::{self, Read, BufWriter, Write, Cursor};
     use std::fs::File;
 
     #[test]
@@ -82,7 +106,7 @@ mod generator_test {
 
         let p = Parser::new(&mut l);
         let io = io::stdout();
-        let _g = Generator::new(p, Box::new(io));
+        let _g = Generator::new(p, &io);
     }
 
     #[test]
@@ -94,19 +118,35 @@ mod generator_test {
         let f = File::open("test_code/fetch.nsl").unwrap();
         let io = BufWriter::new(f);
 
-        let _g = Generator::new(p, Box::new(io));
+        let _g = Generator::new(p, &io);
     }
 
     #[test]
     fn output_declare() {
-        let mut b = "declare hello {input ok; func_in hh(ok);}".as_bytes();
+        let mut b = b"declare hello {input ok; func_in hh(ok);}"
         let mut l = Lexer::new(&mut b);
 
         let p = Parser::new(&mut l);
-        let io = io::stdout();
 
-        let mut g = Generator::new(p, Box::new(io));
+        // 出力を指定する
+        //let io = Cursor::new(Vec::new()); // メモリへ(test用)
+        let io = io::stdout();              // 標準出力へ(debug用)
+        //let io =                          // Fileへ(実用)
+        //      BufWriter::new(
+        //          File::open(
+        //          "test_code/declare.nsl").unwrap());
+
+
+        //実行する
+        let mut g = Generator::new(p, &io);
         while let Some(a) = g.output_node() {}
+
+        // テストの際の比較をする
+        // let ans = b"declare hello\n{\n    input ok;\n    func_in　hh(ok);\n}
+        //let mut out = Vec::new();
+        //g.writer.read_to_end(&mut out).unwrap();
+        //io.read_to_end(&mut out).unwrap();
+        //println!("{:?}", out);
     }
 }
 
