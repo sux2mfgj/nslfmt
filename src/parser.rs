@@ -4,7 +4,7 @@ use token::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ASTError {
-    EndOfProgram,
+    //EndOfProgram,
     UnExpectedToken,
 }
 
@@ -32,7 +32,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn generate_declare_ast(&mut self, token: Token) -> Result<ASTNode, ASTError> {
+    fn generate_declare_ast(&mut self, _token: Token) -> Result<ASTNode, ASTError> {
         let root_node: ASTNode;
         let d_name_token = self.lexer.get_next_token();
         let mut io_vec = Vec::new();

@@ -1,4 +1,4 @@
-use std::io::{BufWriter, Write};
+use std::io::Write;
 
 use ast::*;
 use parser::*;
@@ -16,70 +16,68 @@ impl<'a, 'b> Generator<'a, 'b> {
         }
     }
 
-    pub fn output_node(&mut self) -> Option<String> {
+    pub fn output_node(&mut self) {
         let ast = self.parser.next_ast().unwrap();
 
         match ast.class {
             ASTClass::Declare(id, io_vec, func_vec) => {
-                self.writer.write(format!("declare {} {{\n", id).as_bytes());
+                self.writer.write(format!("declare {} {{\n", id).as_bytes()).unwrap();
                 self.io_and_func(io_vec);
                 self.io_and_func(func_vec);
-                self.writer.write(b"}\n");
-                self.writer.flush();
-                return Some(id);
+                self.writer.write(b"}\n").unwrap();
+                self.writer.flush().unwrap();
             }
             ASTClass::EndOfProgram => {
-                return None;
+                return;
             }
             _ => {
-                return None;
+                return;
             }
         }
     }
 
-    fn io_and_func(&mut self, io_vec: Vec<ASTNode>) -> Option<String> {
+    fn io_and_func(&mut self, io_vec: Vec<ASTNode>) {
         let mut iter = io_vec.iter();
         while let Some(node) = iter.next() {
             match node.class {
                 ASTClass::Input(ref name, ref bits) => {
-                    if (bits == "1") {
+                    if bits == "1" {
                         self.writer
-                            .write(format!("    input {};\n", name).as_bytes());
+                            .write(format!("    input {};\n", name).as_bytes()).unwrap();
                     } else {
                         self.writer
-                            .write(format!("    input {}[{}];\n", name, bits).as_bytes());
+                            .write(format!("    input {}[{}];\n", name, bits).as_bytes()).unwrap();
                     }
                 }
                 ASTClass::FuncIn(ref name, ref args, ref result) => {
                     self.writer
-                        .write(format!("    func_in {}(", name).as_bytes());
+                        .write(format!("    func_in {}(", name).as_bytes()).unwrap();
                     self.func_args(args);
-                    self.writer.write(b")");
+                    self.writer.write(b")").unwrap();
 
                     if !result.is_empty() {
-                        self.writer.write(format!(": {};\n", result).as_bytes());
+                        self.writer.write(format!(": {};\n", result).as_bytes()).unwrap();
                     } else {
-                        self.writer.write(b";\n");
+                        self.writer.write(b";\n").unwrap();
                     }
                 }
                 //TODO
                 _ => {
-                    return None;
+                    return;
                 }
             }
         }
-        Some("ok".to_string())
     }
 
     fn func_args(&mut self, args: &Vec<String>) {
         let mut iter = args.iter().peekable();
 
         while let Some(&arg) = iter.peek() {
-            self.writer.write(format!("{}", arg).as_bytes());
+            self.writer.write(format!("{}", arg).as_bytes()).unwrap();
             iter.next();
 
             if None != iter.peek() {
-                self.writer.write(b", ");
+                self.writer.write(b", ").unwrap();
             }
         }
     }
@@ -89,10 +87,10 @@ impl<'a, 'b> Generator<'a, 'b> {
 mod generator_test {
     use super::*;
     use lexer::*;
-    use token::*;
+    //use token::*;
 
     use std::fs::File;
-    use std::io::{self, BufWriter, Cursor, Read, Write};
+    use std::io::{self, BufWriter, Cursor};
 
     #[test]
     fn new_by_stdout() {
@@ -127,7 +125,8 @@ mod generator_test {
 
         {
             let mut g = Generator::new(p, &mut io);
-            while let Some(a) = g.output_node() {}
+            /* while let Some(_a) = g.output_node() {} */
+            g.output_node();
         }
     }
 
@@ -142,7 +141,8 @@ mod generator_test {
 
         {
             let mut g = Generator::new(p, &mut io);
-            while let Some(a) = g.output_node() {}
+            /* while let Some(_a) = g.output_node() {} */
+            g.output_node();
         }
     }
 
@@ -156,7 +156,8 @@ mod generator_test {
         let mut io = Cursor::new(Vec::new());
         {
             let mut g = Generator::new(p, &mut io);
-            while let Some(a) = g.output_node() {}
+            /* while let Some(_a) = g.output_node() {} */
+            g.output_node();
         }
 
         let ans = "declare hello {\n    input ok;\n    func_in hh(ok);\n}\n";
@@ -177,7 +178,8 @@ mod generator_test {
         let mut io = Cursor::new(Vec::new());
         {
             let mut g = Generator::new(p, &mut io);
-            while let Some(a) = g.output_node() {}
+            /* while let Some(_a) = g.output_node() {} */
+            g.output_node();
         }
 
         let ans = "declare hello {\n    input ok;\n    input test;\n    func_in hh(ok, test);\n}\n";

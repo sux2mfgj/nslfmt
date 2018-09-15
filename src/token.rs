@@ -29,7 +29,7 @@ pub enum TokenClass {
      */
     Number(String),
     Symbol(Symbol),
-    Newline,
+    //Newline,
     EndOfProgram,
 }
 
