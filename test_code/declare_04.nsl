@@ -1,0 +1,7 @@
+declare test
+{
+    input aa;
+    input jk;
+
+    func_in ok(aa, jk);
+}
