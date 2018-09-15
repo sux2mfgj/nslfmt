@@ -5,12 +5,10 @@ use parser::*;
 
 pub struct Generator<'a, 'b> {
     parser: Parser<'a>,
-    //pub writer: Box<Write>,
     writer: &'b mut Write,
 }
 
 impl<'a, 'b> Generator<'a, 'b> {
-    //pub fn new(parser: Parser<'a>, writer: Box<Write>) -> Generator<'a> {
     pub fn new(parser: Parser<'a>, writer: &'b mut Write) -> Generator<'a, 'b> {
         Generator {
             parser: parser,
@@ -163,6 +161,26 @@ mod generator_test {
 
         let ans = "declare hello {\n    input ok;\n    func_in hh(ok);\n}\n";
         /* if let  */
+        if let Ok(s) = String::from_utf8(io.into_inner()) {
+            println!("{}", s);
+            assert_eq!(s, ans);
+        }
+    }
+
+    #[test]
+    fn func_args() {
+        let mut b = "declare hello {input ok; input test; func_in hh(ok, test);}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        let p = Parser::new(&mut l);
+
+        let mut io = Cursor::new(Vec::new());
+        {
+            let mut g = Generator::new(p, &mut io);
+            while let Some(a) = g.output_node() {}
+        }
+
+        let ans = "declare hello {\n    input ok;\n    input test;\n    func_in hh(ok, test);\n}\n";
         if let Ok(s) = String::from_utf8(io.into_inner()) {
             println!("{}", s);
             assert_eq!(s, ans);

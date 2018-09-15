@@ -170,6 +170,9 @@ impl<'a> Parser<'a> {
                 TokenClass::Symbol(Symbol::RightParen) => {
                     return Ok(args);
                 }
+                TokenClass::Symbol(Symbol::Comma) => {
+                    continue;
+                }
                 _ => {
                     return Err(ASTError::UnExpectedToken);
                 }
