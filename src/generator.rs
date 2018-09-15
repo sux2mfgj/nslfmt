@@ -3,16 +3,16 @@ use std::io::{BufWriter, Write};
 use parser::*;
 use ast::*;
 
-pub struct Generator<'a> {
+pub struct Generator<'a, 'b> {
     parser: Parser<'a>,
     //pub writer: Box<Write>,
-    writer: &'a Write,
+    writer: &'b mut Write,
 
 }
 
-impl<'a> Generator<'a> {
+impl<'a, 'b> Generator<'a, 'b> {
     //pub fn new(parser: Parser<'a>, writer: Box<Write>) -> Generator<'a> {
-    pub fn new(parser: Parser<'a>, writer: &'a Write) -> Generator<'a> {
+    pub fn new(parser: Parser<'a>, writer: &'b mut Write) -> Generator<'a, 'b> {
         Generator {
             parser: parser,
             writer: writer,
@@ -105,8 +105,8 @@ mod generator_test {
         let mut l = Lexer::new(&mut b);
 
         let p = Parser::new(&mut l);
-        let io = io::stdout();
-        let _g = Generator::new(p, &io);
+        let mut io = io::stdout();
+        let _g = Generator::new(p, &mut io);
     }
 
     #[test]
@@ -116,21 +116,21 @@ mod generator_test {
 
         let p = Parser::new(&mut l);
         let f = File::open("test_code/fetch.nsl").unwrap();
-        let io = BufWriter::new(f);
+        let mut io = BufWriter::new(f);
 
-        let _g = Generator::new(p, &io);
+        let _g = Generator::new(p, &mut io);
     }
 
     #[test]
     fn output_declare() {
-        let mut b = b"declare hello {input ok; func_in hh(ok);}"
+        let mut b = "declare hello {input ok; func_in hh(ok);}".as_bytes();
         let mut l = Lexer::new(&mut b);
 
         let p = Parser::new(&mut l);
 
         // 出力を指定する
-        //let io = Cursor::new(Vec::new()); // メモリへ(test用)
-        let io = io::stdout();              // 標準出力へ(debug用)
+        let mut io = Cursor::new(Vec::new()); // メモリへ(test用)
+        // let mut io = io::stdout();              // 標準出力へ(debug用)
         //let io =                          // Fileへ(実用)
         //      BufWriter::new(
         //          File::open(
@@ -138,15 +138,18 @@ mod generator_test {
 
 
         //実行する
-        let mut g = Generator::new(p, &io);
-        while let Some(a) = g.output_node() {}
+        {
+            let mut g = Generator::new(p, &mut io);
+            while let Some(a) = g.output_node() {}
+        }
 
-        // テストの際の比較をする
-        // let ans = b"declare hello\n{\n    input ok;\n    func_in　hh(ok);\n}
-        //let mut out = Vec::new();
-        //g.writer.read_to_end(&mut out).unwrap();
-        //io.read_to_end(&mut out).unwrap();
-        //println!("{:?}", out);
+        println!("{:?}", io.position());
+        // // テストの際の比較をする
+        // let ans = b"declare hello\n{\n    input ok;\n    func_in hh(ok);\n}".as_bytes();
+        // let mut out = Vec::new();
+        // g.writer.read_to_end(&mut out).unwrap();
+        // io.read_to_end(&mut out).unwrap();
+        // println!("{:?}", out);
     }
 }
 
