@@ -1,13 +1,12 @@
 use std::io::{BufWriter, Write};
 
-use parser::*;
 use ast::*;
+use parser::*;
 
 pub struct Generator<'a, 'b> {
     parser: Parser<'a>,
     //pub writer: Box<Write>,
     writer: &'b mut Write,
-
 }
 
 impl<'a, 'b> Generator<'a, 'b> {
@@ -45,25 +44,23 @@ impl<'a, 'b> Generator<'a, 'b> {
         while let Some(node) = iter.next() {
             match node.class {
                 ASTClass::Input(ref name, ref bits) => {
-                    if(bits == "1")
-                    {
-                        self.writer.write(
-                                format!("    input {};\n", name).as_bytes());
+                    if (bits == "1") {
+                        self.writer
+                            .write(format!("    input {};\n", name).as_bytes());
                     } else {
-                        self.writer.write(
-                                format!("    input {}[{}];\n", name, bits).as_bytes());
+                        self.writer
+                            .write(format!("    input {}[{}];\n", name, bits).as_bytes());
                     }
                 }
                 ASTClass::FuncIn(ref name, ref args, ref result) => {
-                    self.writer.write(
-                            format!("    func_in {} (", name).as_bytes());
+                    self.writer
+                        .write(format!("    func_in {}(", name).as_bytes());
                     self.func_args(args);
                     self.writer.write(b")");
 
                     if !result.is_empty() {
                         self.writer.write(format!(": {};\n", result).as_bytes());
-                    }
-                    else {
+                    } else {
                         self.writer.write(b";\n");
                     }
                 }
@@ -93,11 +90,11 @@ impl<'a, 'b> Generator<'a, 'b> {
 #[cfg(test)]
 mod generator_test {
     use super::*;
-    use token::*;
     use lexer::*;
+    use token::*;
 
-    use std::io::{self, Read, BufWriter, Write, Cursor};
     use std::fs::File;
+    use std::io::{self, BufWriter, Cursor, Read, Write};
 
     #[test]
     fn new_by_stdout() {
@@ -122,34 +119,53 @@ mod generator_test {
     }
 
     #[test]
-    fn output_declare() {
+    fn output_declare_to_file() {
         let mut b = "declare hello {input ok; func_in hh(ok);}".as_bytes();
         let mut l = Lexer::new(&mut b);
 
         let p = Parser::new(&mut l);
 
-        // 出力を指定する
-        let mut io = Cursor::new(Vec::new()); // メモリへ(test用)
-        // let mut io = io::stdout();              // 標準出力へ(debug用)
-        //let io =                          // Fileへ(実用)
-        //      BufWriter::new(
-        //          File::open(
-        //          "test_code/declare.nsl").unwrap());
+        let mut io = BufWriter::new(File::create("/tmp/out.nsl").unwrap());
 
+        {
+            let mut g = Generator::new(p, &mut io);
+            while let Some(a) = g.output_node() {}
+        }
+    }
 
-        //実行する
+    #[test]
+    fn output_declare_to_stdio() {
+        let mut b = "declare hello {input ok; func_in hh(ok);}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        let p = Parser::new(&mut l);
+
+        let mut io = io::stdout();
+
+        {
+            let mut g = Generator::new(p, &mut io);
+            while let Some(a) = g.output_node() {}
+        }
+    }
+
+    #[test]
+    fn output_declare_to_cursor() {
+        let mut b = "declare hello {input ok; func_in hh(ok);}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        let p = Parser::new(&mut l);
+
+        let mut io = Cursor::new(Vec::new());
         {
             let mut g = Generator::new(p, &mut io);
             while let Some(a) = g.output_node() {}
         }
 
-        println!("{:?}", io.position());
-        // // テストの際の比較をする
-        // let ans = b"declare hello\n{\n    input ok;\n    func_in hh(ok);\n}".as_bytes();
-        // let mut out = Vec::new();
-        // g.writer.read_to_end(&mut out).unwrap();
-        // io.read_to_end(&mut out).unwrap();
-        // println!("{:?}", out);
+        let ans = "declare hello {\n    input ok;\n    func_in hh(ok);\n}\n";
+        /* if let  */
+        if let Ok(s) = String::from_utf8(io.into_inner()) {
+            println!("{}", s);
+            assert_eq!(s, ans);
+        }
     }
 }
-

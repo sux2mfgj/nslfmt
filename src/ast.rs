@@ -16,8 +16,6 @@ pub struct ASTNode {
 
 impl ASTNode {
     pub fn new(class: ASTClass) -> ASTNode {
-        ASTNode{
-            class: class,
-        }
+        ASTNode { class: class }
     }
 }

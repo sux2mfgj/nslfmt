@@ -20,7 +20,6 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn get_next_token(&mut self) -> Token {
-
         while self.tokens.len() == 0 {
             self.supply_tokens();
         }
@@ -50,11 +49,10 @@ impl<'a> Lexer<'a> {
                         ));
                     }
                     // TODO
-                    '0' ... '9' => {
-                        self.tokens.push_back(Token::new(
-                                Lexer::get_number_token(&mut it),
-                                self.line))
-                    }
+                    '0'...'9' => self.tokens.push_back(Token::new(
+                        Lexer::get_number_token(&mut it),
+                        self.line,
+                    )),
                     '{' => {
                         self.tokens.push_back(Token::new(
                             TokenClass::Symbol(Symbol::OpeningBrace),
@@ -85,14 +83,16 @@ impl<'a> Lexer<'a> {
                     }
                     '[' => {
                         self.tokens.push_back(Token::new(
-                                TokenClass::Symbol(Symbol::LeftSquareBracket),
-                                self.line));
+                            TokenClass::Symbol(Symbol::LeftSquareBracket),
+                            self.line,
+                        ));
                         it.next();
                     }
                     ']' => {
                         self.tokens.push_back(Token::new(
-                                TokenClass::Symbol(Symbol::RightSquareBracket),
-                                self.line));
+                            TokenClass::Symbol(Symbol::RightSquareBracket),
+                            self.line,
+                        ));
                         it.next();
                     }
                     ';' => {
@@ -160,8 +160,7 @@ impl<'a> Lexer<'a> {
             if c_next.is_numeric() | (c_next == '_') {
                 number.push_str(&c_next.to_string());
                 iter.next();
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -272,32 +271,50 @@ mod lexer_test {
             l.get_next_token(),
             Token::new(TokenClass::Identifire("hello_google2".to_string()), 1)
         );
-        assert_eq!(l.get_next_token(),
+        assert_eq!(
+            l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 2)
         );
-        assert_eq!(l.get_next_token(),
+        assert_eq!(
+            l.get_next_token(),
             Token::new(TokenClass::Symbol(Symbol::Input), 3)
         );
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 3));
         assert_eq!(
             l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 3));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::FuncIn), 4));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Identifire("sugoi".to_string()), 4));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 4));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 4));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 4));
+            Token::new(TokenClass::Identifire("ok".to_string()), 3)
+        );
         assert_eq!(
             l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 4));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 5));
+            Token::new(TokenClass::Symbol(Symbol::Semicolon), 3)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::FuncIn), 4)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Identifire("sugoi".to_string()), 4)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::LeftParen), 4)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Identifire("ok".to_string()), 4)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::RightParen), 4)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Semicolon), 4)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 5)
+        );
     }
 
     #[test]
@@ -312,43 +329,74 @@ mod lexer_test {
             l.get_next_token(),
             Token::new(TokenClass::Identifire("hel".to_string()), 1)
         );
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 2)
-        );
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Input), 3)
-        );
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 3));
         assert_eq!(
             l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 3));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Input), 4));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Identifire("ggrks".to_string()), 4));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 4));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Output), 5));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Identifire("jk".to_string()), 5));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 5));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::FuncIn), 7));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Identifire("sugoi".to_string()), 7));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 7));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 7));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 7));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 7));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::FuncOut), 8));
+            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 2)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Input), 3)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Identifire("ok".to_string()), 3)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Semicolon), 3)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Input), 4)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Identifire("ggrks".to_string()), 4)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Semicolon), 4)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Output), 5)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Identifire("jk".to_string()), 5)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Semicolon), 5)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::FuncIn), 7)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Identifire("sugoi".to_string()), 7)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::LeftParen), 7)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Identifire("ok".to_string()), 7)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::RightParen), 7)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Semicolon), 7)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::FuncOut), 8)
+        );
         assert_eq!(
             l.get_next_token(),
             Token::new(TokenClass::Identifire("majika".to_string()), 8)
@@ -375,10 +423,14 @@ mod lexer_test {
             Token::new(TokenClass::Identifire("ggrks".to_string()), 8)
         );
 
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 8));
-        assert_eq!(l.get_next_token(),
-            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 9));
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Semicolon), 8)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 9)
+        );
         assert_eq!(l.get_next_token(), Token::new(TokenClass::EndOfProgram, 10));
     }
 
@@ -386,24 +438,45 @@ mod lexer_test {
     fn number() {
         let mut b = "declare ok {input a[12];}".as_bytes();
         let mut l = Lexer::new(&mut b);
-        assert_eq!(l.get_next_token(), Token::new(TokenClass::Symbol(Symbol::Declare), 1));
-        assert_eq!(l.get_next_token(),
-                   Token::new(TokenClass::Identifire("ok".to_string()), 1));
-        assert_eq!(l.get_next_token(),
-                   Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 1));
-        assert_eq!(l.get_next_token(),
-                   Token::new(TokenClass::Symbol(Symbol::Input), 1));
-        assert_eq!(l.get_next_token(),
-                   Token::new(TokenClass::Identifire("a".to_string()), 1));
-        assert_eq!(l.get_next_token(),
-                   Token::new(TokenClass::Symbol(Symbol::LeftSquareBracket), 1));
-        assert_eq!(l.get_next_token(),
-                   Token::new(TokenClass::Number("12".to_string()), 1));
-        assert_eq!(l.get_next_token(),
-                   Token::new(TokenClass::Symbol(Symbol::RightSquareBracket), 1));
-        assert_eq!(l.get_next_token(),
-                   Token::new(TokenClass::Symbol(Symbol::Semicolon), 1));
-        assert_eq!(l.get_next_token(),
-                   Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 1));
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Declare), 1)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Identifire("ok".to_string()), 1)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 1)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Input), 1)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Identifire("a".to_string()), 1)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::LeftSquareBracket), 1)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Number("12".to_string()), 1)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::RightSquareBracket), 1)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Semicolon), 1)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 1)
+        );
     }
 }
