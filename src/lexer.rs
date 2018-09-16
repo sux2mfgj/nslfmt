@@ -49,10 +49,10 @@ impl<'a> Lexer<'a> {
                         ));
                     }
                     // TODO
-                    '0'...'9' => self.tokens.push_back(Token::new(
-                        Lexer::get_number_token(&mut it),
-                        self.line,
-                    )),
+                    '0'...'9' => {
+                        self.tokens.push_back(
+                                Token::new(Lexer::get_number_token(&mut it), self.line));
+                    }
                     '{' => {
                         self.tokens.push_back(Token::new(
                             TokenClass::Symbol(Symbol::OpeningBrace),
@@ -172,7 +172,9 @@ impl<'a> Lexer<'a> {
             "inout" => TokenClass::Symbol(Symbol::InOut),
             "func_in" => TokenClass::Symbol(Symbol::FuncIn),
             "func_out" => TokenClass::Symbol(Symbol::FuncOut),
-            "include" => TokenClass::Macro(MacroSymbol::Include),
+            "include" => TokenClass::Macro(Macro::Include),
+            //"define" => TokenClass::Macro(Macro::Define),
+            "undef" => TokenClass::Macro(Macro::Undef),
             //TODO
             _ => TokenClass::Identifire(word),
         }
@@ -578,7 +580,7 @@ mod lexer_test {
                 Token::new(TokenClass::Symbol(Symbol::Sharp), 1));
         assert_eq!(
                 l.get_next_token(),
-                Token::new(TokenClass::Macro(MacroSymbol::Include), 1));
+                Token::new(TokenClass::Macro(Macro::Include), 1));
         assert_eq!(
                 l.get_next_token(),
                 Token::new(TokenClass::Symbol(Symbol::DoubleQuote), 1));
@@ -600,5 +602,20 @@ mod lexer_test {
         assert_eq!(
                 l.get_next_token(),
                 Token::new(TokenClass::Identifire("ok".to_string()), 2));
+    }
+
+    #[test]
+    fn macro_undef() {
+        let mut b = "#undef aaaa".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        assert_eq!(
+                l.get_next_token(),
+                Token::new(TokenClass::Symbol(Symbol::Sharp), 1));
+        assert_eq!(
+                l.get_next_token(),
+                Token::new(TokenClass::Macro(Macro::Undef), 1));
+        assert_eq!(
+                l.get_next_token(),
+                Token::new(TokenClass::Identifire("aaaa".to_string()), 1));
     }
 }

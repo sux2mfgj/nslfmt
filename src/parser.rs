@@ -37,12 +37,22 @@ impl<'a> Parser<'a> {
     fn generate_macro_ast(&mut self) -> Result<ASTNode, ASTError> {
         let t = self.lexer.get_next_token();
         match t.class {
-            TokenClass::Macro(MacroSymbol::Include) => {
+            TokenClass::Macro(Macro::Include) => {
                 if let Ok(s) = self.get_string_with_dquote() {
                     return Ok(ASTNode::new(ASTClass::MacroInclude(s)));
                 }
                 else {
                     return Err(ASTError::UnExpectedToken);
+                }
+            }
+            TokenClass::Macro(Macro::Undef) => {
+                match self.lexer.get_next_token().class {
+                    TokenClass::Identifire(s) => {
+                        return Ok(ASTNode::new(ASTClass::MacroUndef(s)));
+                    }
+                    _ => {
+                        return Err(ASTError::UnExpectedToken);
+                    }
                 }
             }
             _ => {
@@ -451,6 +461,19 @@ mod parser_test {
         assert_eq!(
                 p.next_ast().unwrap(),
                 ASTNode::new(ASTClass::EndOfProgram));
+    }
 
+    #[test]
+    fn undef_macro() {
+        let mut b = "#undef hello".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::MacroUndef("hello".to_string())));
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::EndOfProgram));
     }
 }

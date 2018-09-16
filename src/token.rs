@@ -25,7 +25,7 @@ pub enum Symbol {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum MacroSymbol {
+pub enum Macro {
     Include,    // #include
     Define,     // #define
     Undef,      // #undef
@@ -44,7 +44,7 @@ pub enum TokenClass {
      */
     Number(String),
     Symbol(Symbol),
-    Macro(MacroSymbol),
+    Macro(Macro),
     //Newline,
     EndOfProgram,
 }
