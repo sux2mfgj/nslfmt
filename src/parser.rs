@@ -4,7 +4,6 @@ use token::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ASTError {
-    //EndOfProgram,
     UnExpectedToken,
 }
 
@@ -21,7 +20,10 @@ impl<'a> Parser<'a> {
         let t = self.lexer.get_next_token();
         match t.class {
             TokenClass::Symbol(Symbol::Declare) => {
-                return self.generate_declare_ast(t);
+                return self.generate_declare_ast();
+            }
+            TokenClass::Symbol(Symbol::Sharp) => {
+                return self.generate_macro_ast();
             }
             //TokenClass::Symbol(Symbol::Module) => {
             //}
@@ -32,7 +34,24 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn generate_declare_ast(&mut self, _token: Token) -> Result<ASTNode, ASTError> {
+    fn generate_macro_ast(&mut self) -> Result<ASTNode, ASTError> {
+        let t = self.lexer.get_next_token();
+        match t.class {
+            TokenClass::Macro(MacroSymbol::Include) => {
+                if let Ok(s) = self.get_string_with_dquote() {
+                    return Ok(ASTNode::new(ASTClass::MacroInclude(s)));
+                }
+                else {
+                    return Err(ASTError::UnExpectedToken);
+                }
+            }
+            _ => {
+                return Err(ASTError::UnExpectedToken);
+            }
+        }
+    }
+
+    fn generate_declare_ast(&mut self) -> Result<ASTNode, ASTError> {
         let root_node: ASTNode;
         let d_name_token = self.lexer.get_next_token();
         let mut io_vec = Vec::new();
@@ -93,6 +112,33 @@ impl<'a> Parser<'a> {
             return Ok(root_node);
         } else {
             return Err(ASTError::UnExpectedToken);
+        }
+    }
+
+    fn get_string_with_dquote(&mut self) -> Result<String, ASTError> {
+        let mut file_path = "\"".to_string();
+        let dquote1 = self.lexer.get_next_token();
+        if let TokenClass::Symbol(Symbol::DoubleQuote) = dquote1.class {}
+        else {
+            return Err(ASTError::UnExpectedToken);
+        }
+        loop {
+            let t = self.lexer.get_next_token();
+            match t.class {
+                TokenClass::Identifire(id) => {
+                    file_path.push_str(&id);
+                }
+                TokenClass::Symbol(Symbol::Dot) => {
+                    file_path.push_str(".");
+                }
+                TokenClass::Symbol(Symbol::DoubleQuote) => {
+                    file_path.push_str("\"");
+                    return Ok(file_path);
+                }
+                _ => {
+                    return Err(ASTError::UnExpectedToken);
+                }
+            }
         }
     }
 
@@ -388,5 +434,23 @@ mod parser_test {
             p.next_ast().unwrap(),
             ASTNode::new(ASTClass::Declare("hel".to_string(), io_vec, func_vec))
         );
+    }
+
+    #[test]
+    fn include_macro() {
+        let mut b = "#include \"hello.h\"\ndeclare ok {}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::MacroInclude("\"hello.h\"".to_string())));
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::Declare("ok".to_string(), Vec::new(), Vec::new())));
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::EndOfProgram));
+
     }
 }

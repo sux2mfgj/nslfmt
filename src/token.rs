@@ -11,13 +11,28 @@ pub enum Symbol {
     Semicolon,          // ;
     Colon,              // :
     Comma,              // ,
+    Dot,                // .
     Input,              // input
     Output,             // output
     InOut,              // inout
     FuncIn,             // func_in
     FuncOut,            // func_out
+    Sharp,              // #
+    DoubleQuote,        // "
+    //SingleQuote,        // '
                         //TODO
                         // lack some symbols
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum MacroSymbol {
+    Include,    // #include
+    Define,     // #define
+    Undef,      // #undef
+    Ifdef,      // #ifdef
+    Ifndef,     // #ifndef
+    Else,       // #eles
+    Endif,      // #endif
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -29,6 +44,7 @@ pub enum TokenClass {
      */
     Number(String),
     Symbol(Symbol),
+    Macro(MacroSymbol),
     //Newline,
     EndOfProgram,
 }

@@ -6,6 +6,13 @@ pub enum ASTClass {
     Input(String, String),
     Output(String, String),
     InOut(String, String),
+    MacroInclude(String),
+    MacroDefine(String, String),
+    MacroUndef(String),
+    MacroIfdef(String),
+    MacroIfndef(String),
+    MacroElse,
+    MacroEndif,
     EndOfProgram,
 }
 
