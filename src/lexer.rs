@@ -176,6 +176,9 @@ impl<'a> Lexer<'a> {
             //"define" => TokenClass::Macro(Macro::Define),
             "undef" => TokenClass::Macro(Macro::Undef),
             "ifdef" => TokenClass::Macro(Macro::Ifdef),
+            "ifndef" => TokenClass::Macro(Macro::Ifndef),
+            "else"=> TokenClass::Macro(Macro::Else),
+            "endif" => TokenClass::Macro(Macro::Endif),
             //TODO
             _ => TokenClass::Identifire(word),
         }
@@ -633,6 +636,43 @@ mod lexer_test {
         assert_eq!(
                 l.get_next_token(),
                 Token::new(TokenClass::Identifire("aaaa".to_string()), 1));
+    }
 
+    #[test]
+    fn macro_ifndef() {
+        let mut b = "#ifndef aaaa".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        assert_eq!(
+                l.get_next_token(),
+                Token::new(TokenClass::Symbol(Symbol::Sharp), 1));
+        assert_eq!(
+                l.get_next_token(),
+                Token::new(TokenClass::Macro(Macro::Ifndef), 1));
+        assert_eq!(
+                l.get_next_token(),
+                Token::new(TokenClass::Identifire("aaaa".to_string()), 1));
+    }
+
+    #[test]
+    fn macro_else() {
+        let mut b = "#else".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        assert_eq!(
+                l.get_next_token(),
+                Token::new(TokenClass::Symbol(Symbol::Sharp), 1));
+        assert_eq!(
+                l.get_next_token(),
+                Token::new(TokenClass::Macro(Macro::Else), 1));
+    }
+    #[test]
+    fn macro_endif() {
+        let mut b = "#endif".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        assert_eq!(
+                l.get_next_token(),
+                Token::new(TokenClass::Symbol(Symbol::Sharp), 1));
+        assert_eq!(
+                l.get_next_token(),
+                Token::new(TokenClass::Macro(Macro::Endif), 1));
     }
 }

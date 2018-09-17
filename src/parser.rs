@@ -65,6 +65,22 @@ impl<'a> Parser<'a> {
                     }
                 }
             }
+            TokenClass::Macro(Macro::Ifndef) => {
+                match self.lexer.get_next_token().class {
+                    TokenClass::Identifire(s) => {
+                        return Ok(ASTNode::new(ASTClass::MacroIfndef(s)));
+                    }
+                    _ => {
+                        return Err(ASTError::UnExpectedToken);
+                    }
+                }
+            }
+            TokenClass::Macro(Macro::Else) => {
+                return Ok(ASTNode::new(ASTClass::MacroElse));
+            }
+            TokenClass::Macro(Macro::Endif) => {
+                return Ok(ASTNode::new(ASTClass::MacroEndif));
+            }
             //TODO
             _ => {
                 return Err(ASTError::UnExpectedToken);
@@ -497,6 +513,48 @@ mod parser_test {
         assert_eq!(
                 p.next_ast().unwrap(),
                 ASTNode::new(ASTClass::MacroIfdef("hello".to_string())));
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::EndOfProgram));
+    }
+
+    #[test]
+    fn ifndef_macro() {
+        let mut b = "#ifndef hello".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::MacroIfndef("hello".to_string())));
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::EndOfProgram));
+    }
+
+    #[test]
+    fn else_macro() {
+        let mut b = "#else".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::MacroElse));
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::EndOfProgram));
+    }
+
+    #[test]
+    fn endif_macro() {
+        let mut b = "#endif".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::MacroEndif));
         assert_eq!(
                 p.next_ast().unwrap(),
                 ASTNode::new(ASTClass::EndOfProgram));
