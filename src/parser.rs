@@ -55,6 +55,17 @@ impl<'a> Parser<'a> {
                     }
                 }
             }
+            TokenClass::Macro(Macro::Ifdef) => {
+                match self.lexer.get_next_token().class {
+                    TokenClass::Identifire(s) => {
+                        return Ok(ASTNode::new(ASTClass::MacroIfdef(s)));
+                    }
+                    _ => {
+                        return Err(ASTError::UnExpectedToken);
+                    }
+                }
+            }
+            //TODO
             _ => {
                 return Err(ASTError::UnExpectedToken);
             }
@@ -472,6 +483,20 @@ mod parser_test {
         assert_eq!(
                 p.next_ast().unwrap(),
                 ASTNode::new(ASTClass::MacroUndef("hello".to_string())));
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::EndOfProgram));
+    }
+
+    #[test]
+    fn ifdef_macro() {
+        let mut b = "#ifdef hello".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::MacroIfdef("hello".to_string())));
         assert_eq!(
                 p.next_ast().unwrap(),
                 ASTNode::new(ASTClass::EndOfProgram));
