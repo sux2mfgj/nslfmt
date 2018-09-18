@@ -1,0 +1,78 @@
+nsl-syntax  ::= { <top-declarator> }*
+
+top-declarator  ::= <declare-definition>
+                |   <module-definition>
+                |   <macro>
+
+declare-definition ::= "declare" <id> "{" { <interfaces-definition> }* "}"
+
+#- id
+interfaces-definition::=    <io-width-definition>
+                        |   <io-function-declarator>
+
+io-wire-declarator  ::= <io-wire> <id> <width-defitinion> ";"
+
+io-wire     ::= "input"
+            |   "inout"
+            |   "output"
+
+width-definition ::= [ "[" <width-expression> "]" ]
+
+width-expression    ::= <number>
+                    |   <width-expr> <width-operation> <width-expr>
+
+width-operation     ::= "/"
+                    |   "*"
+
+function-args       ::= [ <id> { "," <id> }* ]
+function-return     ::= [ ":" <id> ]
+
+io-function-declarator  ::= <io-function> <id> "(" <function-args> ")" <function-return> ";"
+
+io-function ::= "func_in"
+            |   "func_out"
+
+module-definition ::= "module" <id> "{" <module-expression> "}"
+
+module-expression   ::= { <reg-wire-module-declaration> }* { <module-behavior> }*
+
+reg-wire-module-declaration ::= <reg-wire-definition>
+                            |   <module-declaration>
+                            |   <struct-wire-reg-declaration>
+                            |   <proc-declaration>
+                            |   <state-declaration>
+                            |   <func-declaration>
+
+reg-wire-definition ::= <reg-wire> <id> <width-declarator> [ "," <id> <width-declarator> ] ";"
+
+reg-wire            ::= "reg" | "wire"
+
+module-declaration  ::= <id> <id> ";"
+
+struct-wire     ::= <id> <reg-wire> <id> ";"
+
+proc-declaration    ::= "proc_name" <proc-information> { "," <proc-information> }* ";"
+
+proc-information    ::= <id> "(" <function-args> ")"
+
+state-declaration   ::= "state_name" <id> { "," <id> }* ";"
+
+func-declaration    ::= "func_self" <id> "(" <function-args> ")" <function-return> ";"
+
+module-behavior     ::= <assignment-expression>
+                    |   <state-expression>
+                    |   <func-expression>
+                    |   <proc-expression>
+                    |   <if-declaration>
+                    |   <return-declaration>
+
+assignment-expression   ::= <wire-reg-assignment> | <expression>
+wire-reg-assignment     ::= <id> <assigner> <expression> ";"
+assigner                ::= "=" | ":="
+expression              ::=
+# number
+# func
+#
+
+
+macro       ::= "#" <macro-syntax>
