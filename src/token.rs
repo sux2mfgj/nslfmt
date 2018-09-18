@@ -45,11 +45,11 @@ pub enum TokenClass {
     Number(String),
     Symbol(Symbol),
     Macro(Macro),
-    //Newline,
+    Newline,
     EndOfProgram,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 pub struct Token {
     pub class: TokenClass,
     pub line: usize,

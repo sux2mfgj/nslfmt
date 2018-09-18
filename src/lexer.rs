@@ -23,12 +23,24 @@ impl<'a> Lexer<'a> {
         while self.tokens.len() == 0 {
             self.supply_tokens();
         }
-        match self.tokens.pop_front() {
-            Some(next_token) => next_token,
-            None => {
-                panic!("invalid tokens.pop_front()");
+        if let Some(next_token) = self.tokens.pop_front() {
+            if next_token.class == TokenClass::Newline{
+                return self.get_next_token();
+            }
+            else {
+                return next_token;
             }
         }
+        else {
+            panic!("invalid tokens.pop_front()");
+        }
+    }
+
+    pub fn check_next_token(&mut self) -> Option<&Token>{
+        while self.tokens.len() == 0 {
+            self.supply_tokens();
+        }
+        self.tokens.front()
     }
 
     fn supply_tokens(&mut self) {
@@ -139,8 +151,8 @@ impl<'a> Lexer<'a> {
                         it.next();
                     }
                     '\n' => {
-                        //self.tokens
-                        //    .push_back(Token::new(TokenClass::Newline, self.line));
+                        self.tokens.push_back(
+                                Token::new(TokenClass::Newline, self.line));
                         self.line += 1;
                         it.next();
                     }
@@ -173,7 +185,7 @@ impl<'a> Lexer<'a> {
             "func_in" => TokenClass::Symbol(Symbol::FuncIn),
             "func_out" => TokenClass::Symbol(Symbol::FuncOut),
             "include" => TokenClass::Macro(Macro::Include),
-            //"define" => TokenClass::Macro(Macro::Define),
+            "define" => TokenClass::Macro(Macro::Define),
             "undef" => TokenClass::Macro(Macro::Undef),
             "ifdef" => TokenClass::Macro(Macro::Ifdef),
             "ifndef" => TokenClass::Macro(Macro::Ifndef),
@@ -674,5 +686,36 @@ mod lexer_test {
         assert_eq!(
                 l.get_next_token(),
                 Token::new(TokenClass::Macro(Macro::Endif), 1));
+        assert_eq!(l.get_next_token(), Token::new(TokenClass::EndOfProgram, 1));
     }
+
+    #[test]
+    fn macro_define() {
+        let mut b = "#define HELLO (12)".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        assert_eq!(
+                l.get_next_token(),
+                Token::new(TokenClass::Symbol(Symbol::Sharp), 1));
+        assert_eq!(
+                l.get_next_token(),
+                Token::new(TokenClass::Macro(Macro::Define), 1));
+        assert_eq!(
+                l.get_next_token(),
+                Token::new(TokenClass::Identifire("HELLO".to_string()), 1));
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Number("12".to_string()), 1)
+        );
+        assert_eq!(
+            l.get_next_token(),
+            Token::new(TokenClass::Symbol(Symbol::RightParen), 1)
+        );
+
+        assert_eq!(l.get_next_token(), Token::new(TokenClass::EndOfProgram, 1));
+    }
+
 }

@@ -9,10 +9,16 @@ run:
 	cargo run
 
 test:
+	cargo test
+
+details:
 	RUST_BACKTRACE=1 cargo test
 
 debug:
 	rust-gdb -tui ./target/debug/nslfmt
+
+debug_test:
+	rust-gdb -tui $(shell ls -t target/debug/nslfmt-* |head -n 1)
 
 fmt:
 	cargo-fmt --all

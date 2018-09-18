@@ -4,7 +4,7 @@ use token::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ASTError {
-    UnExpectedToken,
+    UnExpectedToken(Token),
 }
 
 pub struct Parser<'a> {
@@ -27,10 +27,42 @@ impl<'a> Parser<'a> {
             }
             //TokenClass::Symbol(Symbol::Module) => {
             //}
+            TokenClass::Symbol(Symbol::Input) => {
+                let id = self.get_id().unwrap();
+                let number = self.get_width().unwrap();
+                return Ok(ASTNode::new(ASTClass::Input(id, number)));
+            }
+            TokenClass::Symbol(Symbol::Output) => {
+                let id = self.get_id().unwrap();
+                let number = self.get_width().unwrap();
+                return Ok(ASTNode::new(ASTClass::Output(id, number)));
+            }
+            TokenClass::Symbol(Symbol::InOut) => {
+                let id = self.get_id().unwrap();
+                let number = self.get_width().unwrap();
+                return Ok(ASTNode::new(ASTClass::InOut(id, number)));
+            }
+            TokenClass::Symbol(Symbol::FuncIn) => {
+                let id = self.get_id().unwrap();
+                let args = self.get_arguments().unwrap();
+                let return_port = self.get_return_port().unwrap();
+                return Ok(ASTNode::new(
+                        ASTClass::FuncIn(id, args, return_port)));
+            }
+            TokenClass::Symbol(Symbol::FuncOut) => {
+                let id = self.get_id().unwrap();
+                let args = self.get_arguments().unwrap();
+                let return_port = self.get_return_port().unwrap();
+                return Ok(ASTNode::new(
+                        ASTClass::FuncOut(id, args, return_port)));
+            }
+            TokenClass::Newline => {
+                return self.next_ast();
+            }
             TokenClass::EndOfProgram => {
                 return Ok(ASTNode::new(ASTClass::EndOfProgram));
             }
-            _ => Err(ASTError::UnExpectedToken),
+            _ => Err(ASTError::UnExpectedToken(t)),
         }
     }
 
@@ -42,7 +74,7 @@ impl<'a> Parser<'a> {
                     return Ok(ASTNode::new(ASTClass::MacroInclude(s)));
                 }
                 else {
-                    return Err(ASTError::UnExpectedToken);
+                    return Err(ASTError::UnExpectedToken(t));
                 }
             }
             TokenClass::Macro(Macro::Undef) => {
@@ -51,7 +83,7 @@ impl<'a> Parser<'a> {
                         return Ok(ASTNode::new(ASTClass::MacroUndef(s)));
                     }
                     _ => {
-                        return Err(ASTError::UnExpectedToken);
+                        return Err(ASTError::UnExpectedToken(t));
                     }
                 }
             }
@@ -61,7 +93,7 @@ impl<'a> Parser<'a> {
                         return Ok(ASTNode::new(ASTClass::MacroIfdef(s)));
                     }
                     _ => {
-                        return Err(ASTError::UnExpectedToken);
+                        return Err(ASTError::UnExpectedToken(t));
                     }
                 }
             }
@@ -71,7 +103,7 @@ impl<'a> Parser<'a> {
                         return Ok(ASTNode::new(ASTClass::MacroIfndef(s)));
                     }
                     _ => {
-                        return Err(ASTError::UnExpectedToken);
+                        return Err(ASTError::UnExpectedToken(t));
                     }
                 }
             }
@@ -81,9 +113,29 @@ impl<'a> Parser<'a> {
             TokenClass::Macro(Macro::Endif) => {
                 return Ok(ASTNode::new(ASTClass::MacroEndif));
             }
+            TokenClass::Macro(Macro::Define) => {
+                let id = self.get_id().unwrap();
+                let mut define_arg = Vec::new();
+                loop {
+                    match self.lexer.check_next_token().unwrap().class
+                    {
+                        TokenClass::Newline | TokenClass::EndOfProgram =>
+                        {
+                            self.lexer.get_next_token();
+                            return Ok(ASTNode::new(
+                                        ASTClass::MacroDefine(
+                                            id, define_arg)));
+
+                        }
+                        _ => {
+                            define_arg.push(self.next_ast().unwrap());
+                        }
+                    }
+                }
+            }
             //TODO
             _ => {
-                return Err(ASTError::UnExpectedToken);
+                return Err(ASTError::UnExpectedToken(t));
             }
         }
     }
@@ -91,13 +143,12 @@ impl<'a> Parser<'a> {
     fn generate_declare_ast(&mut self) -> Result<ASTNode, ASTError> {
         let root_node: ASTNode;
         let d_name_token = self.lexer.get_next_token();
-        let mut io_vec = Vec::new();
-        let mut func_vec = Vec::new();
+        let mut interfaces = Vec::new();
 
         let open_brace = self.lexer.get_next_token();
         if let TokenClass::Symbol(Symbol::OpeningBrace) = open_brace.class {
         } else {
-            return Err(ASTError::UnExpectedToken);
+            return Err(ASTError::UnExpectedToken(open_brace));
         }
 
         loop {
@@ -110,45 +161,45 @@ impl<'a> Parser<'a> {
                     let id = self.get_id().unwrap();
                     let number = self.get_width().unwrap();
                     let node = ASTNode::new(ASTClass::Input(id, number));
-                    io_vec.push(node);
+                    interfaces.push(node);
                 }
                 TokenClass::Symbol(Symbol::Output) => {
                     let id = self.get_id().unwrap();
                     let number = self.get_width().unwrap();
                     let node = ASTNode::new(ASTClass::Output(id, number));
-                    io_vec.push(node);
+                    interfaces.push(node);
                 }
                 TokenClass::Symbol(Symbol::InOut) => {
                     let id = self.get_id().unwrap();
                     let number = self.get_width().unwrap();
                     let node = ASTNode::new(ASTClass::InOut(id, number));
-                    io_vec.push(node);
+                    interfaces.push(node);
                 }
                 TokenClass::Symbol(Symbol::FuncIn) => {
                     let id = self.get_id().unwrap();
                     let args = self.get_arguments().unwrap();
                     let return_port = self.get_return_port().unwrap();
                     let node = ASTNode::new(ASTClass::FuncIn(id, args, return_port));
-                    func_vec.push(node);
+                    interfaces.push(node);
                 }
                 TokenClass::Symbol(Symbol::FuncOut) => {
                     let id = self.get_id().unwrap();
                     let args = self.get_arguments().unwrap();
                     let return_port = self.get_return_port().unwrap();
                     let node = ASTNode::new(ASTClass::FuncOut(id, args, return_port));
-                    func_vec.push(node);
+                    interfaces.push(node);
                 }
                 _ => {
-                    return Err(ASTError::UnExpectedToken);
+                    return Err(ASTError::UnExpectedToken(t));
                 }
             }
         }
         if let TokenClass::Identifire(name) = d_name_token.class {
-            let ast_class = ASTClass::Declare(name, io_vec, func_vec);
+            let ast_class = ASTClass::Declare(name, interfaces);
             root_node = ASTNode::new(ast_class);
             return Ok(root_node);
         } else {
-            return Err(ASTError::UnExpectedToken);
+            return Err(ASTError::UnExpectedToken(d_name_token));
         }
     }
 
@@ -157,7 +208,7 @@ impl<'a> Parser<'a> {
         let dquote1 = self.lexer.get_next_token();
         if let TokenClass::Symbol(Symbol::DoubleQuote) = dquote1.class {}
         else {
-            return Err(ASTError::UnExpectedToken);
+            return Err(ASTError::UnExpectedToken(dquote1));
         }
         loop {
             let t = self.lexer.get_next_token();
@@ -173,7 +224,7 @@ impl<'a> Parser<'a> {
                     return Ok(file_path);
                 }
                 _ => {
-                    return Err(ASTError::UnExpectedToken);
+                    return Err(ASTError::UnExpectedToken(t));
                 }
             }
         }
@@ -184,7 +235,7 @@ impl<'a> Parser<'a> {
         if let TokenClass::Identifire(id) = id_token.class {
             return Ok(id);
         } else {
-            return Err(ASTError::UnExpectedToken);
+            return Err(ASTError::UnExpectedToken(id_token));
         }
     }
 
@@ -193,7 +244,7 @@ impl<'a> Parser<'a> {
         if let TokenClass::Symbol(Symbol::Semicolon) = token.class {
             return None;
         } else {
-            return Some(ASTError::UnExpectedToken);
+            return Some(ASTError::UnExpectedToken(token));
         }
     }
 
@@ -207,7 +258,7 @@ impl<'a> Parser<'a> {
                 return self.get_number();
             }
             _ => {
-                return Err(ASTError::UnExpectedToken);
+                return Err(ASTError::UnExpectedToken(width_token));
             }
         }
     }
@@ -219,19 +270,19 @@ impl<'a> Parser<'a> {
         if let TokenClass::Symbol(Symbol::RightSquareBracket) = right_bracket_token.class
         {
         } else {
-            return Err(ASTError::UnExpectedToken);
+            return Err(ASTError::UnExpectedToken(right_bracket_token));
         }
 
         let semicolon_token = self.lexer.get_next_token();
         if let TokenClass::Symbol(Symbol::Semicolon) = semicolon_token.class {
         } else {
-            return Err(ASTError::UnExpectedToken);
+            return Err(ASTError::UnExpectedToken(semicolon_token));
         }
 
         if let TokenClass::Number(num) = num_token.class {
             return Ok(num);
         } else {
-            return Err(ASTError::UnExpectedToken);
+            return Err(ASTError::UnExpectedToken(num_token));
         }
     }
 
@@ -239,7 +290,7 @@ impl<'a> Parser<'a> {
         let left_paren = self.lexer.get_next_token();
         if let TokenClass::Symbol(Symbol::LeftParen) = left_paren.class {
         } else {
-            return Err(ASTError::UnExpectedToken);
+            return Err(ASTError::UnExpectedToken(left_paren));
         }
 
         let mut args = Vec::new();
@@ -257,7 +308,7 @@ impl<'a> Parser<'a> {
                     continue;
                 }
                 _ => {
-                    return Err(ASTError::UnExpectedToken);
+                    return Err(ASTError::UnExpectedToken(t));
                 }
             }
         }
@@ -278,7 +329,7 @@ impl<'a> Parser<'a> {
                 return id;
             }
         } else {
-            Err(ASTError::UnExpectedToken)
+            Err(ASTError::UnExpectedToken(colon_of_semicolon))
         }
     }
 }
@@ -305,7 +356,8 @@ mod parser_test {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        assert_eq!(p.next_ast().err(), Some(ASTError::UnExpectedToken));
+        //TODO
+        //assert_eq!(p.next_ast().err(), Some(ASTError::UnExpectedToken(t)));
     }
 
     #[test]
@@ -314,15 +366,14 @@ mod parser_test {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let mut io_vec = Vec::new();
-        io_vec.push(ASTNode::new(ASTClass::Input(
+        let mut interfaces = Vec::new();
+        interfaces.push(ASTNode::new(ASTClass::Input(
             "a".to_string(),
             "2".to_string(),
         )));
-        let func_vec = Vec::new();
         assert_eq!(
             p.next_ast().unwrap(),
-            ASTNode::new(ASTClass::Declare("ok".to_string(), io_vec, func_vec))
+            ASTNode::new(ASTClass::Declare("ok".to_string(), interfaces))
         );
     }
 
@@ -332,19 +383,18 @@ mod parser_test {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let mut io_vec = Vec::new();
-        io_vec.push(ASTNode::new(ASTClass::Output(
+        let mut interfaces = Vec::new();
+        interfaces.push(ASTNode::new(ASTClass::Output(
             "a".to_string(),
             "2".to_string(),
         )));
-        io_vec.push(ASTNode::new(ASTClass::InOut(
+        interfaces.push(ASTNode::new(ASTClass::InOut(
             "b".to_string(),
             "12".to_string(),
         )));
-        let func_vec = Vec::new();
         assert_eq!(
             p.next_ast().unwrap(),
-            ASTNode::new(ASTClass::Declare("ok".to_string(), io_vec, func_vec))
+            ASTNode::new(ASTClass::Declare("ok".to_string(), interfaces))
         );
     }
 
@@ -354,22 +404,21 @@ mod parser_test {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let mut io_vec = Vec::new();
-        io_vec.push(ASTNode::new(ASTClass::Input(
+        let mut interfaces = Vec::new();
+        interfaces.push(ASTNode::new(ASTClass::Input(
             "a".to_string(),
             "1".to_string(),
         )));
-        let mut func_vec = Vec::new();
         let mut arg_vec = Vec::new();
         arg_vec.push("a".to_string());
-        func_vec.push(ASTNode::new(ASTClass::FuncIn(
+        interfaces.push(ASTNode::new(ASTClass::FuncIn(
             "ok".to_string(),
             arg_vec,
             "".to_string(),
         )));
         assert_eq!(
             p.next_ast().unwrap(),
-            ASTNode::new(ASTClass::Declare("ok".to_string(), io_vec, func_vec))
+            ASTNode::new(ASTClass::Declare("ok".to_string(), interfaces))
         );
     }
 
@@ -379,26 +428,25 @@ mod parser_test {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let mut io_vec = Vec::new();
-        io_vec.push(ASTNode::new(ASTClass::Input(
+        let mut interfaces = Vec::new();
+        interfaces.push(ASTNode::new(ASTClass::Input(
             "a".to_string(),
             "1".to_string(),
         )));
-        io_vec.push(ASTNode::new(ASTClass::Output(
+        interfaces.push(ASTNode::new(ASTClass::Output(
             "c".to_string(),
             "2".to_string(),
         )));
-        let mut func_vec = Vec::new();
         let mut arg_vec = Vec::new();
         arg_vec.push("a".to_string());
-        func_vec.push(ASTNode::new(ASTClass::FuncIn(
+        interfaces.push(ASTNode::new(ASTClass::FuncIn(
             "ok".to_string(),
             arg_vec,
             "c".to_string(),
         )));
         assert_eq!(
             p.next_ast().unwrap(),
-            ASTNode::new(ASTClass::Declare("ok".to_string(), io_vec, func_vec))
+            ASTNode::new(ASTClass::Declare("ok".to_string(), interfaces))
         );
     }
 
@@ -408,26 +456,25 @@ mod parser_test {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let mut io_vec = Vec::new();
-        io_vec.push(ASTNode::new(ASTClass::Input(
+        let mut interfaces = Vec::new();
+        interfaces.push(ASTNode::new(ASTClass::Input(
             "a".to_string(),
             "3".to_string(),
         )));
-        io_vec.push(ASTNode::new(ASTClass::Output(
+        interfaces.push(ASTNode::new(ASTClass::Output(
             "c".to_string(),
             "2".to_string(),
         )));
-        let mut func_vec = Vec::new();
         let mut arg_vec = Vec::new();
         arg_vec.push("a".to_string());
-        func_vec.push(ASTNode::new(ASTClass::FuncOut(
+        interfaces.push(ASTNode::new(ASTClass::FuncOut(
             "ok".to_string(),
             arg_vec,
             "c".to_string(),
         )));
         assert_eq!(
             p.next_ast().unwrap(),
-            ASTNode::new(ASTClass::Declare("ok".to_string(), io_vec, func_vec))
+            ASTNode::new(ASTClass::Declare("ok".to_string(), interfaces))
         );
     }
 
@@ -437,23 +484,22 @@ mod parser_test {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let mut io_vec = Vec::new();
-        io_vec.push(ASTNode::new(ASTClass::Input(
+        let mut interfaces = Vec::new();
+        interfaces.push(ASTNode::new(ASTClass::Input(
             "ok".to_string(),
             "1".to_string(),
         )));
-        io_vec.push(ASTNode::new(ASTClass::Input(
+        interfaces.push(ASTNode::new(ASTClass::Input(
             "ggrks".to_string(),
             "1".to_string(),
         )));
-        io_vec.push(ASTNode::new(ASTClass::Output(
+        interfaces.push(ASTNode::new(ASTClass::Output(
             "jk".to_string(),
             "1".to_string(),
         )));
-        let mut func_vec = Vec::new();
         let mut f1_arg_vec = Vec::new();
         f1_arg_vec.push("ok".to_string());
-        func_vec.push(ASTNode::new(ASTClass::FuncIn(
+        interfaces.push(ASTNode::new(ASTClass::FuncIn(
             "sugoi".to_string(),
             f1_arg_vec,
             "".to_string(),
@@ -461,7 +507,7 @@ mod parser_test {
 
         let mut f2_arg_vec = Vec::new();
         f2_arg_vec.push("jk".to_string());
-        func_vec.push(ASTNode::new(ASTClass::FuncOut(
+        interfaces.push(ASTNode::new(ASTClass::FuncOut(
             "majika".to_string(),
             f2_arg_vec,
             "ggrks".to_string(),
@@ -469,7 +515,7 @@ mod parser_test {
 
         assert_eq!(
             p.next_ast().unwrap(),
-            ASTNode::new(ASTClass::Declare("hel".to_string(), io_vec, func_vec))
+            ASTNode::new(ASTClass::Declare("hel".to_string(), interfaces))
         );
     }
 
@@ -484,7 +530,7 @@ mod parser_test {
                 ASTNode::new(ASTClass::MacroInclude("\"hello.h\"".to_string())));
         assert_eq!(
                 p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::Declare("ok".to_string(), Vec::new(), Vec::new())));
+                ASTNode::new(ASTClass::Declare("ok".to_string(), Vec::new())));
         assert_eq!(
                 p.next_ast().unwrap(),
                 ASTNode::new(ASTClass::EndOfProgram));
@@ -559,4 +605,26 @@ mod parser_test {
                 p.next_ast().unwrap(),
                 ASTNode::new(ASTClass::EndOfProgram));
     }
+
+    #[test]
+    fn define_macro() {
+        let mut b = "#define HELLO input ok;".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let mut define_arg = Vec::new();
+        define_arg.push(ASTNode::new(
+                    ASTClass::Input(
+                        "ok".to_string(),
+                        "1".to_string())));
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::MacroDefine(
+                        "HELLO".to_string(),
+                        define_arg)));
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::EndOfProgram));
+    }
+
 }

@@ -20,10 +20,9 @@ impl<'a, 'b> Generator<'a, 'b> {
         let ast = self.parser.next_ast().unwrap();
 
         match ast.class {
-            ASTClass::Declare(id, io_vec, func_vec) => {
+            ASTClass::Declare(id, interfaces) => {
                 self.writer.write(format!("declare {} {{\n", id).as_bytes()).unwrap();
-                self.io_and_func(io_vec);
-                self.io_and_func(func_vec);
+                self.io_and_func(interfaces);
                 self.writer.write(b"}\n").unwrap();
                 self.writer.flush().unwrap();
             }
