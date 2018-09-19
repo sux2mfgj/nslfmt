@@ -19,6 +19,7 @@ pub enum Symbol {
     FuncOut,            // func_out
     Sharp,              // #
     DoubleQuote,        // "
+    Slash,              // /
     //SingleQuote,        // '
                         //TODO
                         // lack some symbols

@@ -279,10 +279,16 @@ impl<'a> Parser<'a> {
             return Err(ASTError::UnExpectedToken(semicolon_token));
         }
 
-        if let TokenClass::Number(num) = num_token.class {
-            return Ok(num);
-        } else {
-            return Err(ASTError::UnExpectedToken(num_token));
+        match num_token.class {
+            TokenClass::Number(n1) => {
+                return Ok(n1);
+            }
+            TokenClass::Identifire(n2) => {
+                return Ok(n2);
+            }
+            _ => {
+                return Err(ASTError::UnExpectedToken(num_token));
+            }
         }
     }
 
@@ -627,4 +633,41 @@ mod parser_test {
                 ASTNode::new(ASTClass::EndOfProgram));
     }
 
+    #[test]
+    fn define_macro2() {
+        // axi4 master interface
+        let mut b = "#define AXI4_LITE_MASTER_INTERFACE output awvalid; input awready; output awaddr[AXI_ADDR_WIDTH]; output awprot[3]; output wvalid; input wready; output wdata[AXI_DATA_WIDTH]; output wstrb[AXI_DATA_WIDTH / 8]; input bvalid; output bready; input bresp[2]; output arvalid; input arready; output araddr[AXI_ADDR_WIDTH]; output arprot[3]; input rvalid; output rready; input rdata[AXI_DATA_WIDTH]; input rresp[2];".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let mut define_arg = Vec::new();
+        define_arg.push(ASTNode::new(
+                    ASTClass::Input(
+                        "ok".to_string(),
+                        "1".to_string())));
+
+        let mut define_arg = Vec::new();
+        define_arg.push(ASTNode::new(
+                    ASTClass::Output(
+                        "awvalid".to_string(),
+                        "1".to_string())));
+        define_arg.push(ASTNode::new(
+                    ASTClass::Input(
+                        "awready".to_string(),
+                       "1".to_string())));
+        define_arg.push(ASTNode::new(
+                    ASTClass::Output(
+                        "awaddr".to_string(),
+                        "AXI_ADDR_WIDTH".to_string())));
+
+
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::MacroDefine(
+                        "AXI4_LITE_MASTER_INTERFACE".to_string(),
+                        define_arg)));
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ASTNode::new(ASTClass::EndOfProgram));
+    }
 }

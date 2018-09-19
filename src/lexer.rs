@@ -150,6 +150,13 @@ impl<'a> Lexer<'a> {
                     ' ' | '\t' => {
                         it.next();
                     }
+                    '/' => {
+                        self.tokens.push_back(
+                                Token::new(
+                                    TokenClass::Symbol(Symbol::Slash),
+                                    self.line));
+                        it.next();
+                    }
                     '\n' => {
                         self.tokens.push_back(
                                 Token::new(TokenClass::Newline, self.line));
@@ -717,5 +724,4 @@ mod lexer_test {
 
         assert_eq!(l.get_next_token(), Token::new(TokenClass::EndOfProgram, 1));
     }
-
 }
