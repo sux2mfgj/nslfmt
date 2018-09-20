@@ -33,8 +33,8 @@ pub enum ASTClass {
      *      input hello[3];
      */
     Input(Box<ASTNode>, Box<ASTNode>),
-    Output(String, Box<ASTNode>),
-    InOut(String, Box<ASTNode>),
+    Output(Box<ASTNode>, Box<ASTNode>),
+    InOut(Box<ASTNode>, Box<ASTNode>),
     MacroInclude(String),
     MacroDefine(String, Vec<Box<ASTNode>>),
     MacroUndef(String),

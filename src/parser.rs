@@ -11,6 +11,12 @@ pub struct Parser<'a> {
     lexer: &'a mut Lexer<'a>,
 }
 
+macro_rules! create_node {
+    ($n:expr) => {
+        Box::new(ASTNode::new($n));
+    };
+}
+
 impl<'a> Parser<'a> {
     pub fn new(lexer: &'a mut Lexer<'a>) -> Parser<'a> {
         Parser { lexer: lexer }
@@ -20,18 +26,18 @@ impl<'a> Parser<'a> {
         let t = self.lexer.next_token();
         match t.class {
             TokenClass::Identifire(s) => {
-                return Ok(Box::new(ASTNode::new(ASTClass::Identifire(s))));
+                return Ok(create_node!(ASTClass::Identifire(s)));
             }
             TokenClass::Number(n) => {
-                return Ok(Box::new(ASTNode::new(ASTClass::Number(n))));
+                return Ok(create_node!(ASTClass::Number(n)));
             }
             TokenClass::EndOfProgram => {
-                return Ok(Box::new(ASTNode::new(ASTClass::EndOfProgram)));
+                return Ok(create_node!(ASTClass::EndOfProgram));
             }
             TokenClass::Symbol(Symbol::Declare) => {
                 let id = self.next_ast().unwrap();
                 let block = self.next_ast().unwrap();
-                return Ok(Box::new(ASTNode::new(ASTClass::Declare(id, block))))
+                return Ok(create_node!(ASTClass::Declare(id, block)))
             }
             TokenClass::Symbol(Symbol::Input) => {
                 let id = self.next_ast()?;
@@ -40,25 +46,72 @@ impl<'a> Parser<'a> {
                 {
                     TokenClass::Symbol(Symbol::Semicolon) => {
                         self.lexer.next_token();
-                        return Ok(Box::new(ASTNode::new(ASTClass::Input(
-                                        id,
-                                        Box::new(ASTNode::new(ASTClass::Number("1".to_string())))))));
+                        return Ok(create_node!(ASTClass::Input(
+                                    id,
+                                    create_node!(ASTClass::Number("1".to_string())))));
                     }
                     TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                         let width = self.next_ast()?;
                         let semicolon = self.lexer.next_token();
-                        return Ok(Box::new(ASTNode::new(ASTClass::Input(
-                                        id,
-                                        width))));
+                        return Ok(create_node!(ASTClass::Input(id, width)));
                     }
                     _ => {
                         return Err(ASTStatus::UnExpectedToken(self.lexer.next_token(),line!()));
                     }
                 }
 
+                let width = self.next_ast().unwrap();
+                return Ok(create_node!(ASTClass::Input(id, width)));
+            }
+            //TODO use macro. almost same with Input and InOut.
+            TokenClass::Symbol(Symbol::Output) => {
+                let id = self.next_ast()?;
+
+                match self.lexer.check_next_token().unwrap().class
+                {
+                    TokenClass::Symbol(Symbol::Semicolon) => {
+                        self.lexer.next_token();
+                        return Ok(create_node!(ASTClass::Output(
+                                    id,
+                                    create_node!(ASTClass::Number("1".to_string())))));
+                    }
+                    TokenClass::Symbol(Symbol::LeftSquareBracket) => {
+                        let width = self.next_ast()?;
+                        let semicolon = self.lexer.next_token();
+                        return Ok(create_node!(ASTClass::Output(id, width)));
+                    }
+                    _ => {
+                        return Err(ASTStatus::UnExpectedToken(self.lexer.next_token(),line!()));
+                    }
+                }
 
                 let width = self.next_ast().unwrap();
-                return Ok(Box::new(ASTNode::new(ASTClass::Input(id, width))));
+                return Ok(create_node!(ASTClass::Output(id, width)));
+            }
+            //TODO use macro
+            TokenClass::Symbol(Symbol::InOut) => {
+                let id = self.next_ast()?;
+
+                match self.lexer.check_next_token().unwrap().class
+                {
+                    TokenClass::Symbol(Symbol::Semicolon) => {
+                        self.lexer.next_token();
+                        return Ok(create_node!(ASTClass::InOut(
+                                    id,
+                                    create_node!(ASTClass::Number("1".to_string())))));
+                    }
+                    TokenClass::Symbol(Symbol::LeftSquareBracket) => {
+                        let width = self.next_ast()?;
+                        let semicolon = self.lexer.next_token();
+                        return Ok(create_node!(ASTClass::InOut(id, width)));
+                    }
+                    _ => {
+                        return Err(ASTStatus::UnExpectedToken(self.lexer.next_token(),line!()));
+                    }
+                }
+
+                let width = self.next_ast().unwrap();
+                return Ok(create_node!(ASTClass::InOut(id, width)));
             }
             TokenClass::Symbol(Symbol::OpeningBrace) => {
                 let mut content = Vec::new();
@@ -66,7 +119,7 @@ impl<'a> Parser<'a> {
                     match self.lexer.check_next_token().unwrap().class {
                         TokenClass::Symbol(Symbol::ClosingBrace) => {
                             self.lexer.next_token();
-                            return Ok(Box::new(ASTNode::new(ASTClass::Block(content))));
+                            return Ok(create_node!(ASTClass::Block(content)));
                         }
                         TokenClass::EndOfProgram => {
                             return Err(ASTStatus::UnExpectedToken(self.lexer.next_token(), line!()));
@@ -127,12 +180,6 @@ mod parser_test {
     use super::*;
     use std::fs::File;
     use std::io::BufReader;
-
-    macro_rules! create_node {
-        ($n:expr) => {
-            Box::new(ASTNode::new($n));
-        };
-    }
 
     #[test]
     fn end_of_program() {
@@ -250,7 +297,6 @@ mod parser_test {
             create_node!(ASTClass::Declare(id, block)));
     }
 
-    /*
     #[test]
     fn output_inout() {
         let mut b = "declare ok{ output a[2]; inout b[12];}".as_bytes();
@@ -258,19 +304,23 @@ mod parser_test {
         let mut p = Parser::new(&mut l);
 
         let mut interfaces = Vec::new();
-        interfaces.push(ASTNode::new(ASTClass::Output(
-            "a".to_string(),
-            "2".to_string(),
-        )));
-        interfaces.push(ASTNode::new(ASTClass::InOut(
-            "b".to_string(),
-            "12".to_string(),
-        )));
+        interfaces.push(
+            create_node!(ASTClass::Output(
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    create_node!(ASTClass::Number("2".to_string())))));
+
+        interfaces.push(
+            create_node!(ASTClass::InOut(
+                    create_node!(ASTClass::Identifire("b".to_string())),
+                    create_node!(ASTClass::Number("12".to_string())))));
         assert_eq!(
             p.next_ast().unwrap(),
-            ASTNode::new(ASTClass::Declare("ok".to_string(), interfaces))
+            create_node!(ASTClass::Declare(
+                create_node!(ASTClass::Identifire("ok".to_string())),
+                create_node!(ASTClass::Block(interfaces))))
         );
     }
+    /*
 
     #[test]
     fn func_in() {
