@@ -1,6 +1,7 @@
 nslfmt
 ---
 [![Build Status](https://travis-ci.org/sux2mfgj/nslfmt.svg?branch=master)](https://travis-ci.org/sux2mfgj/nslfmt)
+[![Coverage Status](https://coveralls.io/repos/github/sux2mfgj/nslfmt/badge.svg?branch=master)](https://coveralls.io/github/sux2mfgj/nslfmt?branch=master)
 [![gitmoji badge](https://img.shields.io/badge/gitmoji-%20😜%20😍-FFDD67.svg?style=flat-square)](https://github.com/carloscuesta/gitmoji)
 
 ##### What's this?
