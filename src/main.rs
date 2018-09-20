@@ -15,8 +15,10 @@ fn main() {
     let p = Parser::new(&mut l);
     let mut io = std::io::stdout();
 
+    /*
     {
         let mut g = Generator::new(p, &mut io);
         g.output_node();
     }
+    */
 }

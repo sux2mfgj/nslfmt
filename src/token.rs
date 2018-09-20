@@ -19,10 +19,24 @@ pub enum Symbol {
     FuncOut,            // func_out
     Sharp,              // #
     DoubleQuote,        // "
-    Slash,              // /
     //SingleQuote,        // '
                         //TODO
                         // lack some symbols
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Operator {
+    Plus,               // +
+    Minus,              // -
+    Asterisk,           // *
+    Slash,              // /
+    ShiftLeft,          // <<
+    ShiftRight,         // >>
+    And,                // &
+    Pipe,               // |
+    Hat,                // ^
+    Tilde,              // ~
+
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -45,6 +59,7 @@ pub enum TokenClass {
      */
     Number(String),
     Symbol(Symbol),
+    Operator(Operator),
     Macro(Macro),
     Newline,
     EndOfProgram,

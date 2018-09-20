@@ -16,6 +16,7 @@ impl<'a, 'b> Generator<'a, 'b> {
         }
     }
 
+    /*
     pub fn output_node(&mut self) {
         let ast = self.parser.next_ast().unwrap();
 
@@ -187,4 +188,5 @@ mod generator_test {
             assert_eq!(s, ans);
         }
     }
+*/
 }
