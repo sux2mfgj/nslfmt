@@ -11,6 +11,9 @@ run:
 test:
 	cargo test
 
+coverage:
+	rustup run nightly cargo tarpaulin -v
+
 details:
 	RUST_BACKTRACE=1 cargo test
 

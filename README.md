@@ -7,7 +7,11 @@ nslfmt
 ##### What's this?
 A nslfmt is a code fomatter for [NSL](http://www.overtone.co.jp/products/overture/) which is one of the HDL and a succsesor of [SFL](https://ja.wikipedia.org/wiki/SFL).
 
-##### references
+##### Requirements
+You can build the nslfmt by __stable rust__ and toolchains, but, [tarpaulin](https://github.com/xd009642/tarpaulin) is required  for a coverage test, because we use a tarpauli which require it.
+
+
+##### References
 - [Writting a Simple Parser in Rust](https://adriann.github.io/rust_parser.html)
 
 ##### License
