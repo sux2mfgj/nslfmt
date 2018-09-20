@@ -36,7 +36,6 @@ pub enum Operator {
     Pipe,               // |
     Hat,                // ^
     Tilde,              // ~
-
 }
 
 #[derive(Debug, Clone, PartialEq)]

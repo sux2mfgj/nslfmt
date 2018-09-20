@@ -43,7 +43,7 @@ pub enum ASTClass {
     MacroElse,
     MacroEndif,
     //          operand     , operation   , operand
-    Expression(Box<ASTNode>, Box<ASTNode>, Box<ASTNode>),
+    Expression(Box<ASTNode>, Operator, Box<ASTNode>),
     EndOfProgram,
 }
 
