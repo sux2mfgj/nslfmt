@@ -9,9 +9,13 @@ addons:
 cache: cargo
 rust:
   - stable
+  - nightly
+matrix:
+  allow_failures:
+    - rust: nightly
 
 before_cache: |
-    if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
+    if [[ "$TRAVIS_RUST_VERSION" == nightly ]]; then
         RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo install cargo-tarpaulin
     fi
 
@@ -25,7 +29,7 @@ branches:
     - master
 
 after_success: |
-    if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
+    if [[ "$TRAVIS_RUST_VERSION" == nightly ]]; then
         cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
     fi
 
