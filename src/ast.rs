@@ -20,8 +20,8 @@ pub enum ASTClass {
     Declare(Box<ASTNode>, Box<ASTNode>),
 
     // identifire, inputs, output
-    //FuncIn(Box<ASTNode>, Vec<ASTNode>, Box<ASTNode>),
-    FuncIn(String, Vec<String>, String),
+    FuncIn(Box<ASTNode>, Vec<Box<ASTNode>>, Box<ASTNode>),
+
     // identifire, outputs, input
     //FuncOut(Box<ASTNode>, Vec<ASTNode>, Box<ASTNode>),
     FuncOut(String, Vec<String>, String),
