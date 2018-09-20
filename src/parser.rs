@@ -37,18 +37,18 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::Declare) => {
                 let id = self.next_ast().unwrap();
                 let block = self.next_ast().unwrap();
-                return Ok(create_node!(ASTClass::Declare(id, block)))
+                return Ok(create_node!(ASTClass::Declare(id, block)));
             }
             TokenClass::Symbol(Symbol::Input) => {
                 let id = self.next_ast()?;
 
-                match self.lexer.check_next_token().unwrap().class
-                {
+                match self.lexer.check_next_token().unwrap().class {
                     TokenClass::Symbol(Symbol::Semicolon) => {
                         self.lexer.next_token();
                         return Ok(create_node!(ASTClass::Input(
-                                    id,
-                                    create_node!(ASTClass::Number("1".to_string())))));
+                            id,
+                            create_node!(ASTClass::Number("1".to_string()))
+                        )));
                     }
                     TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                         let width = self.next_ast()?;
@@ -56,7 +56,10 @@ impl<'a> Parser<'a> {
                         return Ok(create_node!(ASTClass::Input(id, width)));
                     }
                     _ => {
-                        return Err(ASTStatus::UnExpectedToken(self.lexer.next_token(),line!()));
+                        return Err(ASTStatus::UnExpectedToken(
+                            self.lexer.next_token(),
+                            line!(),
+                        ));
                     }
                 }
 
@@ -67,13 +70,13 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::Output) => {
                 let id = self.next_ast()?;
 
-                match self.lexer.check_next_token().unwrap().class
-                {
+                match self.lexer.check_next_token().unwrap().class {
                     TokenClass::Symbol(Symbol::Semicolon) => {
                         self.lexer.next_token();
                         return Ok(create_node!(ASTClass::Output(
-                                    id,
-                                    create_node!(ASTClass::Number("1".to_string())))));
+                            id,
+                            create_node!(ASTClass::Number("1".to_string()))
+                        )));
                     }
                     TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                         let width = self.next_ast()?;
@@ -81,7 +84,10 @@ impl<'a> Parser<'a> {
                         return Ok(create_node!(ASTClass::Output(id, width)));
                     }
                     _ => {
-                        return Err(ASTStatus::UnExpectedToken(self.lexer.next_token(),line!()));
+                        return Err(ASTStatus::UnExpectedToken(
+                            self.lexer.next_token(),
+                            line!(),
+                        ));
                     }
                 }
 
@@ -92,13 +98,13 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::InOut) => {
                 let id = self.next_ast()?;
 
-                match self.lexer.check_next_token().unwrap().class
-                {
+                match self.lexer.check_next_token().unwrap().class {
                     TokenClass::Symbol(Symbol::Semicolon) => {
                         self.lexer.next_token();
                         return Ok(create_node!(ASTClass::InOut(
-                                    id,
-                                    create_node!(ASTClass::Number("1".to_string())))));
+                            id,
+                            create_node!(ASTClass::Number("1".to_string()))
+                        )));
                     }
                     TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                         let width = self.next_ast()?;
@@ -106,7 +112,10 @@ impl<'a> Parser<'a> {
                         return Ok(create_node!(ASTClass::InOut(id, width)));
                     }
                     _ => {
-                        return Err(ASTStatus::UnExpectedToken(self.lexer.next_token(),line!()));
+                        return Err(ASTStatus::UnExpectedToken(
+                            self.lexer.next_token(),
+                            line!(),
+                        ));
                     }
                 }
 
@@ -122,7 +131,10 @@ impl<'a> Parser<'a> {
                             return Ok(create_node!(ASTClass::Block(content)));
                         }
                         TokenClass::EndOfProgram => {
-                            return Err(ASTStatus::UnExpectedToken(self.lexer.next_token(), line!()));
+                            return Err(ASTStatus::UnExpectedToken(
+                                self.lexer.next_token(),
+                                line!(),
+                            ));
                         }
                         _ => {
                             let t = self.next_ast()?;
@@ -150,14 +162,15 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn create_expression(&mut self, node: Box<ASTNode>) -> Result<Box<ASTNode>, ASTStatus> {
-
-        match self.lexer.check_next_token().unwrap().class
-        {
+    fn create_expression(
+        &mut self,
+        node: Box<ASTNode>,
+    ) -> Result<Box<ASTNode>, ASTStatus> {
+        match self.lexer.check_next_token().unwrap().class {
             TokenClass::Operator(_) => {
                 let t = self.lexer.next_token();
                 match t.class {
-                    TokenClass::Operator(op) =>  {
+                    TokenClass::Operator(op) => {
                         let right = self.next_ast()?;
                         let expr = ASTNode::new(ASTClass::Expression(node, op, right));
                         return self.create_expression(Box::new(expr));
@@ -207,10 +220,10 @@ mod parser_test {
         let mut p = Parser::new(&mut l);
 
         let mut interfaces = Vec::new();
-        interfaces.push(
-            create_node!(ASTClass::Input(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    create_node!(ASTClass::Number("1".to_string())))));
+        interfaces.push(create_node!(ASTClass::Input(
+            create_node!(ASTClass::Identifire("a".to_string())),
+            create_node!(ASTClass::Number("1".to_string()))
+        )));
 
         let block = create_node!(ASTClass::Block(interfaces));
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
@@ -228,10 +241,10 @@ mod parser_test {
         let mut p = Parser::new(&mut l);
 
         let mut interfaces = Vec::new();
-        interfaces.push(
-                create_node!(ASTClass::Input(
-                        create_node!(ASTClass::Identifire("a".to_string())),
-                        create_node!(ASTClass::Number("2".to_string())))));
+        interfaces.push(create_node!(ASTClass::Input(
+            create_node!(ASTClass::Identifire("a".to_string())),
+            create_node!(ASTClass::Number("2".to_string()))
+        )));
 
         let block = create_node!(ASTClass::Block(interfaces));
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
@@ -248,24 +261,24 @@ mod parser_test {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-
         let left = create_node!(ASTClass::Identifire("OK".to_string()));
         let op = Operator::Slash;
         let right = create_node!(ASTClass::Number("2".to_string()));
         let expr = create_node!(ASTClass::Expression(left, op, right));
 
         let mut interfaces = Vec::new();
-        interfaces.push(
-            create_node!(ASTClass::Input(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    expr)));
+        interfaces.push(create_node!(ASTClass::Input(
+            create_node!(ASTClass::Identifire("a".to_string())),
+            expr
+        )));
 
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
         let block = create_node!(ASTClass::Block(interfaces));
 
         assert_eq!(
             p.next_ast().unwrap(),
-            create_node!(ASTClass::Declare(id, block)));
+            create_node!(ASTClass::Declare(id, block))
+        );
     }
 
     #[test]
@@ -273,7 +286,6 @@ mod parser_test {
         let mut b = "declare ok{ input a[OK / 4 * 2]; }".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
-
 
         let left = create_node!(ASTClass::Identifire("OK".to_string()));
         let op = Operator::Slash;
@@ -284,17 +296,18 @@ mod parser_test {
         let expr2 = create_node!(ASTClass::Expression(expr, Operator::Asterisk, right2));
 
         let mut interfaces = Vec::new();
-        interfaces.push(
-            create_node!(ASTClass::Input(
-                        create_node!(ASTClass::Identifire("a".to_string())),
-                        expr2)));
+        interfaces.push(create_node!(ASTClass::Input(
+            create_node!(ASTClass::Identifire("a".to_string())),
+            expr2
+        )));
 
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
         let block = create_node!(ASTClass::Block(interfaces));
 
         assert_eq!(
             p.next_ast().unwrap(),
-            create_node!(ASTClass::Declare(id, block)));
+            create_node!(ASTClass::Declare(id, block))
+        );
     }
 
     #[test]
@@ -304,20 +317,21 @@ mod parser_test {
         let mut p = Parser::new(&mut l);
 
         let mut interfaces = Vec::new();
-        interfaces.push(
-            create_node!(ASTClass::Output(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    create_node!(ASTClass::Number("2".to_string())))));
+        interfaces.push(create_node!(ASTClass::Output(
+            create_node!(ASTClass::Identifire("a".to_string())),
+            create_node!(ASTClass::Number("2".to_string()))
+        )));
 
-        interfaces.push(
-            create_node!(ASTClass::InOut(
-                    create_node!(ASTClass::Identifire("b".to_string())),
-                    create_node!(ASTClass::Number("12".to_string())))));
+        interfaces.push(create_node!(ASTClass::InOut(
+            create_node!(ASTClass::Identifire("b".to_string())),
+            create_node!(ASTClass::Number("12".to_string()))
+        )));
         assert_eq!(
             p.next_ast().unwrap(),
             create_node!(ASTClass::Declare(
                 create_node!(ASTClass::Identifire("ok".to_string())),
-                create_node!(ASTClass::Block(interfaces))))
+                create_node!(ASTClass::Block(interfaces))
+            ))
         );
     }
     /*

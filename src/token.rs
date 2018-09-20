@@ -19,34 +19,34 @@ pub enum Symbol {
     FuncOut,            // func_out
     Sharp,              // #
     DoubleQuote,        // "
-    //SingleQuote,        // '
+                        //SingleQuote,        // '
                         //TODO
                         // lack some symbols
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Operator {
-    Plus,               // +
-    Minus,              // -
-    Asterisk,           // *
-    Slash,              // /
-    ShiftLeft,          // <<
-    ShiftRight,         // >>
-    And,                // &
-    Pipe,               // |
-    Hat,                // ^
-    Tilde,              // ~
+    Plus,       // +
+    Minus,      // -
+    Asterisk,   // *
+    Slash,      // /
+    ShiftLeft,  // <<
+    ShiftRight, // >>
+    And,        // &
+    Pipe,       // |
+    Hat,        // ^
+    Tilde,      // ~
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Macro {
-    Include,    // #include
-    Define,     // #define
-    Undef,      // #undef
-    Ifdef,      // #ifdef
-    Ifndef,     // #ifndef
-    Else,       // #eles
-    Endif,      // #endif
+    Include, // #include
+    Define,  // #define
+    Undef,   // #undef
+    Ifdef,   // #ifdef
+    Ifndef,  // #ifndef
+    Else,    // #eles
+    Endif,   // #endif
 }
 
 #[derive(Debug, Clone, PartialEq)]
