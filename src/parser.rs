@@ -128,6 +128,12 @@ mod parser_test {
     use std::fs::File;
     use std::io::BufReader;
 
+    macro_rules! create_node {
+        ($n:expr) => {
+            Box::new(ASTNode::new($n));
+        };
+    }
+
     #[test]
     fn end_of_program() {
         let mut b = "".as_bytes();
@@ -155,16 +161,15 @@ mod parser_test {
 
         let mut interfaces = Vec::new();
         interfaces.push(
-                Box::new(ASTNode::new(ASTClass::Input(
-                        Box::new(ASTNode::new(ASTClass::Identifire("a".to_string()))),
-                        Box::new(ASTNode::new(ASTClass::Number("1".to_string()))))
-        )));
+            create_node!(ASTClass::Input(
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    create_node!(ASTClass::Number("1".to_string())))));
 
-        let block = Box::new(ASTNode::new(ASTClass::Block(interfaces)));
-        let id = Box::new(ASTNode::new(ASTClass::Identifire("ok".to_string())));
+        let block = create_node!(ASTClass::Block(interfaces));
+        let id = create_node!(ASTClass::Identifire("ok".to_string()));
         assert_eq!(
             p.next_ast().unwrap(),
-            Box::new(ASTNode::new(ASTClass::Declare(id, block)))
+            create_node!(ASTClass::Declare(id, block))
         );
     }
 
@@ -177,15 +182,16 @@ mod parser_test {
 
         let mut interfaces = Vec::new();
         interfaces.push(
-                Box::new(ASTNode::new(ASTClass::Input(
-                        Box::new(ASTNode::new(ASTClass::Identifire("a".to_string()))),
-                        Box::new(ASTNode::new(ASTClass::Number("2".to_string())))))));
+                create_node!(ASTClass::Input(
+                        create_node!(ASTClass::Identifire("a".to_string())),
+                        create_node!(ASTClass::Number("2".to_string())))));
 
-        let block = Box::new(ASTNode::new(ASTClass::Block(interfaces)));
-        let id = Box::new(ASTNode::new(ASTClass::Identifire("ok".to_string())));
+        let block = create_node!(ASTClass::Block(interfaces));
+        let id = create_node!(ASTClass::Identifire("ok".to_string()));
+
         assert_eq!(
             p.next_ast().unwrap(),
-            Box::new(ASTNode::new(ASTClass::Declare(id, block)))
+            create_node!(ASTClass::Declare(id, block))
         );
     }
 
@@ -196,23 +202,23 @@ mod parser_test {
         let mut p = Parser::new(&mut l);
 
 
-        let left = Box::new(ASTNode::new(ASTClass::Identifire("OK".to_string())));
+        let left = create_node!(ASTClass::Identifire("OK".to_string()));
         let op = Operator::Slash;
-        let right = Box::new(ASTNode::new(ASTClass::Number("2".to_string())));
-        let expr = Box::new(ASTNode::new(ASTClass::Expression(left, op, right)));
+        let right = create_node!(ASTClass::Number("2".to_string()));
+        let expr = create_node!(ASTClass::Expression(left, op, right));
 
         let mut interfaces = Vec::new();
         interfaces.push(
-            Box::new(ASTNode::new(ASTClass::Input(
-                        Box::new(ASTNode::new(ASTClass::Identifire("a".to_string()))),
-                        expr))));
+            create_node!(ASTClass::Input(
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    expr)));
 
-        let id = Box::new(ASTNode::new(ASTClass::Identifire("ok".to_string())));
-        let block = Box::new(ASTNode::new(ASTClass::Block(interfaces)));
+        let id = create_node!(ASTClass::Identifire("ok".to_string()));
+        let block = create_node!(ASTClass::Block(interfaces));
 
         assert_eq!(
             p.next_ast().unwrap(),
-            Box::new(ASTNode::new(ASTClass::Declare(id, block))));
+            create_node!(ASTClass::Declare(id, block)));
     }
 
     #[test]
@@ -222,27 +228,26 @@ mod parser_test {
         let mut p = Parser::new(&mut l);
 
 
-        let left = Box::new(ASTNode::new(ASTClass::Identifire("OK".to_string())));
+        let left = create_node!(ASTClass::Identifire("OK".to_string()));
         let op = Operator::Slash;
-        let right = Box::new(ASTNode::new(ASTClass::Number("4".to_string())));
-        let expr = Box::new(ASTNode::new(ASTClass::Expression(left, op, right)));
+        let right = create_node!(ASTClass::Number("4".to_string()));
+        let expr = create_node!(ASTClass::Expression(left, op, right));
 
-        let right2 = Box::new(ASTNode::new(ASTClass::Number("2".to_string())));
-        let expr2 = Box::new(ASTNode::new(
-                ASTClass::Expression(expr, Operator::Asterisk, right2)));
+        let right2 = create_node!(ASTClass::Number("2".to_string()));
+        let expr2 = create_node!(ASTClass::Expression(expr, Operator::Asterisk, right2));
 
         let mut interfaces = Vec::new();
         interfaces.push(
-            Box::new(ASTNode::new(ASTClass::Input(
-                        Box::new(ASTNode::new(ASTClass::Identifire("a".to_string()))),
-                        expr2))));
+            create_node!(ASTClass::Input(
+                        create_node!(ASTClass::Identifire("a".to_string())),
+                        expr2)));
 
-        let id = Box::new(ASTNode::new(ASTClass::Identifire("ok".to_string())));
-        let block = Box::new(ASTNode::new(ASTClass::Block(interfaces)));
+        let id = create_node!(ASTClass::Identifire("ok".to_string()));
+        let block = create_node!(ASTClass::Block(interfaces));
 
         assert_eq!(
             p.next_ast().unwrap(),
-            Box::new(ASTNode::new(ASTClass::Declare(id, block))));
+            create_node!(ASTClass::Declare(id, block)));
     }
 
     /*
