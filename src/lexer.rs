@@ -157,6 +157,13 @@ impl<'a> Lexer<'a> {
                                     self.line));
                         it.next();
                     }
+                    '*' => {
+                        self.tokens.push_back(
+                            Token::new(
+                                TokenClass::Operator(Operator::Asterisk),
+                                self.line));
+                        it.next();
+                    }
                     '\n' => {
                         self.tokens.push_back(
                                 Token::new(TokenClass::Newline, self.line));

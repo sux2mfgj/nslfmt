@@ -50,8 +50,6 @@ impl<'a> Parser<'a> {
                         return Ok(Box::new(ASTNode::new(ASTClass::Input(
                                         id,
                                         width))));
-
-
                     }
                     _ => {
                         return Err(ASTStatus::UnExpectedToken(self.lexer.next_token(),line!()));
@@ -81,30 +79,43 @@ impl<'a> Parser<'a> {
                 }
             }
             TokenClass::Symbol(Symbol::LeftSquareBracket) => {
-                let left_node = self.next_ast()?;
-                let center_token = self.lexer.next_token();
-                match center_token.class {
-                    TokenClass::Operator(op) => {
-                        let right_node = self.next_ast()?;
-                        return Ok(Box::new(ASTNode::new(
-                                    ASTClass::Expression(
-                                        left_node,
-                                        op,
-                                        right_node))));
-
-                    }
+                let left = self.next_ast()?;
+                let expr = self.create_expression(left)?;
+                let next_token = self.lexer.next_token();
+                match next_token.class {
                     TokenClass::Symbol(Symbol::RightSquareBracket) => {
-                        return Ok(Box::new(ASTNode::new(
-                                    ASTClass::WidthBlock(
-                                        left_node))));
+                        return Ok(expr);
                     }
                     _ => {
-                        return Err(ASTStatus::UnExpectedToken(center_token, line!()));
+                        return Err(ASTStatus::UnExpectedToken(next_token, line!()));
                     }
                 }
             }
             _ => {
                 return Err(ASTStatus::UnExpectedToken(t, line!()));
+            }
+        }
+    }
+
+    fn create_expression(&mut self, node: Box<ASTNode>) -> Result<Box<ASTNode>, ASTStatus> {
+
+        match self.lexer.check_next_token().unwrap().class
+        {
+            TokenClass::Operator(_) => {
+                let t = self.lexer.next_token();
+                match t.class {
+                    TokenClass::Operator(op) =>  {
+                        let right = self.next_ast()?;
+                        let expr = ASTNode::new(ASTClass::Expression(node, op, right));
+                        return self.create_expression(Box::new(expr));
+                    }
+                    _ => {
+                        return Err(ASTStatus::UnExpectedToken(t, line!()));
+                    }
+                }
+            }
+            _ => {
+                return Ok(node);
             }
         }
     }
@@ -168,9 +179,7 @@ mod parser_test {
         interfaces.push(
                 Box::new(ASTNode::new(ASTClass::Input(
                         Box::new(ASTNode::new(ASTClass::Identifire("a".to_string()))),
-                        Box::new(ASTNode::new(ASTClass::WidthBlock(
-                                    Box::new(ASTNode::new(ASTClass::Number("2".to_string())))))))
-        )));
+                        Box::new(ASTNode::new(ASTClass::Number("2".to_string())))))));
 
         let block = Box::new(ASTNode::new(ASTClass::Block(interfaces)));
         let id = Box::new(ASTNode::new(ASTClass::Identifire("ok".to_string())));
@@ -180,15 +189,61 @@ mod parser_test {
         );
     }
 
-    /*
     #[test]
-    fn expression_on_width_block() {
+    fn expression_in_width_block_01() {
         let mut b = "declare ok{ input a[OK / 2]; }".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
+
+        let left = Box::new(ASTNode::new(ASTClass::Identifire("OK".to_string())));
+        let op = Operator::Slash;
+        let right = Box::new(ASTNode::new(ASTClass::Number("2".to_string())));
+        let expr = Box::new(ASTNode::new(ASTClass::Expression(left, op, right)));
+
+        let mut interfaces = Vec::new();
+        interfaces.push(
+            Box::new(ASTNode::new(ASTClass::Input(
+                        Box::new(ASTNode::new(ASTClass::Identifire("a".to_string()))),
+                        expr))));
+
+        let id = Box::new(ASTNode::new(ASTClass::Identifire("ok".to_string())));
+        let block = Box::new(ASTNode::new(ASTClass::Block(interfaces)));
+
+        assert_eq!(
+            p.next_ast().unwrap(),
+            Box::new(ASTNode::new(ASTClass::Declare(id, block))));
     }
-    */
+
+    #[test]
+    fn expression_in_width_block_02() {
+        let mut b = "declare ok{ input a[OK / 4 * 2]; }".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+
+        let left = Box::new(ASTNode::new(ASTClass::Identifire("OK".to_string())));
+        let op = Operator::Slash;
+        let right = Box::new(ASTNode::new(ASTClass::Number("4".to_string())));
+        let expr = Box::new(ASTNode::new(ASTClass::Expression(left, op, right)));
+
+        let right2 = Box::new(ASTNode::new(ASTClass::Number("2".to_string())));
+        let expr2 = Box::new(ASTNode::new(
+                ASTClass::Expression(expr, Operator::Asterisk, right2)));
+
+        let mut interfaces = Vec::new();
+        interfaces.push(
+            Box::new(ASTNode::new(ASTClass::Input(
+                        Box::new(ASTNode::new(ASTClass::Identifire("a".to_string()))),
+                        expr2))));
+
+        let id = Box::new(ASTNode::new(ASTClass::Identifire("ok".to_string())));
+        let block = Box::new(ASTNode::new(ASTClass::Block(interfaces)));
+
+        assert_eq!(
+            p.next_ast().unwrap(),
+            Box::new(ASTNode::new(ASTClass::Declare(id, block))));
+    }
 
     /*
     #[test]
