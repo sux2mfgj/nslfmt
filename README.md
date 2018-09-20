@@ -9,7 +9,7 @@ A nslfmt is a code fomatter for [NSL](http://www.overtone.co.jp/products/overtur
 
 ##### Requirements
 - rust  
-You can build the nslfmt by __stable rust__ and toolchains, but, [tarpaulin](https://github.com/xd009642/tarpaulin) is required  for a coverage test, because we use a tarpauli which require it.
+You can build the nslfmt by __stable rust__ and toolchains. If you want to run a coverage test, nightly rust is required. because we use [tarpaulin](https://github.com/xd009642/tarpaulin) which require it.
 
 - tarpaulin  
 ```
