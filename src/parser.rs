@@ -3,7 +3,7 @@ use lexer::*;
 use token::*;
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum ASTStatus {
+pub enum ASTError{
     UnExpectedToken(Token, u32),
 }
 
@@ -22,7 +22,7 @@ impl<'a> Parser<'a> {
         Parser { lexer: lexer }
     }
 
-    pub fn next_ast(&mut self) -> Result<Box<ASTNode>, ASTStatus> {
+    pub fn next_ast(&mut self) -> Result<Box<ASTNode>, ASTError> {
         let t = self.lexer.next_token();
         match t.class {
             TokenClass::Identifire(s) => {
@@ -56,7 +56,7 @@ impl<'a> Parser<'a> {
                         return Ok(create_node!(ASTClass::Input(id, width)));
                     }
                     _ => {
-                        return Err(ASTStatus::UnExpectedToken(
+                        return Err(ASTError::UnExpectedToken(
                             self.lexer.next_token(),
                             line!(),
                         ));
@@ -84,7 +84,7 @@ impl<'a> Parser<'a> {
                         return Ok(create_node!(ASTClass::Output(id, width)));
                     }
                     _ => {
-                        return Err(ASTStatus::UnExpectedToken(
+                        return Err(ASTError::UnExpectedToken(
                             self.lexer.next_token(),
                             line!(),
                         ));
@@ -112,7 +112,7 @@ impl<'a> Parser<'a> {
                         return Ok(create_node!(ASTClass::InOut(id, width)));
                     }
                     _ => {
-                        return Err(ASTStatus::UnExpectedToken(
+                        return Err(ASTError::UnExpectedToken(
                             self.lexer.next_token(),
                             line!(),
                         ));
@@ -134,7 +134,7 @@ impl<'a> Parser<'a> {
                                 ASTClass::FuncIn(id, args, return_node)));
                     }
                     else {
-                        return Err(ASTStatus::UnExpectedToken(out_token, line!()));
+                        return Err(ASTError::UnExpectedToken(out_token, line!()));
                     }
                 }
                 else {
@@ -155,7 +155,7 @@ impl<'a> Parser<'a> {
                             return Ok(create_node!(ASTClass::Block(content)));
                         }
                         TokenClass::EndOfProgram => {
-                            return Err(ASTStatus::UnExpectedToken(
+                            return Err(ASTError::UnExpectedToken(
                                 self.lexer.next_token(),
                                 line!(),
                             ));
@@ -176,23 +176,23 @@ impl<'a> Parser<'a> {
                         return Ok(expr);
                     }
                     _ => {
-                        return Err(ASTStatus::UnExpectedToken(next_token, line!()));
+                        return Err(ASTError::UnExpectedToken(next_token, line!()));
                     }
                 }
             }
             _ => {
-                return Err(ASTStatus::UnExpectedToken(t, line!()));
+                return Err(ASTError::UnExpectedToken(t, line!()));
             }
         }
     }
 
-    fn generate_args_vec(&mut self) -> Result<Vec<Box<ASTNode>>, ASTStatus>
+    fn generate_args_vec(&mut self) -> Result<Vec<Box<ASTNode>>, ASTError>
     {
         let left_paren = self.lexer.next_token();
         if let TokenClass::Symbol(Symbol::LeftParen) = left_paren.class
         {}
         else {
-            return Err(ASTStatus::UnExpectedToken(left_paren, line!()));
+            return Err(ASTError::UnExpectedToken(left_paren, line!()));
         }
 
         let mut args = Vec::new();
@@ -208,7 +208,7 @@ impl<'a> Parser<'a> {
                     args.push(create_node!(ASTClass::Identifire(id)));
                 }
                 _ => {
-                    return Err(ASTStatus::UnExpectedToken(token, line!()));
+                    return Err(ASTError::UnExpectedToken(token, line!()));
                 }
             }
         }
@@ -217,7 +217,7 @@ impl<'a> Parser<'a> {
     fn create_expression(
         &mut self,
         node: Box<ASTNode>,
-    ) -> Result<Box<ASTNode>, ASTStatus> {
+    ) -> Result<Box<ASTNode>, ASTError> {
         match self.lexer.check_next_token().unwrap().class {
             TokenClass::Operator(_) => {
                 let t = self.lexer.next_token();
@@ -228,7 +228,7 @@ impl<'a> Parser<'a> {
                         return self.create_expression(Box::new(expr));
                     }
                     _ => {
-                        return Err(ASTStatus::UnExpectedToken(t, line!()));
+                        return Err(ASTError::UnExpectedToken(t, line!()));
                     }
                 }
             }
@@ -256,16 +256,6 @@ mod parser_test {
     }
 
     #[test]
-    fn unexptected_token() {
-        let mut b = "a".as_bytes();
-        let mut l = Lexer::new(&mut b);
-        let mut p = Parser::new(&mut l);
-
-        //TODO
-        //assert_eq!(p.next_ast().err(), Some(ASTError::UnExpectedToken(t)));
-    }
-
-    #[test]
     fn one_bit_input() {
         let mut b = "declare ok{ input a; }".as_bytes();
         let mut l = Lexer::new(&mut b);
@@ -287,7 +277,6 @@ mod parser_test {
 
     #[test]
     fn multi_bit_input() {
-        /* let mut b = "declare ok{ input a[2]; }".as_bytes(); */
         let mut b = "declare ok{ input a[2]; }".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
