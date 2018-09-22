@@ -4,17 +4,21 @@ mod lexer;
 mod parser;
 mod token;
 
+use std::fs::File;
+use std::io::BufReader;
+
 use generator::Generator;
 use lexer::Lexer;
 use parser::Parser;
 
 fn main() {
-    let mut b = "declare hello {input ok; func_in gg (ok);}".as_bytes();
+    let mut b = BufReader::new(File::open("test_code/declare_03.nsl").unwrap());
     let mut l = Lexer::new(&mut b);
 
-    let p = Parser::new(&mut l);
-    let mut io = std::io::stdout();
+    let mut p = Parser::new(&mut l);
+    //let mut io = std::io::stdout();
 
+    println!("{:?}", p.next_ast().unwrap());
     /*
     {
         let mut g = Generator::new(p, &mut io);

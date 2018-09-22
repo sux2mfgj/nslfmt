@@ -38,6 +38,11 @@ impl<'a> Lexer<'a> {
         while self.tokens.len() == 0 {
             self.supply_tokens();
         }
+
+        if self.tokens.front().unwrap().class == TokenClass::Newline {
+            self.tokens.pop_front();
+            return self.check_next_token();
+        }
         self.tokens.front()
     }
 
@@ -774,4 +779,29 @@ mod lexer_test {
 
         assert_eq!(l.next_token(), Token::new(TokenClass::EndOfProgram, 1));
     }
+
+    #[test]
+    fn newline_in_declare_block() {
+        let mut b = "declare ok{\n}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Declare), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Identifire("ok".to_string()), 1)
+        );
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 1));
+        assert_eq!(
+            l.check_next_token(),
+            Some(&Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 2)));
+
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 2));
+    }
+
 }
