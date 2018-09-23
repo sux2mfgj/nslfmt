@@ -31,6 +31,9 @@ impl<'a> Parser<'a> {
             TokenClass::Number(n) => {
                 return Ok(create_node!(ASTClass::Number(n)));
             }
+            TokenClass::String(s) => {
+                return Ok(create_node!(ASTClass::String(s)));
+            }
             TokenClass::EndOfProgram => {
                 return Ok(create_node!(ASTClass::EndOfProgram));
             }
@@ -203,6 +206,24 @@ impl<'a> Parser<'a> {
                         return Err(ASTError::UnExpectedToken(next_token, line!()));
                     }
                 }
+            }
+            TokenClass::Symbol(Symbol::Sharp) => {
+                return self.generate_macro_astnode();
+            }
+            _ => {
+                return Err(ASTError::UnExpectedToken(t, line!()));
+            }
+        }
+    }
+
+    fn generate_macro_astnode(&mut self) -> Result<Box<ASTNode>, ASTError>
+    {
+
+        let t = self.lexer.next_token();
+        match t.class {
+            TokenClass::Macro(Macro::Include) => {
+                let path = self.next_ast()?;
+                return Ok(create_node!(ASTClass::MacroInclude(path)));
             }
             _ => {
                 return Err(ASTError::UnExpectedToken(t, line!()));
@@ -558,25 +579,24 @@ mod parser_test {
                     create_node!(ASTClass::Block(interfaces)))));
     }
 
-    /*
-
     #[test]
     fn include_macro() {
         let mut b = "#include \"hello.h\"\ndeclare ok {}".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
+
+        let path = create_node!(ASTClass::String("hello.h".to_string()));
+        let id = create_node!(ASTClass::Declare(
+                    create_node!(ASTClass::Identifire("ok".to_string())),
+                    create_node!(ASTClass::Block(Vec::new()))));
+        let include = create_node!(ASTClass::MacroInclude(path));
         assert_eq!(
                 p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::MacroInclude("\"hello.h\"".to_string())));
-        assert_eq!(
-                p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::Declare("ok".to_string(), Vec::new())));
-        assert_eq!(
-                p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::EndOfProgram));
+                include);
     }
 
+    /*
     #[test]
     fn undef_macro() {
         let mut b = "#undef hello".as_bytes();

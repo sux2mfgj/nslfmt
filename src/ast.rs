@@ -4,6 +4,7 @@ use token::Operator;
 pub enum ASTClass {
     Identifire(String),
     Number(String),
+    String(String),
     /*
      *  block
      *  e.g.
@@ -34,13 +35,15 @@ pub enum ASTClass {
     Input(Box<ASTNode>, Box<ASTNode>),
     Output(Box<ASTNode>, Box<ASTNode>),
     InOut(Box<ASTNode>, Box<ASTNode>),
-    MacroInclude(String),
+    MacroInclude(Box<ASTNode>),
+    /*
     MacroDefine(String, Vec<Box<ASTNode>>),
     MacroUndef(String),
     MacroIfdef(String),
     MacroIfndef(String),
     MacroElse,
     MacroEndif,
+    */
     //          operand     , operation   , operand
     Expression(Box<ASTNode>, Operator, Box<ASTNode>),
     EndOfProgram,

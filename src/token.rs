@@ -57,6 +57,8 @@ pub enum TokenClass {
      * コードフォーマッタではいじらないのでStringで持ちそのまま出す
      */
     Number(String),
+    String(String),
+    // "hello.h" 等
     Symbol(Symbol),
     Operator(Operator),
     Macro(Macro),

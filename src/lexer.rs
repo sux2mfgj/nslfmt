@@ -161,11 +161,24 @@ impl<'a> Lexer<'a> {
                         it.next();
                     }
                     '"' => {
-                        self.tokens.push_back(Token::new(
-                            TokenClass::Symbol(Symbol::DoubleQuote),
-                            self.line,
-                        ));
                         it.next();
+                        let mut name = String::new();
+                        loop {
+                            if let Some(nc) = it.next() {
+                                if nc == '"' {
+                                    self.tokens.push_back(
+                                            Token::new(TokenClass::String(name),
+                                                self.line));
+                                    break;
+                                }
+                                else {
+                                    name.push_str(&nc.to_string());
+                                }
+                            }
+                            else {
+                                panic!("error");
+                            }
+                        }
                     }
                     ' ' | '\t' => {
                         it.next();
@@ -651,23 +664,7 @@ mod lexer_test {
         );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::DoubleQuote), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("hello".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Dot), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("h".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::DoubleQuote), 1)
+            Token::new(TokenClass::String("hello.h".to_string()), 1)
         );
         assert_eq!(
             l.next_token(),
