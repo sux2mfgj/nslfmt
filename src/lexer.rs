@@ -46,6 +46,19 @@ impl<'a> Lexer<'a> {
         self.tokens.front()
     }
 
+    pub fn next_token_nl(&mut self) -> Token {
+        while self.tokens.len() == 0 {
+            self.supply_tokens();
+        }
+
+        if let Some(next_token) = self.tokens.pop_front() {
+            return next_token;
+        }
+        else {
+            panic!("token notfound");
+        }
+    }
+
     fn supply_tokens(&mut self) {
         let mut buf = Vec::<u8>::new();
         let t = self.reader.read_until(b'\n', &mut buf).unwrap();
@@ -804,4 +817,40 @@ mod lexer_test {
             Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 2));
     }
 
+    #[test]
+    fn next_token_nl() {
+        let mut b = "#define HELLO ok\n declare HELLO{\n}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Sharp), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Macro(Macro::Define), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Identifire("HELLO".to_string()), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Identifire("ok".to_string()), 1));
+        assert_eq!(
+                l.next_token_nl(),
+                Token::new(TokenClass::Newline, 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Declare), 2));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Identifire("HELLO".to_string()), 2));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 2));
+        assert_eq!(
+                l.next_token_nl(),
+                Token::new(TokenClass::Newline, 2));
+        assert_eq!(
+            l.check_next_token(),
+            Some(&Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 3)));
+    }
 }
