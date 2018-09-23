@@ -36,9 +36,9 @@ pub enum ASTClass {
     Output(Box<ASTNode>, Box<ASTNode>),
     InOut(Box<ASTNode>, Box<ASTNode>),
     MacroInclude(Box<ASTNode>),
+    MacroUndef(Box<ASTNode>),
     /*
     MacroDefine(String, Vec<Box<ASTNode>>),
-    MacroUndef(String),
     MacroIfdef(String),
     MacroIfndef(String),
     MacroElse,

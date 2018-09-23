@@ -225,6 +225,10 @@ impl<'a> Parser<'a> {
                 let path = self.next_ast()?;
                 return Ok(create_node!(ASTClass::MacroInclude(path)));
             }
+            TokenClass::Macro(Macro::Undef) => {
+                let id = self.next_ast()?;
+                return Ok(create_node!(ASTClass::MacroUndef(id)));
+            }
             _ => {
                 return Err(ASTError::UnExpectedToken(t, line!()));
             }
@@ -596,21 +600,20 @@ mod parser_test {
                 include);
     }
 
-    /*
     #[test]
     fn undef_macro() {
         let mut b = "#undef hello".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
+        let undef = create_node!(ASTClass::MacroUndef(
+                    create_node!(ASTClass::Identifire("hello".to_string()))));
         assert_eq!(
                 p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::MacroUndef("hello".to_string())));
-        assert_eq!(
-                p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::EndOfProgram));
+                undef);
     }
 
+    /*
     #[test]
     fn ifdef_macro() {
         let mut b = "#ifdef hello".as_bytes();
