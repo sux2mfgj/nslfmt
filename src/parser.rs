@@ -229,6 +229,20 @@ impl<'a> Parser<'a> {
                 let id = self.next_ast()?;
                 return Ok(create_node!(ASTClass::MacroUndef(id)));
             }
+            TokenClass::Macro(Macro::Ifdef) => {
+                let id = self.next_ast()?;
+                return Ok(create_node!(ASTClass::MacroIfdef(id)));
+            }
+            TokenClass::Macro(Macro::Ifndef) => {
+                let id = self.next_ast()?;
+                return Ok(create_node!(ASTClass::MacroIfndef(id)));
+            }
+            TokenClass::Macro(Macro::Endif) => {
+                return Ok(create_node!(ASTClass::MacroEndif));
+            }
+            TokenClass::Macro(Macro::Else) => {
+                return Ok(create_node!(ASTClass::MacroElse));
+            }
             _ => {
                 return Err(ASTError::UnExpectedToken(t, line!()));
             }
@@ -613,20 +627,72 @@ mod parser_test {
                 undef);
     }
 
-    /*
     #[test]
     fn ifdef_macro() {
         let mut b = "#ifdef hello".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
+        let ifdef = create_node!(ASTClass::MacroIfdef(
+                    create_node!(ASTClass::Identifire("hello".to_string()))));
         assert_eq!(
                 p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::MacroIfdef("hello".to_string())));
-        assert_eq!(
-                p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::EndOfProgram));
+                ifdef);
     }
+
+    #[test]
+    fn ifndef_macro() {
+        let mut b = "#ifndef hello".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let ifndef = create_node!(ASTClass::MacroIfndef(
+                    create_node!(ASTClass::Identifire("hello".to_string()))));
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ifndef);
+    }
+
+    #[test]
+    fn endif_macro() {
+        let mut b = "#ifndef hello\n#endif".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let ifndef = create_node!(ASTClass::MacroIfndef(
+                    create_node!(ASTClass::Identifire("hello".to_string()))));
+        let endif = create_node!(ASTClass::MacroEndif);
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ifndef);
+        assert_eq!(
+                p.next_ast().unwrap(),
+                endif);
+    }
+
+    #[test]
+    fn if_else_end() {
+        let mut b = "#ifndef hello\n#else\n#endif".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let ifndef = create_node!(ASTClass::MacroIfndef(
+                    create_node!(ASTClass::Identifire("hello".to_string()))));
+        let endif = create_node!(ASTClass::MacroEndif);
+        let melse = create_node!(ASTClass::MacroElse);
+        assert_eq!(
+                p.next_ast().unwrap(),
+                ifndef);
+        assert_eq!(
+                p.next_ast().unwrap(),
+                melse);
+        assert_eq!(
+                p.next_ast().unwrap(),
+                endif);
+    }
+
+
+    /*
 
     #[test]
     fn ifndef_macro() {

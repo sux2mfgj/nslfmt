@@ -37,12 +37,12 @@ pub enum ASTClass {
     InOut(Box<ASTNode>, Box<ASTNode>),
     MacroInclude(Box<ASTNode>),
     MacroUndef(Box<ASTNode>),
-    /*
-    MacroDefine(String, Vec<Box<ASTNode>>),
-    MacroIfdef(String),
-    MacroIfndef(String),
+    MacroIfdef(Box<ASTNode>),
+    MacroIfndef(Box<ASTNode>),
     MacroElse,
     MacroEndif,
+    /*
+    MacroDefine(String, Vec<Box<ASTNode>>),
     */
     //          operand     , operation   , operand
     Expression(Box<ASTNode>, Operator, Box<ASTNode>),
