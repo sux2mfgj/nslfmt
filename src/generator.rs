@@ -1,4 +1,4 @@
-use std::io::{Write, Error};
+use std::io::{Error, Write};
 
 use ast::*;
 use parser::*;
@@ -28,7 +28,13 @@ mod generator_test {
     use lexer::*;
 
     use std::fs::File;
-    use std::io::{self, BufWriter, BufReader, Cursor};
+    use std::io::{self, BufReader, BufWriter, Cursor};
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    static call_count: AtomicUsize = AtomicUsize::new(0);
+    fn get_value_with_lock() -> usize {
+        return call_count.fetch_add(1, Ordering::Relaxed);
+    }
 
     #[test]
     fn new_by_stdout() {
@@ -111,9 +117,9 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello\n{\n\tinput a;\n\tinput b;\n\tfunc_in aa(a, b);\n}".to_string();
+        let ans = "declare hello\n{\n\tinput a;\n\tinput b;\n\tfunc_in aa(a, b);\n}"
+            .to_string();
         assert_eq!(out, ans);
-
     }
 
     #[test]
@@ -128,10 +134,10 @@ mod generator_test {
             g.output_node();
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-        let ans = "declare hello_google2\n{\n\tinput ok;\n\tfunc_in sugoi(ok);\n}".to_string();
+        let ans =
+            "declare hello_google2\n{\n\tinput ok;\n\tfunc_in sugoi(ok);\n}".to_string();
         assert_eq!(out, ans);
     }
-    /*
 
     #[test]
     fn output_declare_to_file() {
@@ -140,72 +146,12 @@ mod generator_test {
 
         let p = Parser::new(&mut l);
 
-        let mut io = BufWriter::new(File::create("/tmp/out.nsl").unwrap());
+        let file_path = format!("/tmp/{:02}.nsl", get_value_with_lock());
+        let mut io = BufWriter::new(File::create(file_path).unwrap());
 
         {
             let mut g = Generator::new(p, &mut io);
-            /* while let Some(_a) = g.output_node() {} */
             g.output_node();
         }
     }
-
-    #[test]
-    fn output_declare_to_stdio() {
-        let mut b = "declare hello {input ok; func_in hh(ok);}".as_bytes();
-        let mut l = Lexer::new(&mut b);
-
-        let p = Parser::new(&mut l);
-
-        let mut io = io::stdout();
-
-        {
-            let mut g = Generator::new(p, &mut io);
-            /* while let Some(_a) = g.output_node() {} */
-            g.output_node();
-        }
-    }
-
-    #[test]
-    fn output_declare_to_cursor() {
-        let mut b = "declare hello {input ok; func_in hh(ok);}".as_bytes();
-        let mut l = Lexer::new(&mut b);
-
-        let p = Parser::new(&mut l);
-
-        let mut io = Cursor::new(Vec::new());
-        {
-            let mut g = Generator::new(p, &mut io);
-            /* while let Some(_a) = g.output_node() {} */
-            g.output_node();
-        }
-
-        let ans = "declare hello {\n    input ok;\n    func_in hh(ok);\n}\n";
-        /* if let  */
-        if let Ok(s) = String::from_utf8(io.into_inner()) {
-            println!("{}", s);
-            assert_eq!(s, ans);
-        }
-    }
-
-    #[test]
-    fn func_args() {
-        let mut b = "declare hello {input ok; input test; func_in hh(ok, test);}".as_bytes();
-        let mut l = Lexer::new(&mut b);
-
-        let p = Parser::new(&mut l);
-
-        let mut io = Cursor::new(Vec::new());
-        {
-            let mut g = Generator::new(p, &mut io);
-            /* while let Some(_a) = g.output_node() {} */
-            g.output_node();
-        }
-
-        let ans = "declare hello {\n    input ok;\n    input test;\n    func_in hh(ok, test);\n}\n";
-        if let Ok(s) = String::from_utf8(io.into_inner()) {
-            println!("{}", s);
-            assert_eq!(s, ans);
-        }
-    }
-*/
 }

@@ -1,5 +1,5 @@
-use token;
 use std::fmt;
+use token;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ASTClass {
@@ -81,32 +81,28 @@ impl fmt::Display for ASTNode {
                 if let ASTClass::Number(ref width) = expr.class {
                     if width == "1" {
                         return write!(f, "input {};\n", id);
-                    }
-                    else {
-                        return write!(f, "input {}[{}];\n", id, expr)
+                    } else {
+                        return write!(f, "input {}[{}];\n", id, expr);
                     }
                 }
-                return write!(f, "input {}[{}];\n", id, expr)
+                return write!(f, "input {}[{}];\n", id, expr);
             }
             ASTClass::FuncIn(ref id, ref input_ids, ref output) => {
-                let str_input: Vec<String> = input_ids.iter().map(
-                    |ident| format!("{}", ident)).collect();
+                let str_input: Vec<String> =
+                    input_ids.iter().map(|ident| format!("{}", ident)).collect();
                 let args = str_input.connect(", ");
 
                 if let ASTClass::Identifire(ref s) = output.class {
                     if s.is_empty() {
                         return write!(f, "func_in {}({});\n", id, args);
-                    }
-                    else {
+                    } else {
                         return write!(f, "func_in {}({}): {}\n", id, args, output);
                     }
-                }
-                else {
+                } else {
                     panic!("UnExpectedToken at {}", line!());
                 }
             }
             ASTClass::Block(ref list, nest) => {
-                //TODO use nest
                 let mut list_str = String::new();
                 let nest_tabs = "\t".repeat(nest);
                 for node in list {
@@ -116,10 +112,11 @@ impl fmt::Display for ASTNode {
                 return write!(f, "\n{{\n{}}}", list_str);
             }
             _ => {
-                panic!("For the node {:?}, fmt::Display does not implemented yet.",
-                       self);
+                panic!(
+                    "For the node {:?}, fmt::Display does not implemented yet.",
+                    self
+                );
             }
         }
     }
 }
-

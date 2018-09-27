@@ -53,8 +53,7 @@ impl<'a> Lexer<'a> {
 
         if let Some(next_token) = self.tokens.pop_front() {
             return next_token;
-        }
-        else {
+        } else {
             panic!("token notfound");
         }
     }
@@ -166,16 +165,15 @@ impl<'a> Lexer<'a> {
                         loop {
                             if let Some(nc) = it.next() {
                                 if nc == '"' {
-                                    self.tokens.push_back(
-                                            Token::new(TokenClass::String(name),
-                                                self.line));
+                                    self.tokens.push_back(Token::new(
+                                        TokenClass::String(name),
+                                        self.line,
+                                    ));
                                     break;
-                                }
-                                else {
+                                } else {
                                     name.push_str(&nc.to_string());
                                 }
-                            }
-                            else {
+                            } else {
                                 panic!("error");
                             }
                         }
@@ -797,21 +795,25 @@ mod lexer_test {
 
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Declare), 1));
+            Token::new(TokenClass::Symbol(Symbol::Declare), 1)
+        );
         assert_eq!(
             l.next_token(),
             Token::new(TokenClass::Identifire("ok".to_string()), 1)
         );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 1));
+            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 1)
+        );
         assert_eq!(
             l.check_next_token(),
-            Some(&Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 2)));
+            Some(&Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 2))
+        );
 
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 2));
+            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 2)
+        );
     }
 
     #[test]
@@ -821,33 +823,37 @@ mod lexer_test {
 
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Sharp), 1));
+            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
+        );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Define), 1));
+            Token::new(TokenClass::Macro(Macro::Define), 1)
+        );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Identifire("HELLO".to_string()), 1));
+            Token::new(TokenClass::Identifire("HELLO".to_string()), 1)
+        );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 1));
-        assert_eq!(
-                l.next_token_nl(),
-                Token::new(TokenClass::Newline, 1));
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Declare), 2));
+            Token::new(TokenClass::Identifire("ok".to_string()), 1)
+        );
+        assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 1));
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Identifire("HELLO".to_string()), 2));
+            Token::new(TokenClass::Symbol(Symbol::Declare), 2)
+        );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 2));
+            Token::new(TokenClass::Identifire("HELLO".to_string()), 2)
+        );
         assert_eq!(
-                l.next_token_nl(),
-                Token::new(TokenClass::Newline, 2));
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 2)
+        );
+        assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 2));
         assert_eq!(
             l.check_next_token(),
-            Some(&Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 3)));
+            Some(&Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 3))
+        );
     }
 }

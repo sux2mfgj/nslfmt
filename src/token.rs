@@ -121,12 +121,14 @@ impl fmt::Display for Token {
                 return write!(f, ";");
             }
             TokenClass::Operator(Operator::Slash) => {
-                return write!(f," / ");
+                return write!(f, " / ");
             }
             //TODO
             _ => {
-                panic!("For the token {:?}, this function does not implemented yet.",
-                       self);
+                panic!(
+                    "For the token {:?}, this function does not implemented yet.",
+                    self
+                );
             }
         }
     }

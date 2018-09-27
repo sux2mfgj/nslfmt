@@ -16,13 +16,11 @@ fn main() {
     let mut l = Lexer::new(&mut b);
 
     let mut p = Parser::new(&mut l);
-    //let mut io = std::io::stdout();
+    let mut io = std::io::stdout();
 
     println!("{:?}", p.next_ast().unwrap());
-    /*
     {
         let mut g = Generator::new(p, &mut io);
         g.output_node();
     }
-    */
 }
