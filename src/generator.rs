@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::io::{Write, Error};
 
 use ast::*;
 use parser::*;
@@ -16,70 +16,9 @@ impl<'a, 'b> Generator<'a, 'b> {
         }
     }
 
-    /*
-    pub fn output_node(&mut self) {
+    pub fn output_node(&mut self) -> Result<usize, Error> {
         let ast = self.parser.next_ast().unwrap();
-
-        match ast.class {
-            ASTClass::Declare(id, interfaces) => {
-                self.writer.write(format!("declare {} {{\n", id).as_bytes()).unwrap();
-                self.io_and_func(interfaces);
-                self.writer.write(b"}\n").unwrap();
-                self.writer.flush().unwrap();
-            }
-            ASTClass::EndOfProgram => {
-                return;
-            }
-            _ => {
-                return;
-            }
-        }
-    }
-
-    fn io_and_func(&mut self, io_vec: Vec<ASTNode>) {
-        let mut iter = io_vec.iter();
-        while let Some(node) = iter.next() {
-            match node.class {
-                ASTClass::Input(ref name, ref bits) => {
-                    if bits == "1" {
-                        self.writer
-                            .write(format!("    input {};\n", name).as_bytes()).unwrap();
-                    } else {
-                        self.writer
-                            .write(format!("    input {}[{}];\n", name, bits).as_bytes()).unwrap();
-                    }
-                }
-                ASTClass::FuncIn(ref name, ref args, ref result) => {
-                    self.writer
-                        .write(format!("    func_in {}(", name).as_bytes()).unwrap();
-                    self.func_args(args);
-                    self.writer.write(b")").unwrap();
-
-                    if !result.is_empty() {
-                        self.writer.write(format!(": {};\n", result).as_bytes()).unwrap();
-                    } else {
-                        self.writer.write(b";\n").unwrap();
-                    }
-                }
-                //TODO
-                _ => {
-                    return;
-                }
-            }
-        }
-    }
-
-    fn func_args(&mut self, args: &Vec<String>) {
-        let mut iter = args.iter().peekable();
-
-        while let Some(&arg) = iter.peek() {
-            self.writer.write(format!("{}", arg).as_bytes()).unwrap();
-            iter.next();
-
-            if None != iter.peek() {
-                self.writer.write(b", ").unwrap();
-            }
-        }
+        self.writer.write(format!("{}", ast).as_bytes())
     }
 }
 
@@ -87,21 +26,30 @@ impl<'a, 'b> Generator<'a, 'b> {
 mod generator_test {
     use super::*;
     use lexer::*;
-    //use token::*;
 
     use std::fs::File;
     use std::io::{self, BufWriter, Cursor};
 
     #[test]
     fn new_by_stdout() {
-        let mut b = "declare hello {input ok; func_in hh (ok);}".as_bytes();
+        let mut b = "declare hello {}".as_bytes();
         let mut l = Lexer::new(&mut b);
 
         let p = Parser::new(&mut l);
-        let mut io = io::stdout();
-        let _g = Generator::new(p, &mut io);
+        //let mut io = io::stdout();
+        let mut io = Cursor::new(Vec::new());
+        {
+            let mut g = Generator::new(p, &mut io);
+            g.output_node();
+        }
+        let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+
+        let ans = "declare hello \n{\n}".to_string();
+
+        assert_eq!(out, ans);
     }
 
+    /*
     #[test]
     fn new_by_file() {
         let mut b = "declare hello {input ok; func_in hh(ok);}".as_bytes();

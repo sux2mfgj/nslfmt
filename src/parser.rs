@@ -267,7 +267,6 @@ impl<'a> Parser<'a> {
                     string.push_str(&format!("{}", t));
                 }
             }
-
         }
     }
 

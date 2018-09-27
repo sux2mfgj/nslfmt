@@ -1,4 +1,5 @@
 use token::Operator;
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ASTClass {
@@ -57,3 +58,29 @@ impl ASTNode {
         ASTNode { class: class }
     }
 }
+
+impl fmt::Display for ASTNode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.class {
+            ASTClass::Declare(ref id, ref interfaces) => {
+                return write!(f, "declare {} {}", id, interfaces);
+            }
+            ASTClass::Identifire(ref s) => {
+                return write!(f, "{}", s);
+            }
+            ASTClass::Block(ref list) => {
+                let mut list_str = String::new();
+                for node in list {
+                    list_str.push_str(&format!("{}\n", node));
+                }
+
+                return write!(f, "\n{{\n{}}}", list_str);
+            }
+            _ => {
+                panic!("For the node {:?}, fmt::Display does not implemented yet.",
+                       self);
+            }
+        }
+    }
+}
+
