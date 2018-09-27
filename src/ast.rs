@@ -111,6 +111,9 @@ impl fmt::Display for ASTNode {
 
                 return write!(f, "\n{{\n{}}}", list_str);
             }
+            ASTClass::EndOfProgram => {
+                return write!(f, "");
+            }
             _ => {
                 panic!(
                     "For the node {:?}, fmt::Display does not implemented yet.",

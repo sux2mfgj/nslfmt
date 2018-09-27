@@ -1,6 +1,7 @@
 [package]
 name = "nslfmt"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Shunsuke Mie <sux2mfgj@gmail.com>"]
 
 [dependencies]
+getopts = "0.2"
