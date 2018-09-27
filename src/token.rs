@@ -77,6 +77,7 @@ pub enum TokenClass {
     Symbol(Symbol),
     Operator(Operator),
     Macro(Macro),
+    Comment(String),
     Newline,
     EndOfProgram,
 }

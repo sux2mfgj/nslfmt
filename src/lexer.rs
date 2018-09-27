@@ -185,11 +185,22 @@ impl<'a> Lexer<'a> {
                         it.next();
                     }
                     '/' => {
-                        self.tokens.push_back(Token::new(
-                            TokenClass::Operator(Operator::Slash),
-                            self.line,
-                        ));
                         it.next();
+                        if let Some(&slash) = it.peek() {
+                            match slash {
+                                '/' => {
+                                    it.next();
+                                    let comment = self.get_string_until_newline(&mut it);
+                                    self.tokens.push_back(Token::new(
+                                                TokenClass::Comment(comment), self.line));
+                                }
+                                _ => {
+                                    self.tokens.push_back(Token::new(
+                                                TokenClass::Operator(Operator::Slash),
+                                                self.line));
+                                }
+                            }
+                        }
                     }
                     '*' => {
                         self.tokens.push_back(Token::new(
@@ -259,6 +270,20 @@ impl<'a> Lexer<'a> {
         }
 
         TokenClass::Number(number)
+    }
+
+    fn get_string_until_newline<T: Iterator<Item = char>>(&self, iter: &mut Peekable<T>) -> String {
+        let mut word = String::new();
+        while let Some(&c_next) = iter.peek() {
+            if c_next == '\n' {
+                break;
+            }
+            else {
+                word.push_str(&c_next.to_string());
+                iter.next();
+            }
+        }
+        return word;
     }
 }
 
@@ -861,5 +886,52 @@ mod lexer_test {
             l.check_next_token(),
             Some(&Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 3))
         );
+    }
+
+    #[test]
+    fn comment_00() {
+        let mut b = "declare hello {
+                // this is inputs.
+                input ok[12];
+            }".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        assert_eq!(
+                l.next_token(),
+                Token::new(TokenClass::Symbol(Symbol::Declare), 1));
+        assert_eq!(
+                l.next_token(),
+                Token::new(TokenClass::Identifire("hello".to_string()), 1));
+        assert_eq!(
+                l.next_token(),
+                Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 1));
+        assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 1));
+        assert_eq!(
+                l.next_token(),
+                Token::new(TokenClass::Comment(" this is inputs.".to_string()), 2));
+        assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 2));
+        assert_eq!(
+                l.next_token(),
+                Token::new(TokenClass::Symbol(Symbol::Input), 3));
+        assert_eq!(
+                l.next_token(),
+                Token::new(TokenClass::Identifire("ok".to_string()), 3));
+        assert_eq!(
+                l.next_token(),
+                Token::new(TokenClass::Symbol(Symbol::LeftSquareBracket), 3));
+        assert_eq!(
+                l.next_token(),
+                Token::new(TokenClass::Number("12".to_string()), 3));
+        assert_eq!(
+                l.next_token(),
+                Token::new(TokenClass::Symbol(Symbol::RightSquareBracket), 3));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Semicolon), 3)
+        );
+        assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 3));
+        assert_eq!(
+                l.next_token(),
+                Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 4));
     }
 }
