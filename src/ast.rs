@@ -64,7 +64,7 @@ impl fmt::Display for ASTNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.class {
             ASTClass::Declare(ref id, ref interfaces) => {
-                return write!(f, "declare {}{}", id, interfaces);
+                return write!(f, "\ndeclare {}{}", id, interfaces);
             }
             ASTClass::Identifire(ref s) => {
                 return write!(f, "{}", s);
@@ -131,11 +131,25 @@ impl fmt::Display for ASTNode {
             ASTClass::Block(ref list, nest) => {
                 let mut list_str = String::new();
                 let nest_tabs = "\t".repeat(nest);
+                let mut double_newline_flag = false;
                 for node in list {
-                    list_str.push_str(&format!("{}{}", nest_tabs, node));
+                    if node.class == ASTClass::Newline {
+                        if double_newline_flag {
+                            list_str.push_str("\n");
+                            double_newline_flag = false;
+                        }
+                        else {
+                            double_newline_flag = true;
+                            continue;
+                        }
+                    }
+                    else {
+                        double_newline_flag = false;
+                        list_str.push_str(&format!("{}{}", nest_tabs, node));
+                    }
                 }
 
-                return write!(f, "\n{{\n{}}}\n", list_str);
+                return write!(f, "\n{{\n{}}}\n\n", list_str);
             }
             ASTClass::MacroIfndef(ref id) => {
                 return write!(f, "#ifndef {}\n", id);
@@ -153,6 +167,9 @@ impl fmt::Display for ASTNode {
             }
             ASTClass::EndOfProgram => {
                 return write!(f, "");
+            }
+            ASTClass::Newline => {
+                return write!(f, "\n");
             }
             _ => {
                 panic!(

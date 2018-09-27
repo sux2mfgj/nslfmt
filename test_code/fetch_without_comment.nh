@@ -4,7 +4,8 @@
 declare fetch
 {
     output address[32];
-    input data[32];
+    input 
+        data[32];
 
     output instruction[32];
     input next_pc[32];
