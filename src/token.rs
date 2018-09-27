@@ -89,12 +89,28 @@ impl fmt::Display for Token {
             TokenClass::Identifire(ref id) => {
                 return write!(f, "{}", id);
             }
+            TokenClass::Number(ref num) => {
+                return write!(f, "{}", num);
+            }
             TokenClass::Symbol(Symbol::Input) => {
-                return write!(f, "input");
+                return write!(f, " input ");
+            }
+            TokenClass::Symbol(Symbol::Output) => {
+                return write!(f, " output ");
+            }
+            TokenClass::Symbol(Symbol::LeftSquareBracket) => {
+                return write!(f, "[ ");
+            }
+            TokenClass::Symbol(Symbol::RightSquareBracket) => {
+                return write!(f, " ]");
             }
             TokenClass::Symbol(Symbol::Semicolon) => {
                 return write!(f, ";");
             }
+            TokenClass::Operator(Operator::Slash) => {
+                return write!(f," / ");
+            }
+            //TODO
             _ => {
                 panic!("For the token {:?}, this function does not implemented yet.",
                        self);
