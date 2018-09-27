@@ -43,7 +43,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello \n{\n}".to_string();
+        let ans = "declare hello\n{\n}".to_string();
         assert_eq!(out, ans);
     }
 
@@ -60,7 +60,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello \n{\n\tinput ok;\n}".to_string();
+        let ans = "declare hello\n{\n\tinput ok;\n}".to_string();
         assert_eq!(out, ans);
     }
 
@@ -77,7 +77,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello \n{\n\tinput ok[2];\n}".to_string();
+        let ans = "declare hello\n{\n\tinput ok[2];\n}".to_string();
         assert_eq!(out, ans);
     }
 
@@ -94,14 +94,31 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello \n{\n\tinput ok[OK / 2];\n}".to_string();
+        let ans = "declare hello\n{\n\tinput ok[OK / 2];\n}".to_string();
         assert_eq!(out, ans);
     }
 
-    /*
+    #[test]
+    fn two_arguments() {
+        let mut b = "declare hello {input a; input b; func_in aa(a, b);}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        let p = Parser::new(&mut l);
+        let mut io = Cursor::new(Vec::new());
+        {
+            let mut g = Generator::new(p, &mut io);
+            g.output_node();
+        }
+        let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+
+        let ans = "declare hello\n{\n\tinput a;\n\tinput b;\n\tfunc_in aa(a, b);\n}".to_string();
+        assert_eq!(out, ans);
+
+    }
+
     #[test]
     fn new_by_file() {
-        let mut f = BufReader::new(File::open("test_code/fetch.nsl").unwrap());
+        let mut f = BufReader::new(File::open("test_code/ugly_declare_01.nsl").unwrap());
         let mut l = Lexer::new(&mut f);
 
         let p = Parser::new(&mut l);
@@ -111,8 +128,10 @@ mod generator_test {
             g.output_node();
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-        let ans = "declare hello_google2 \n{\n\tinput ok;\n\tfunc_in sugoi}"
+        let ans = "declare hello_google2\n{\n\tinput ok;\n\tfunc_in sugoi(ok);\n}".to_string();
+        assert_eq!(out, ans);
     }
+    /*
 
     #[test]
     fn output_declare_to_file() {

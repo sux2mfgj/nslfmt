@@ -63,7 +63,7 @@ impl fmt::Display for ASTNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.class {
             ASTClass::Declare(ref id, ref interfaces) => {
-                return write!(f, "declare {} {}", id, interfaces);
+                return write!(f, "declare {}{}", id, interfaces);
             }
             ASTClass::Identifire(ref s) => {
                 return write!(f, "{}", s);
@@ -87,6 +87,23 @@ impl fmt::Display for ASTNode {
                     }
                 }
                 return write!(f, "input {}[{}];\n", id, expr)
+            }
+            ASTClass::FuncIn(ref id, ref input_ids, ref output) => {
+                let str_input: Vec<String> = input_ids.iter().map(
+                    |ident| format!("{}", ident)).collect();
+                let args = str_input.connect(", ");
+
+                if let ASTClass::Identifire(ref s) = output.class {
+                    if s.is_empty() {
+                        return write!(f, "func_in {}({});\n", id, args);
+                    }
+                    else {
+                        return write!(f, "func_in {}({}): {}\n", id, args, output);
+                    }
+                }
+                else {
+                    panic!("UnExpectedToken at {}", line!());
+                }
             }
             ASTClass::Block(ref list, nest) => {
                 //TODO use nest
