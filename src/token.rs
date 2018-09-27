@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Symbol {
     Module,             // module
@@ -77,6 +79,26 @@ impl Token {
         Token {
             class: class,
             line: line,
+        }
+    }
+}
+
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.class {
+            TokenClass::Identifire(ref id) => {
+                return write!(f, "{}", id);
+            }
+            TokenClass::Symbol(Symbol::Input) => {
+                return write!(f, "input");
+            }
+            TokenClass::Symbol(Symbol::Semicolon) => {
+                return write!(f, ";");
+            }
+            _ => {
+                panic!("For the token {:?}, this function does not implemented yet.",
+                       self);
+            }
         }
     }
 }

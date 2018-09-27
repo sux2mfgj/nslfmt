@@ -243,9 +243,34 @@ impl<'a> Parser<'a> {
             TokenClass::Macro(Macro::Else) => {
                 return Ok(create_node!(ASTClass::MacroElse));
             }
+            TokenClass::Macro(Macro::Define) => {
+                let id = self.next_ast()?;
+                let val = self.get_string_for_define().unwrap();
+                return Ok(create_node!(ASTClass::MacroDefine(id, val)));
+            }
             _ => {
                 return Err(ASTError::UnExpectedToken(t, line!()));
             }
+        }
+    }
+
+    fn get_string_for_define(&mut self) -> Result<String, String>
+    {
+        let mut string = String::new();
+        loop {
+            let t = self.lexer.next_token_nl();
+            match t.class {
+                TokenClass::Newline | TokenClass::EndOfProgram => {
+                    return Ok(string.split_off(1));
+                }
+                TokenClass::Symbol(Symbol::Semicolon) => {
+                    string.push_str(";");
+                }
+                _ => {
+                    string.push_str(&format!(" {}", t));
+                }
+            }
+
         }
     }
 
@@ -692,71 +717,35 @@ mod parser_test {
     }
 
 
-    /*
-
     #[test]
-    fn ifndef_macro() {
-        let mut b = "#ifndef hello".as_bytes();
+    fn define_macro_nl() {
+        let mut b = "#define HELLO input ok;\n".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
+        let def_macro = create_node!(ASTClass::MacroDefine(
+                create_node!(ASTClass::Identifire("HELLO".to_string())),
+                "input ok;".to_string()));
         assert_eq!(
-                p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::MacroIfndef("hello".to_string())));
-        assert_eq!(
-                p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::EndOfProgram));
+            p.next_ast().unwrap(),
+            def_macro);
     }
 
     #[test]
-    fn else_macro() {
-        let mut b = "#else".as_bytes();
-        let mut l = Lexer::new(&mut b);
-        let mut p = Parser::new(&mut l);
-
-        assert_eq!(
-                p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::MacroElse));
-        assert_eq!(
-                p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::EndOfProgram));
-    }
-
-    #[test]
-    fn endif_macro() {
-        let mut b = "#endif".as_bytes();
-        let mut l = Lexer::new(&mut b);
-        let mut p = Parser::new(&mut l);
-
-        assert_eq!(
-                p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::MacroEndif));
-        assert_eq!(
-                p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::EndOfProgram));
-    }
-
-    #[test]
-    fn define_macro() {
+    fn define_macro_eof() {
         let mut b = "#define HELLO input ok;".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let mut define_arg = Vec::new();
-        define_arg.push(ASTNode::new(
-                    ASTClass::Input(
-                        "ok".to_string(),
-                        "1".to_string())));
+        let def_macro = create_node!(ASTClass::MacroDefine(
+                create_node!(ASTClass::Identifire("HELLO".to_string())),
+                "input ok;".to_string()));
         assert_eq!(
-                p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::MacroDefine(
-                        "HELLO".to_string(),
-                        define_arg)));
-        assert_eq!(
-                p.next_ast().unwrap(),
-                ASTNode::new(ASTClass::EndOfProgram));
+            p.next_ast().unwrap(),
+            def_macro);
     }
 
+    /*
     #[test]
     fn division() {
         let mut b = "define OK input test[10 / 2];";
