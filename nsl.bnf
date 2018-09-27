@@ -4,13 +4,12 @@ top-declarator  ::= <declare-definition>
                 |   <module-definition>
                 |   <macro>
 
-declare-definition ::= "declare" <id> "{" { <interfaces-definition> }* "}"
+declare-definition ::= "declare" <identifire> "{" { <interfaces-definition> }* "}"
 
-#- id
 interfaces-definition::=    <io-width-definition>
                         |   <io-function-declarator>
 
-io-wire-declarator  ::= <io-wire> <id> <width-defitinion> ";"
+io-wire-declarator  ::= <io-wire> <identifire> <width-defitinion> ";"
 
 io-wire     ::= "input"
             |   "inout"
@@ -19,20 +18,26 @@ io-wire     ::= "input"
 width-definition ::= [ "[" <width-expression> "]" ]
 
 width-expression    ::= <number>
-                    |   <width-expr> <width-operation> <width-expr>
+                    |   <width-expr> <operator> <width-expr>
 
-width-operation     ::= "/"
+operator            ::= "/"
                     |   "*"
+                    |   "+"
+                    |   "-"
+                    |   "<<"
+                    |   ">>"
+                    |   "^"
+                    |   "~"
 
-function-args       ::= [ <id> { "," <id> }* ]
-function-return     ::= [ ":" <id> ]
+function-args       ::= [ <identifire> { "," <identifire> }* ]
+function-return     ::= [ ":" <identifire> ]
 
-io-function-declarator  ::= <io-function> <id> "(" <function-args> ")" <function-return> ";"
+io-function-declarator  ::= <io-function> <identifire> "(" <function-args> ")" <function-return> ";"
 
 io-function ::= "func_in"
             |   "func_out"
 
-module-definition ::= "module" <id> "{" <module-expression> "}"
+module-definition ::= "module" <identifire> "{" <module-expression> "}"
 
 module-expression   ::= { <reg-wire-module-declaration> }* { <module-behavior> }*
 
@@ -43,21 +48,21 @@ reg-wire-module-declaration ::= <reg-wire-definition>
                             |   <state-declaration>
                             |   <func-declaration>
 
-reg-wire-definition ::= <reg-wire> <id> <width-declarator> [ "," <id> <width-declarator> ] ";"
+reg-wire-definition ::= <reg-wire> <identifire> <width-declarator> [ "," <identifire> <width-declarator> ] ";"
 
 reg-wire            ::= "reg" | "wire"
 
-module-declaration  ::= <id> <id> ";"
+module-declaration  ::= <identifire> <identifire> ";"
 
-struct-wire     ::= <id> <reg-wire> <id> ";"
+struct-wire     ::= <identifire> <reg-wire> <identifire> ";"
 
 proc-declaration    ::= "proc_name" <proc-information> { "," <proc-information> }* ";"
 
-proc-information    ::= <id> "(" <function-args> ")"
+proc-information    ::= <identifire> "(" <function-args> ")"
 
-state-declaration   ::= "state_name" <id> { "," <id> }* ";"
+state-declaration   ::= "state_name" <identifire> { "," <identifire> }* ";"
 
-func-declaration    ::= "func_self" <id> "(" <function-args> ")" <function-return> ";"
+func-declaration    ::= "func_self" <identifire> "(" <function-args> ")" <function-return> ";"
 
 module-behavior     ::= <assignment-expression>
                     |   <state-expression>
@@ -67,12 +72,25 @@ module-behavior     ::= <assignment-expression>
                     |   <return-declaration>
 
 assignment-expression   ::= <wire-reg-assignment> | <expression>
-wire-reg-assignment     ::= <id> <assigner> <expression> ";"
+wire-reg-assignment     ::= <identifire> <assigner> <expression> ";"
 assigner                ::= "=" | ":="
-expression              ::=
-# number
-# func
-#
+expression              ::= <number>
+                        |   <identifire>
+                        |   <expression> <operator> <expression>
 
+macro       ::= "#" <macro-syntax> <newline>
+macro-syntax    ::= <macro-define>
+                |   <macro-include>
+                |   <macro-ifdef>
+                |   <macro-ifndef>
+                |   <macro-undef>
+                |   "else"
+                |   "endif"
 
-macro       ::= "#" <macro-syntax>
+macro-define    ::= "define" <identifire> <define-pattern>
+define-pattern  ::= ?any-thing?
+macro-include   ::= "include" "\"" <file-path> "\""
+macro-ifdef     ::= "ifdef" <identifire>
+macro-ifndef    ::= "ifndef" <identifire>
+macro-undef     ::= "undef" <identifire>
+
