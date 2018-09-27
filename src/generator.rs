@@ -16,9 +16,16 @@ impl<'a, 'b> Generator<'a, 'b> {
         }
     }
 
-    pub fn output_node(&mut self) -> Result<usize, Error> {
-        let ast = self.parser.next_ast().unwrap();
-        self.writer.write(format!("{}", ast).as_bytes())
+    pub fn output_node(&mut self) {
+        loop {
+            let ast = self.parser.next_ast().unwrap();
+            if ast.class != ASTClass::EndOfProgram {
+                self.writer.write(format!("{}", ast).as_bytes());
+            }
+            else {
+                return;
+            }
+        }
     }
 }
 
@@ -49,7 +56,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello\n{\n}".to_string();
+        let ans = "declare hello\n{\n}\n".to_string();
         assert_eq!(out, ans);
     }
 
@@ -66,7 +73,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello\n{\n\tinput ok;\n}".to_string();
+        let ans = "declare hello\n{\n\tinput ok;\n}\n".to_string();
         assert_eq!(out, ans);
     }
 
@@ -83,7 +90,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello\n{\n\tinput ok[2];\n}".to_string();
+        let ans = "declare hello\n{\n\tinput ok[2];\n}\n".to_string();
         assert_eq!(out, ans);
     }
 
@@ -100,7 +107,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello\n{\n\tinput ok[OK / 2];\n}".to_string();
+        let ans = "declare hello\n{\n\tinput ok[OK / 2];\n}\n".to_string();
         assert_eq!(out, ans);
     }
 
@@ -117,7 +124,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello\n{\n\tinput a;\n\tinput b;\n\tfunc_in aa(a, b);\n}"
+        let ans = "declare hello\n{\n\tinput a;\n\tinput b;\n\tfunc_in aa(a, b);\n}\n"
             .to_string();
         assert_eq!(out, ans);
     }
@@ -135,7 +142,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
         let ans =
-            "declare hello_google2\n{\n\tinput ok;\n\tfunc_in sugoi(ok);\n}".to_string();
+            "declare hello_google2\n{\n\tinput ok;\n\tfunc_in sugoi(ok);\n}\n".to_string();
         assert_eq!(out, ans);
     }
 

@@ -1,0 +1,23 @@
+#ifndef __INCLUDED_FETCH_NH__
+#define __INCLUDED_FETCH_NH__
+
+declare fetch
+{
+    // for memory;
+    output address[32];
+    input data[32];
+
+    // for internal
+    output instruction[32];
+    input next_pc[32];
+
+    // for memory
+    func_out request_to_bus(address);
+    func_in enable(data);
+
+    // for internal
+    func_in request(next_pc);
+    func_out done(instruction);
+}
+
+#endif

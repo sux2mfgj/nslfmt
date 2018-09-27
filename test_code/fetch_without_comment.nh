@@ -1,0 +1,20 @@
+#ifndef __INCLUDED_FETCH_NH__
+#define __INCLUDED_FETCH_NH__
+
+declare fetch
+{
+    output address[32];
+    input data[32];
+
+    output instruction[32];
+    input next_pc[32];
+
+    func_out request_to_bus(address);
+    func_in enable(data);
+
+
+    func_in request(next_pc);
+    func_out done(instruction);
+}
+
+#endif

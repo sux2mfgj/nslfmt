@@ -45,6 +45,7 @@ pub enum ASTClass {
     MacroDefine(Box<ASTNode>, String),
     //          operand     , operation   , operand
     Expression(Box<ASTNode>, Box<ASTNode>, Box<ASTNode>),
+    Newline,
     EndOfProgram,
 }
 
@@ -87,6 +88,16 @@ impl fmt::Display for ASTNode {
                 }
                 return write!(f, "input {}[{}];\n", id, expr);
             }
+            ASTClass::Output(ref id, ref expr) => {
+                if let ASTClass::Number(ref width) = expr.class {
+                    if width == "1" {
+                        return write!(f, "output {};\n", id);
+                    } else {
+                        return write!(f, "output {}[{}];\n", id, expr);
+                    }
+                }
+                return write!(f, "output {}[{}];\n", id, expr);
+            }
             ASTClass::FuncIn(ref id, ref input_ids, ref output) => {
                 let str_input: Vec<String> =
                     input_ids.iter().map(|ident| format!("{}", ident)).collect();
@@ -96,7 +107,22 @@ impl fmt::Display for ASTNode {
                     if s.is_empty() {
                         return write!(f, "func_in {}({});\n", id, args);
                     } else {
-                        return write!(f, "func_in {}({}): {}\n", id, args, output);
+                        return write!(f, "func_in {}({}) : {};\n", id, args, output);
+                    }
+                } else {
+                    panic!("UnExpectedToken at {}", line!());
+                }
+            }
+            ASTClass::FuncOut(ref id, ref input_ids, ref output) => {
+                let str_input: Vec<String> =
+                    input_ids.iter().map(|ident| format!("{}", ident)).collect();
+                let args = str_input.connect(", ");
+
+                if let ASTClass::Identifire(ref s) = output.class {
+                    if s.is_empty() {
+                        return write!(f, "func_out {}({});\n", id, args);
+                    } else {
+                        return write!(f, "func_out {}({}) : {};\n", id, args, output);
                     }
                 } else {
                     panic!("UnExpectedToken at {}", line!());
@@ -109,7 +135,21 @@ impl fmt::Display for ASTNode {
                     list_str.push_str(&format!("{}{}", nest_tabs, node));
                 }
 
-                return write!(f, "\n{{\n{}}}", list_str);
+                return write!(f, "\n{{\n{}}}\n", list_str);
+            }
+            ASTClass::MacroIfndef(ref id) => {
+                return write!(f, "#ifndef {}\n", id);
+            }
+            ASTClass::MacroDefine(ref id, ref string) => {
+                if string.len() == 0 {
+                    return write!(f, "#define {}\n", id);
+                }
+                else {
+                    return write!(f, "#define {} {}\n", id, string);
+                }
+            }
+            ASTClass::MacroEndif => {
+                return write!(f, "#endif\n");
             }
             ASTClass::EndOfProgram => {
                 return write!(f, "");

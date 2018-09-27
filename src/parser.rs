@@ -213,8 +213,14 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::Sharp) => {
                 return self.generate_macro_astnode();
             }
+            TokenClass::Operator(op) => {
+                return Ok(create_node!(ASTClass::Operator(op)));
+            }
+            TokenClass::Newline => {
+                return Ok(create_node!(ASTClass::Newline));
+            }
             _ => {
-                return Err(ASTError::UnExpectedToken(t, line!()));
+                panic!("unexptected token: {}", t);
             }
         }
     }
@@ -224,29 +230,36 @@ impl<'a> Parser<'a> {
         match t.class {
             TokenClass::Macro(Macro::Include) => {
                 let path = self.next_ast()?;
+                let nl = self.lexer.next_token_nl();
                 return Ok(create_node!(ASTClass::MacroInclude(path)));
             }
             TokenClass::Macro(Macro::Undef) => {
                 let id = self.next_ast()?;
+                let nl = self.lexer.next_token_nl();
                 return Ok(create_node!(ASTClass::MacroUndef(id)));
             }
             TokenClass::Macro(Macro::Ifdef) => {
                 let id = self.next_ast()?;
+                let nl = self.lexer.next_token_nl();
                 return Ok(create_node!(ASTClass::MacroIfdef(id)));
             }
             TokenClass::Macro(Macro::Ifndef) => {
                 let id = self.next_ast()?;
+                let nl = self.lexer.next_token_nl();
                 return Ok(create_node!(ASTClass::MacroIfndef(id)));
             }
             TokenClass::Macro(Macro::Endif) => {
+                let nl = self.lexer.next_token_nl();
                 return Ok(create_node!(ASTClass::MacroEndif));
             }
             TokenClass::Macro(Macro::Else) => {
+                let nl = self.lexer.next_token_nl();
                 return Ok(create_node!(ASTClass::MacroElse));
             }
             TokenClass::Macro(Macro::Define) => {
                 let id = self.next_ast()?;
-                let val = self.get_string_for_define().unwrap();
+                let val = self.get_string_or_newline_for_define().unwrap();
+                let nl = self.lexer.next_token_nl();
                 return Ok(create_node!(ASTClass::MacroDefine(id, val)));
             }
             _ => {
@@ -255,13 +268,18 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn get_string_for_define(&mut self) -> Result<String, String> {
+    fn get_string_or_newline_for_define(&mut self) -> Result<String, String> {
         let mut string = String::new();
         loop {
             let t = self.lexer.next_token_nl();
             match t.class {
                 TokenClass::Newline | TokenClass::EndOfProgram => {
-                    return Ok(string.split_off(1));
+                    if string.len() == 0 {
+                        return Ok(string);
+                    }
+                    else {
+                        return Ok(string.split_off(1));
+                    }
                 }
                 _ => {
                     string.push_str(&format!("{}", t));
@@ -734,6 +752,18 @@ mod parser_test {
                 create_node!(ASTClass::Identifire("AXI4_LITE_MASTER_INTERFACE".to_string())),
                 "output awvalid; input awready; output awaddr[ AXI_ADDR_WIDTH ]; output awprot[ 3 ]; output wvalid; input wready; output wdata[ AXI_DATA_WIDTH ]; output wstrb[ AXI_DATA_WIDTH / 8 ]; input bvalid; output bready; input bresp[ 2 ]; output arvalid; input arready; output araddr[ AXI_ADDR_WIDTH ]; output arprot[ 3 ]; input rvalid; output rready; input rdata[ AXI_DATA_WIDTH ]; input rresp[ 2 ];".to_string()));
 
+        assert_eq!(p.next_ast().unwrap(), def_macro);
+    }
+
+    #[test]
+    fn define_macro3() {
+        let mut b = "#define HELLO_ONLY".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let def_macro = create_node!(ASTClass::MacroDefine(
+                create_node!(ASTClass::Identifire("HELLO_ONLY".to_string())),
+                "".to_string()));
         assert_eq!(p.next_ast().unwrap(), def_macro);
     }
 }
