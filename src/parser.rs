@@ -9,6 +9,7 @@ pub enum ASTError{
 
 pub struct Parser<'a> {
     lexer: &'a mut Lexer<'a>,
+    number_of_next: usize,
 }
 
 macro_rules! create_node {
@@ -19,7 +20,10 @@ macro_rules! create_node {
 
 impl<'a> Parser<'a> {
     pub fn new(lexer: &'a mut Lexer<'a>) -> Parser<'a> {
-        Parser { lexer: lexer }
+        Parser {
+            lexer: lexer,
+            number_of_next: 1,
+        }
     }
 
     pub fn next_ast(&mut self) -> Result<Box<ASTNode>, ASTError> {
@@ -175,11 +179,16 @@ impl<'a> Parser<'a> {
             }
             TokenClass::Symbol(Symbol::OpeningBrace) => {
                 let mut content = Vec::new();
+                self.number_of_next += 1;
                 loop {
                     match self.lexer.check_next_token().unwrap().class {
                         TokenClass::Symbol(Symbol::ClosingBrace) => {
                             self.lexer.next_token();
-                            return Ok(create_node!(ASTClass::Block(content)));
+                            self.number_of_next -= 1;
+                            return Ok(
+                                create_node!(ASTClass::Block(
+                                        content,
+                                        self.number_of_next)));
                         }
                         TokenClass::EndOfProgram => {
                             return Err(ASTError::UnExpectedToken(
@@ -308,8 +317,9 @@ impl<'a> Parser<'a> {
                 match t.class {
                     TokenClass::Operator(op) => {
                         let right = self.next_ast()?;
-                        let expr = ASTNode::new(ASTClass::Expression(node, op, right));
-                        return self.create_expression(Box::new(expr));
+                        let op_node = create_node!(ASTClass::Operator(op));
+                        let expr = create_node!(ASTClass::Expression(node, op_node, right));
+                        return self.create_expression(expr);
                     }
                     _ => {
                         return Err(ASTError::UnExpectedToken(t, line!()));
@@ -351,7 +361,7 @@ mod parser_test {
             create_node!(ASTClass::Number("1".to_string()))
         )));
 
-        let block = create_node!(ASTClass::Block(interfaces));
+        let block = create_node!(ASTClass::Block(interfaces, 1));
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
         assert_eq!(
             p.next_ast().unwrap(),
@@ -371,7 +381,7 @@ mod parser_test {
             create_node!(ASTClass::Number("2".to_string()))
         )));
 
-        let block = create_node!(ASTClass::Block(interfaces));
+        let block = create_node!(ASTClass::Block(interfaces, 1));
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
 
         assert_eq!(
@@ -387,7 +397,7 @@ mod parser_test {
         let mut p = Parser::new(&mut l);
 
         let left = create_node!(ASTClass::Identifire("OK".to_string()));
-        let op = Operator::Slash;
+        let op = create_node!(ASTClass::Operator(Operator::Slash));
         let right = create_node!(ASTClass::Number("2".to_string()));
         let expr = create_node!(ASTClass::Expression(left, op, right));
 
@@ -398,7 +408,7 @@ mod parser_test {
         )));
 
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
-        let block = create_node!(ASTClass::Block(interfaces));
+        let block = create_node!(ASTClass::Block(interfaces, 1));
 
         assert_eq!(
             p.next_ast().unwrap(),
@@ -413,12 +423,14 @@ mod parser_test {
         let mut p = Parser::new(&mut l);
 
         let left = create_node!(ASTClass::Identifire("OK".to_string()));
-        let op = Operator::Slash;
+        let op = create_node!(ASTClass::Operator(Operator::Slash));
         let right = create_node!(ASTClass::Number("4".to_string()));
         let expr = create_node!(ASTClass::Expression(left, op, right));
 
         let right2 = create_node!(ASTClass::Number("2".to_string()));
-        let expr2 = create_node!(ASTClass::Expression(expr, Operator::Asterisk, right2));
+
+        let op_ast = create_node!(ASTClass::Operator(Operator::Asterisk));
+        let expr2 = create_node!(ASTClass::Expression(expr, op_ast, right2));
 
         let mut interfaces = Vec::new();
         interfaces.push(create_node!(ASTClass::Input(
@@ -427,7 +439,7 @@ mod parser_test {
         )));
 
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
-        let block = create_node!(ASTClass::Block(interfaces));
+        let block = create_node!(ASTClass::Block(interfaces, 1));
 
         assert_eq!(
             p.next_ast().unwrap(),
@@ -455,7 +467,7 @@ mod parser_test {
             p.next_ast().unwrap(),
             create_node!(ASTClass::Declare(
                 create_node!(ASTClass::Identifire("ok".to_string())),
-                create_node!(ASTClass::Block(interfaces))
+                create_node!(ASTClass::Block(interfaces, 1))
             ))
         );
     }
@@ -486,7 +498,7 @@ mod parser_test {
             p.next_ast().unwrap(),
             create_node!(ASTClass::Declare(
                     create_node!(ASTClass::Identifire("ok".to_string())),
-                    create_node!(ASTClass::Block(interfaces))
+                    create_node!(ASTClass::Block(interfaces, 1))
                     ))
             );
     }
@@ -520,7 +532,7 @@ mod parser_test {
             p.next_ast().unwrap(),
             create_node!(ASTClass::Declare(
                     create_node!(ASTClass::Identifire("ok".to_string())),
-                    create_node!(ASTClass::Block(interfaces)))));
+                    create_node!(ASTClass::Block(interfaces, 1)))));
     }
 
     #[test]
@@ -552,7 +564,7 @@ mod parser_test {
             p.next_ast().unwrap(),
             create_node!(ASTClass::Declare(
                     create_node!(ASTClass::Identifire("ok".to_string())),
-                    create_node!(ASTClass::Block(interfaces)))));
+                    create_node!(ASTClass::Block(interfaces, 1)))));
     }
 
 
@@ -567,7 +579,7 @@ mod parser_test {
             p.next_ast().unwrap(),
             create_node!(ASTClass::Declare(
                     create_node!(ASTClass::Identifire("ok".to_string())),
-                    create_node!(ASTClass::Block(interfaces)))));
+                    create_node!(ASTClass::Block(interfaces, 1)))));
     }
 
     #[test]
@@ -615,7 +627,7 @@ mod parser_test {
             p.next_ast().unwrap(),
             create_node!(ASTClass::Declare(
                     create_node!(ASTClass::Identifire("hel".to_string())),
-                    create_node!(ASTClass::Block(interfaces)))));
+                    create_node!(ASTClass::Block(interfaces, 1)))));
     }
 
     #[test]
@@ -628,7 +640,7 @@ mod parser_test {
         let path = create_node!(ASTClass::String("hello.h".to_string()));
         let id = create_node!(ASTClass::Declare(
                     create_node!(ASTClass::Identifire("ok".to_string())),
-                    create_node!(ASTClass::Block(Vec::new()))));
+                    create_node!(ASTClass::Block(Vec::new(), 1))));
         let include = create_node!(ASTClass::MacroInclude(path));
         assert_eq!(
                 p.next_ast().unwrap(),

@@ -1,4 +1,4 @@
-use token::Operator;
+use token;
 use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -14,9 +14,9 @@ pub enum ASTClass {
      *          func_out ok() : hello;
      *      }
      */
-    Block(Vec<Box<ASTNode>>),
+    Block(Vec<Box<ASTNode>>, usize),
     WidthBlock(Box<ASTNode>),
-    Operator(Operator),
+    Operator(token::Operator),
 
     // identifire, block
     Declare(Box<ASTNode>, Box<ASTNode>),
@@ -44,7 +44,7 @@ pub enum ASTClass {
     MacroEndif,
     MacroDefine(Box<ASTNode>, String),
     //          operand     , operation   , operand
-    Expression(Box<ASTNode>, Operator, Box<ASTNode>),
+    Expression(Box<ASTNode>, Box<ASTNode>, Box<ASTNode>),
     EndOfProgram,
 }
 
@@ -68,10 +68,32 @@ impl fmt::Display for ASTNode {
             ASTClass::Identifire(ref s) => {
                 return write!(f, "{}", s);
             }
-            ASTClass::Block(ref list) => {
+            ASTClass::Number(ref num) => {
+                return write!(f, "{}", num);
+            }
+            ASTClass::Operator(ref op) => {
+                return write!(f, "{}", op);
+            }
+            ASTClass::Expression(ref operand1, ref operator, ref operand2) => {
+                return write!(f, "{} {} {}", operand1, operator, operand2)
+            }
+            ASTClass::Input(ref id, ref expr) => {
+                if let ASTClass::Number(ref width) = expr.class {
+                    if width == "1" {
+                        return write!(f, "input {};\n", id);
+                    }
+                    else {
+                        return write!(f, "input {}[{}];\n", id, expr)
+                    }
+                }
+                return write!(f, "input {}[{}];\n", id, expr)
+            }
+            ASTClass::Block(ref list, nest) => {
+                //TODO use nest
                 let mut list_str = String::new();
+                let nest_tabs = "\t".repeat(nest);
                 for node in list {
-                    list_str.push_str(&format!("{}\n", node));
+                    list_str.push_str(&format!("{}{}", nest_tabs, node));
                 }
 
                 return write!(f, "\n{{\n{}}}", list_str);

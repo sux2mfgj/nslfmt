@@ -28,7 +28,7 @@ mod generator_test {
     use lexer::*;
 
     use std::fs::File;
-    use std::io::{self, BufWriter, Cursor};
+    use std::io::{self, BufWriter, BufReader, Cursor};
 
     #[test]
     fn new_by_stdout() {
@@ -36,7 +36,6 @@ mod generator_test {
         let mut l = Lexer::new(&mut b);
 
         let p = Parser::new(&mut l);
-        //let mut io = io::stdout();
         let mut io = Cursor::new(Vec::new());
         {
             let mut g = Generator::new(p, &mut io);
@@ -45,21 +44,74 @@ mod generator_test {
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
         let ans = "declare hello \n{\n}".to_string();
+        assert_eq!(out, ans);
+    }
 
+    #[test]
+    fn aware_indent_01() {
+        let mut b = "declare hello {input ok;}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        let p = Parser::new(&mut l);
+        let mut io = Cursor::new(Vec::new());
+        {
+            let mut g = Generator::new(p, &mut io);
+            g.output_node();
+        }
+        let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+
+        let ans = "declare hello \n{\n\tinput ok;\n}".to_string();
+        assert_eq!(out, ans);
+    }
+
+    #[test]
+    fn aware_indent_02() {
+        let mut b = "declare hello {input ok[2];}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        let p = Parser::new(&mut l);
+        let mut io = Cursor::new(Vec::new());
+        {
+            let mut g = Generator::new(p, &mut io);
+            g.output_node();
+        }
+        let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+
+        let ans = "declare hello \n{\n\tinput ok[2];\n}".to_string();
+        assert_eq!(out, ans);
+    }
+
+    #[test]
+    fn aware_indent_03() {
+        let mut b = "declare hello {input ok[OK / 2];}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        let p = Parser::new(&mut l);
+        let mut io = Cursor::new(Vec::new());
+        {
+            let mut g = Generator::new(p, &mut io);
+            g.output_node();
+        }
+        let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+
+        let ans = "declare hello \n{\n\tinput ok[OK / 2];\n}".to_string();
         assert_eq!(out, ans);
     }
 
     /*
     #[test]
     fn new_by_file() {
-        let mut b = "declare hello {input ok; func_in hh(ok);}".as_bytes();
-        let mut l = Lexer::new(&mut b);
+        let mut f = BufReader::new(File::open("test_code/fetch.nsl").unwrap());
+        let mut l = Lexer::new(&mut f);
 
         let p = Parser::new(&mut l);
-        let f = File::open("test_code/fetch.nsl").unwrap();
-        let mut io = BufWriter::new(f);
-
-        let _g = Generator::new(p, &mut io);
+        let mut io = Cursor::new(Vec::new());
+        {
+            let mut g = Generator::new(p, &mut io);
+            g.output_node();
+        }
+        let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+        let ans = "declare hello_google2 \n{\n\tinput ok;\n\tfunc_in sugoi}"
     }
 
     #[test]

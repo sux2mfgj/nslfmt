@@ -40,6 +40,19 @@ pub enum Operator {
     Tilde,      // ~
 }
 
+impl fmt::Display for Operator {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Operator::Slash => {
+                return write!(f, "/");
+            }
+            _ => {
+                panic!("the operator ({}) is not implemented yet", self);
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Macro {
     Include, // #include
