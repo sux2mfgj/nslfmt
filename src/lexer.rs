@@ -20,28 +20,21 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn next_token(&mut self) -> Token {
-        while self.tokens.len() == 0 {
-            self.supply_tokens();
-        }
-        if let Some(next_token) = self.tokens.pop_front() {
-            if next_token.class == TokenClass::Newline {
-                return self.next_token();
-            } else {
-                return next_token;
+        self.pass_newlines();
+        let t = self.tokens.pop_front();
+        match t {
+            Some(token) => {
+                return token;
             }
-        } else {
-            panic!("invalid tokens.pop_front()");
+            None => {
+                panic!("no tokens");
+            }
         }
     }
 
     pub fn check_next_token(&mut self) -> Option<&Token> {
         while self.tokens.len() == 0 {
             self.supply_tokens();
-        }
-
-        if self.tokens.front().unwrap().class == TokenClass::Newline {
-            self.tokens.pop_front();
-            return self.check_next_token();
         }
         self.tokens.front()
     }
@@ -55,6 +48,16 @@ impl<'a> Lexer<'a> {
             return next_token;
         } else {
             panic!("token notfound");
+        }
+    }
+
+    pub fn pass_newlines(&mut self) {
+        while self.tokens.len() == 0 {
+            self.supply_tokens();
+        }
+        if self.tokens.front().unwrap().class == TokenClass::Newline {
+            self.tokens.pop_front();
+            return self.pass_newlines();
         }
     }
 
@@ -807,12 +810,15 @@ mod lexer_test {
         );
         assert_eq!(
             l.check_next_token(),
-            Some(&Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 2))
+            Some(&Token::new(TokenClass::Newline, 1)));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 2)
         );
 
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 2)
+            Token::new(TokenClass::EndOfProgram, 2)
         );
     }
 

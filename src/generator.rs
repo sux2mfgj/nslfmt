@@ -56,7 +56,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello\n{\n}\n".to_string();
+        let ans = "\ndeclare hello\n{\n}\n\n".to_string();
         assert_eq!(out, ans);
     }
 
@@ -73,7 +73,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello\n{\n\tinput ok;\n}\n".to_string();
+        let ans = "\ndeclare hello\n{\n\tinput ok;\n}\n\n".to_string();
         assert_eq!(out, ans);
     }
 
@@ -90,7 +90,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello\n{\n\tinput ok[2];\n}\n".to_string();
+        let ans = "\ndeclare hello\n{\n\tinput ok[2];\n}\n\n".to_string();
         assert_eq!(out, ans);
     }
 
@@ -107,7 +107,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello\n{\n\tinput ok[OK / 2];\n}\n".to_string();
+        let ans = "\ndeclare hello\n{\n\tinput ok[OK / 2];\n}\n\n".to_string();
         assert_eq!(out, ans);
     }
 
@@ -124,7 +124,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "declare hello\n{\n\tinput a;\n\tinput b;\n\tfunc_in aa(a, b);\n}\n"
+        let ans = "\ndeclare hello\n{\n\tinput a;\n\tinput b;\n\tfunc_in aa(a, b);\n}\n\n"
             .to_string();
         assert_eq!(out, ans);
     }
@@ -142,7 +142,7 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
         let ans =
-            "declare hello_google2\n{\n\tinput ok;\n\tfunc_in sugoi(ok);\n}\n".to_string();
+            "\ndeclare hello_google2\n{\n\tinput ok;\n\tfunc_in sugoi(ok);\n}\n\n".to_string();
         assert_eq!(out, ans);
     }
 
