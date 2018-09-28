@@ -15,7 +15,6 @@ pub enum ASTClass {
      *      }
      */
     Block(Vec<Box<ASTNode>>, usize),
-    WidthBlock(Box<ASTNode>),
     Operator(token::Operator),
 
     // identifire, block
@@ -105,7 +104,8 @@ impl fmt::Display for ASTNode {
             ASTClass::FuncIn(ref id, ref input_ids, ref output) => {
                 let str_input: Vec<String> =
                     input_ids.iter().map(|ident| format!("{}", ident)).collect();
-                let args = str_input.connect(", ");
+                //let args = str_input.connect(", ");
+                let args = str_input.join(", ");
 
                 if let ASTClass::Identifire(ref s) = output.class {
                     if s.is_empty() {
@@ -120,7 +120,7 @@ impl fmt::Display for ASTNode {
             ASTClass::FuncOut(ref id, ref input_ids, ref output) => {
                 let str_input: Vec<String> =
                     input_ids.iter().map(|ident| format!("{}", ident)).collect();
-                let args = str_input.connect(", ");
+                let args = str_input.join(", ");
 
                 if let ASTClass::Identifire(ref s) = output.class {
                     if s.is_empty() {
@@ -140,10 +140,9 @@ impl fmt::Display for ASTNode {
                     match node.class {
                         ASTClass::Newline => {
                             if double_newline_flag {
-                            list_str.push_str("\n");
-                            double_newline_flag = false;
-                            }
-                            else {
+                                list_str.push_str("\n");
+                                double_newline_flag = false;
+                            } else {
                                 double_newline_flag = true;
                                 continue;
                             }
@@ -170,8 +169,7 @@ impl fmt::Display for ASTNode {
             ASTClass::MacroDefine(ref id, ref string) => {
                 if string.len() == 0 {
                     return write!(f, "#define {}\n", id);
-                }
-                else {
+                } else {
                     return write!(f, "#define {} {}\n", id, string);
                 }
             }

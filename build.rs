@@ -1,8 +1,8 @@
-use std::fs::File;
 use std::env;
-use std::process::Command;
-use std::path::PathBuf;
+use std::fs::File;
 use std::io::Write;
+use std::path::PathBuf;
+use std::process::Command;
 
 fn main() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());

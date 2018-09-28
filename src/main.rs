@@ -1,9 +1,9 @@
 extern crate getopts;
 use getopts::Options;
 
+use std::env;
 use std::fs::File;
 use std::io::BufReader;
-use std::env;
 use std::process;
 
 mod ast;
@@ -33,14 +33,13 @@ fn print_usage(opts: Options) {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let program = args[0].clone();
     let mut opts = Options::new();
     opts.optflag("h", "help", "print this help menu");
     opts.optflag("V", "version", "print version");
 
     let matches = match opts.parse(&args[1..]) {
-        Ok(m) => {m}
-        Err(f) => {panic!(f.to_string())}
+        Ok(m) => m,
+        Err(f) => panic!(f.to_string()),
     };
 
     if matches.opt_present("h") {
@@ -70,11 +69,16 @@ fn main() {
     let mut b = BufReader::new(fd);
     let mut l = Lexer::new(&mut b);
 
-    let mut p = Parser::new(&mut l);
+    let p = Parser::new(&mut l);
     let mut io = std::io::stdout();
 
     {
         let mut g = Generator::new(p, &mut io);
-        g.output_node();
+        match g.output_node() {
+            Ok(()) => {}
+            Err(e) => {
+                panic!("{}", e);
+            }
+        }
     }
 }

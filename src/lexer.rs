@@ -192,12 +192,15 @@ impl<'a> Lexer<'a> {
                                     it.next();
                                     let comment = self.get_string_until_newline(&mut it);
                                     self.tokens.push_back(Token::new(
-                                                TokenClass::Comment(comment), self.line));
+                                        TokenClass::Comment(comment),
+                                        self.line,
+                                    ));
                                 }
                                 _ => {
                                     self.tokens.push_back(Token::new(
-                                                TokenClass::Operator(Operator::Slash),
-                                                self.line));
+                                        TokenClass::Operator(Operator::Slash),
+                                        self.line,
+                                    ));
                                 }
                             }
                         }
@@ -211,8 +214,9 @@ impl<'a> Lexer<'a> {
                     }
                     '\'' => {
                         self.tokens.push_back(Token::new(
-                                    TokenClass::Symbol(Symbol::SingleQuote),
-                                    self.line));
+                            TokenClass::Symbol(Symbol::SingleQuote),
+                            self.line,
+                        ));
                         it.next();
                     }
                     '\n' => {
@@ -261,18 +265,24 @@ impl<'a> Lexer<'a> {
         }
     }
     fn get_number_token<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> TokenClass {
-
         let mut number = Lexer::get_number(iter);
         if let Some(&c) = iter.peek() {
             match c {
                 '\'' => {
                     iter.next();
                     if let Some(c_next) = iter.next() {
-                        if (c_next == 'x') | (c_next == 'b') | (c_next == 'h') | (c_next == 'd') {
-                            number.push_str(&format!("'{}{}", c_next, Lexer::get_number(iter)));
+                        if (c_next == 'x')
+                            | (c_next == 'b')
+                            | (c_next == 'h')
+                            | (c_next == 'd')
+                        {
+                            number.push_str(&format!(
+                                "'{}{}",
+                                c_next,
+                                Lexer::get_number(iter)
+                            ));
                             return TokenClass::Number(number);
-                        }
-                        else {
+                        } else {
                             panic!("unexptected character {}", c_next);
                         }
                     }
@@ -296,8 +306,7 @@ impl<'a> Lexer<'a> {
             if c_next.is_digit(16) | (c_next == '_') {
                 number.push_str(&c_next.to_string());
                 iter.next();
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -305,34 +314,15 @@ impl<'a> Lexer<'a> {
         number
     }
 
-    fn get_verilog_style_cardinal<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> Result<String, &str> {
-        if let Some(&c) = iter.peek() {
-            if c == '\'' {
-                iter.next();
-            }
-            else {
-                return Err("this is not verilog style number");
-            }
-        }
-        else {
-            panic!("error");
-        }
-
-        if let Some(c) = iter.next() {
-            if (c == 'x') | (c == 'b') | (c == 'h') | (c == 'd') {
-                return Ok(format!("'{}", c));
-            }
-        }
-        panic!("an unknown character is detected");
-    }
-
-    fn get_string_until_newline<T: Iterator<Item = char>>(&self, iter: &mut Peekable<T>) -> String {
+    fn get_string_until_newline<T: Iterator<Item = char>>(
+        &self,
+        iter: &mut Peekable<T>,
+    ) -> String {
         let mut word = String::new();
         while let Some(&c_next) = iter.peek() {
             if c_next == '\n' {
                 break;
-            }
-            else {
+            } else {
                 word.push_str(&c_next.to_string());
                 iter.next();
             }
@@ -889,16 +879,14 @@ mod lexer_test {
         );
         assert_eq!(
             l.check_next_token(),
-            Some(&Token::new(TokenClass::Newline, 1)));
+            Some(&Token::new(TokenClass::Newline, 1))
+        );
         assert_eq!(
             l.next_token(),
             Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 2)
         );
 
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::EndOfProgram, 2)
-        );
+        assert_eq!(l.next_token(), Token::new(TokenClass::EndOfProgram, 2));
     }
 
     #[test]
@@ -947,46 +935,57 @@ mod lexer_test {
         let mut b = "declare hello {
                 // this is inputs.
                 input ok[12];
-            }".as_bytes();
+            }"
+            .as_bytes();
         let mut l = Lexer::new(&mut b);
 
         assert_eq!(
-                l.next_token(),
-                Token::new(TokenClass::Symbol(Symbol::Declare), 1));
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Declare), 1)
+        );
         assert_eq!(
-                l.next_token(),
-                Token::new(TokenClass::Identifire("hello".to_string()), 1));
+            l.next_token(),
+            Token::new(TokenClass::Identifire("hello".to_string()), 1)
+        );
         assert_eq!(
-                l.next_token(),
-                Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 1));
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 1)
+        );
         assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 1));
         assert_eq!(
-                l.next_token(),
-                Token::new(TokenClass::Comment(" this is inputs.".to_string()), 2));
+            l.next_token(),
+            Token::new(TokenClass::Comment(" this is inputs.".to_string()), 2)
+        );
         assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 2));
         assert_eq!(
-                l.next_token(),
-                Token::new(TokenClass::Symbol(Symbol::Input), 3));
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Input), 3)
+        );
         assert_eq!(
-                l.next_token(),
-                Token::new(TokenClass::Identifire("ok".to_string()), 3));
+            l.next_token(),
+            Token::new(TokenClass::Identifire("ok".to_string()), 3)
+        );
         assert_eq!(
-                l.next_token(),
-                Token::new(TokenClass::Symbol(Symbol::LeftSquareBracket), 3));
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::LeftSquareBracket), 3)
+        );
         assert_eq!(
-                l.next_token(),
-                Token::new(TokenClass::Number("12".to_string()), 3));
+            l.next_token(),
+            Token::new(TokenClass::Number("12".to_string()), 3)
+        );
         assert_eq!(
-                l.next_token(),
-                Token::new(TokenClass::Symbol(Symbol::RightSquareBracket), 3));
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::RightSquareBracket), 3)
+        );
         assert_eq!(
             l.next_token(),
             Token::new(TokenClass::Symbol(Symbol::Semicolon), 3)
         );
         assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 3));
         assert_eq!(
-                l.next_token(),
-                Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 4));
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 4)
+        );
     }
 
     // 2'b00
@@ -1001,20 +1000,27 @@ mod lexer_test {
         );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Define), 1));
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()), 1)
+            Token::new(TokenClass::Macro(Macro::Define), 1)
         );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1));
+            Token::new(
+                TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()),
+                1
+            )
+        );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Number("2'b00".to_string()), 1));
+            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1)
+        );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 1));
+            Token::new(TokenClass::Number("2'b00".to_string()), 1)
+        );
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::RightParen), 1)
+        );
     }
 
     // 4'hf
@@ -1029,20 +1035,27 @@ mod lexer_test {
         );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Define), 1));
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()), 1)
+            Token::new(TokenClass::Macro(Macro::Define), 1)
         );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1));
+            Token::new(
+                TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()),
+                1
+            )
+        );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Number("4'hf".to_string()), 1));
+            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1)
+        );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 1));
+            Token::new(TokenClass::Number("4'hf".to_string()), 1)
+        );
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::RightParen), 1)
+        );
     }
 
     // 0b1000
@@ -1057,20 +1070,27 @@ mod lexer_test {
         );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Define), 1));
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()), 1)
+            Token::new(TokenClass::Macro(Macro::Define), 1)
         );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1));
+            Token::new(
+                TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()),
+                1
+            )
+        );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Number("0b1000".to_string()), 1));
+            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1)
+        );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 1));
+            Token::new(TokenClass::Number("0b1000".to_string()), 1)
+        );
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::RightParen), 1)
+        );
     }
 
     // 0x1000
@@ -1085,19 +1105,26 @@ mod lexer_test {
         );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Define), 1));
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()), 1)
+            Token::new(TokenClass::Macro(Macro::Define), 1)
         );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1));
+            Token::new(
+                TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()),
+                1
+            )
+        );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Number("0x1000".to_string()), 1));
+            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1)
+        );
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 1));
+            Token::new(TokenClass::Number("0x1000".to_string()), 1)
+        );
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::RightParen), 1)
+        );
     }
 }

@@ -71,7 +71,7 @@ impl<'a> Parser<'a> {
                     }
                     TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                         let width = self.next_ast()?;
-                        let semicolon = self.lexer.next_token();
+                        let _semicolon = self.lexer.next_token();
                         return Ok(create_node!(ASTClass::Input(id, width)));
                     }
                     _ => {
@@ -81,9 +81,6 @@ impl<'a> Parser<'a> {
                         ));
                     }
                 }
-
-                let width = self.next_ast()?;
-                return Ok(create_node!(ASTClass::Input(id, width)));
             }
             //TODO use macro. almost same with Input and InOut.
             TokenClass::Symbol(Symbol::Output) => {
@@ -99,7 +96,7 @@ impl<'a> Parser<'a> {
                     }
                     TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                         let width = self.next_ast()?;
-                        let semicolon = self.lexer.next_token();
+                        let _semicolon = self.lexer.next_token();
                         return Ok(create_node!(ASTClass::Output(id, width)));
                     }
                     _ => {
@@ -109,9 +106,6 @@ impl<'a> Parser<'a> {
                         ));
                     }
                 }
-
-                let width = self.next_ast()?;
-                return Ok(create_node!(ASTClass::Output(id, width)));
             }
             //TODO use macro
             TokenClass::Symbol(Symbol::InOut) => {
@@ -127,7 +121,7 @@ impl<'a> Parser<'a> {
                     }
                     TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                         let width = self.next_ast()?;
-                        let semicolon = self.lexer.next_token();
+                        let _semicolon = self.lexer.next_token();
                         return Ok(create_node!(ASTClass::InOut(id, width)));
                     }
                     _ => {
@@ -137,9 +131,6 @@ impl<'a> Parser<'a> {
                         ));
                     }
                 }
-
-                let width = self.next_ast()?;
-                return Ok(create_node!(ASTClass::InOut(id, width)));
             }
             TokenClass::Symbol(Symbol::FuncIn) => {
                 let id = self.next_ast()?;
@@ -148,7 +139,7 @@ impl<'a> Parser<'a> {
                 if let TokenClass::Symbol(Symbol::Colon) = self.lexer.next_token().class {
                     let out_token = self.lexer.next_token();
                     if let TokenClass::Identifire(s) = out_token.class {
-                        let semicolon = self.lexer.next_token();
+                        let _semicolon = self.lexer.next_token();
                         let return_node = create_node!(ASTClass::Identifire(s));
                         return Ok(create_node!(ASTClass::FuncIn(id, args, return_node)));
                     } else {
@@ -169,7 +160,7 @@ impl<'a> Parser<'a> {
                 if let TokenClass::Symbol(Symbol::Colon) = self.lexer.next_token().class {
                     let out_token = self.lexer.next_token();
                     if let TokenClass::Identifire(s) = out_token.class {
-                        let semicolon = self.lexer.next_token();
+                        let _semicolon = self.lexer.next_token();
                         let return_node = create_node!(ASTClass::Identifire(s));
                         return Ok(create_node!(ASTClass::FuncOut(id, args, return_node)));
                     } else {
@@ -294,8 +285,7 @@ impl<'a> Parser<'a> {
                 TokenClass::Newline | TokenClass::EndOfProgram => {
                     if string.len() == 0 {
                         return Ok(string);
-                    }
-                    else {
+                    } else {
                         return Ok(string.split_off(1));
                     }
                 }
@@ -596,9 +586,7 @@ mod parser_test {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let mut interfaces = vec![
-                    create_node!(ASTClass::Newline)
-            ];
+        let mut interfaces = vec![create_node!(ASTClass::Newline)];
         assert_eq!(
             p.next_ast().unwrap(),
             create_node!(ASTClass::Declare(
@@ -789,8 +777,9 @@ mod parser_test {
         let mut p = Parser::new(&mut l);
 
         let def_macro = create_node!(ASTClass::MacroDefine(
-                create_node!(ASTClass::Identifire("HELLO_ONLY".to_string())),
-                "".to_string()));
+            create_node!(ASTClass::Identifire("HELLO_ONLY".to_string())),
+            "".to_string()
+        ));
         assert_eq!(p.next_ast().unwrap(), def_macro);
     }
 }

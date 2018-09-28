@@ -1,4 +1,4 @@
-use std::io::{Error, Write};
+use std::io::{self, Write};
 
 use ast::*;
 use parser::*;
@@ -16,14 +16,13 @@ impl<'a, 'b> Generator<'a, 'b> {
         }
     }
 
-    pub fn output_node(&mut self) {
+    pub fn output_node(&mut self) -> Result<(), io::Error> {
         loop {
             let ast = self.parser.next_ast().unwrap();
             if ast.class != ASTClass::EndOfProgram {
-                self.writer.write(format!("{}", ast).as_bytes());
-            }
-            else {
-                return;
+                try!(self.writer.write(format!("{}", ast).as_bytes()));
+            } else {
+                return Ok(());
             }
         }
     }
@@ -124,8 +123,9 @@ mod generator_test {
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-        let ans = "\ndeclare hello\n{\n\tinput a;\n\tinput b;\n\tfunc_in aa(a, b);\n}\n\n"
-            .to_string();
+        let ans =
+            "\ndeclare hello\n{\n\tinput a;\n\tinput b;\n\tfunc_in aa(a, b);\n}\n\n"
+                .to_string();
         assert_eq!(out, ans);
     }
 
@@ -141,8 +141,8 @@ mod generator_test {
             g.output_node();
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-        let ans =
-            "\ndeclare hello_google2\n{\n\tinput ok;\n\tfunc_in sugoi(ok);\n}\n\n".to_string();
+        let ans = "\ndeclare hello_google2\n{\n\tinput ok;\n\tfunc_in sugoi(ok);\n}\n\n"
+            .to_string();
         assert_eq!(out, ans);
     }
 
@@ -174,8 +174,7 @@ mod generator_test {
             g.output_node();
         }
         let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-        let ans =
-            "#define HELLO ( 12 )\n".to_string();
+        let ans = "#define HELLO ( 12 )\n".to_string();
         assert_eq!(out, ans);
     }
 }
