@@ -134,19 +134,25 @@ impl fmt::Display for ASTNode {
                 let nest_tabs = "\t".repeat(nest);
                 let mut double_newline_flag = false;
                 for node in list {
-                    if node.class == ASTClass::Newline {
-                        if double_newline_flag {
+                    match node.class {
+                        ASTClass::Newline => {
+                            if double_newline_flag {
                             list_str.push_str("\n");
                             double_newline_flag = false;
+                            }
+                            else {
+                                double_newline_flag = true;
+                                continue;
+                            }
                         }
-                        else {
-                            double_newline_flag = true;
-                            continue;
+                        ASTClass::Identifire(ref id) => {
+                            double_newline_flag = false;
+                            list_str.push_str(&format!("{}{}\n", nest_tabs, id));
                         }
-                    }
-                    else {
-                        double_newline_flag = false;
-                        list_str.push_str(&format!("{}{}", nest_tabs, node));
+                        _ => {
+                            double_newline_flag = false;
+                            list_str.push_str(&format!("{}{}", nest_tabs, node));
+                        }
                     }
                 }
 

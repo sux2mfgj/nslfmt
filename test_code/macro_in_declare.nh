@@ -1,0 +1,12 @@
+#ifndef __INCLUDED_MACRO_IN_DECLARE_NH__
+#define __INCLUDED_MACRO_IN_DECLARE_NH__
+
+#define SUGOI_INPUT input ok[12];
+
+declare aa {
+    input bb;
+    output cc;
+    SUGOI_INPUT
+}
+
+#endif
