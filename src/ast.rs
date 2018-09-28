@@ -45,6 +45,7 @@ pub enum ASTClass {
     MacroDefine(Box<ASTNode>, String),
     //          operand     , operation   , operand
     Expression(Box<ASTNode>, Box<ASTNode>, Box<ASTNode>),
+    Comment(String),
     Newline,
     EndOfProgram,
 }
@@ -170,6 +171,9 @@ impl fmt::Display for ASTNode {
             }
             ASTClass::Newline => {
                 return write!(f, "\n");
+            }
+            ASTClass::Comment(ref line) => {
+                return write!(f, "// {}\n", line);
             }
             _ => {
                 panic!(
