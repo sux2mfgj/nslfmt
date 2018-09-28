@@ -73,6 +73,9 @@ impl fmt::Display for ASTNode {
             ASTClass::Number(ref num) => {
                 return write!(f, "{}", num);
             }
+            ASTClass::String(ref path) => {
+                return write!(f, "\"{}\"", path);
+            }
             ASTClass::Operator(ref op) => {
                 return write!(f, "{}", op);
             }
@@ -157,6 +160,9 @@ impl fmt::Display for ASTNode {
                 }
 
                 return write!(f, "\n{{\n{}}}\n\n", list_str);
+            }
+            ASTClass::MacroInclude(ref path) => {
+                return write!(f, "#include {}\n", path);
             }
             ASTClass::MacroIfndef(ref id) => {
                 return write!(f, "#ifndef {}\n", id);

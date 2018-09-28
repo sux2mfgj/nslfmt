@@ -209,6 +209,12 @@ impl<'a> Lexer<'a> {
                         ));
                         it.next();
                     }
+                    '\'' => {
+                        self.tokens.push_back(Token::new(
+                                    TokenClass::Symbol(Symbol::SingleQuote),
+                                    self.line));
+                        it.next();
+                    }
                     '\n' => {
                         self.tokens
                             .push_back(Token::new(TokenClass::Newline, self.line));
@@ -216,7 +222,7 @@ impl<'a> Lexer<'a> {
                         it.next();
                     }
                     _ => {
-                        panic!("invalid input");
+                        panic!("invalid input {}", c);
                     }
                 }
             }

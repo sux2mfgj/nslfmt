@@ -21,7 +21,7 @@ pub enum Symbol {
     FuncOut,            // func_out
     Sharp,              // #
     DoubleQuote,        // "
-                        //SingleQuote,        // '
+    SingleQuote,        // '
                         //TODO
                         // lack some symbols
 }
@@ -112,11 +112,20 @@ impl fmt::Display for Token {
             TokenClass::Symbol(Symbol::Output) => {
                 return write!(f, " output ");
             }
+            TokenClass::Symbol(Symbol::FuncOut) => {
+                return write!(f, " func_out ");
+            }
             TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                 return write!(f, "[ ");
             }
             TokenClass::Symbol(Symbol::RightSquareBracket) => {
                 return write!(f, " ]");
+            }
+            TokenClass::Symbol(Symbol::LeftParen) => {
+                return write!(f, "(( ");
+            }
+            TokenClass::Symbol(Symbol::RightParen) => {
+                return write!(f, " )");
             }
             TokenClass::Symbol(Symbol::Semicolon) => {
                 return write!(f, ";");

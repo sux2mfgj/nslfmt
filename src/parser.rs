@@ -222,6 +222,19 @@ impl<'a> Parser<'a> {
                     }
                 }
             }
+            TokenClass::Symbol(Symbol::LeftParen) => {
+                let first = self.next_ast()?;
+                let expr = self.create_expression(first)?;
+                let next_token = self.lexer.next_token();
+                match next_token.class {
+                    TokenClass::Symbol(Symbol::RightParen) => {
+                        return Ok(expr);
+                    }
+                    _ => {
+                        panic!("unexptected token: {}", next_token);
+                    }
+                }
+            }
             TokenClass::Symbol(Symbol::Sharp) => {
                 return self.generate_macro_astnode();
             }

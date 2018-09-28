@@ -161,4 +161,21 @@ mod generator_test {
             g.output_node();
         }
     }
+
+    #[test]
+    fn parences() {
+        let mut b = "#define HELLO ( 12 )".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        let p = Parser::new(&mut l);
+        let mut io = Cursor::new(Vec::new());
+        {
+            let mut g = Generator::new(p, &mut io);
+            g.output_node();
+        }
+        let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+        let ans =
+            "#define HELLO ( 12 )\n".to_string();
+        assert_eq!(out, ans);
+    }
 }
