@@ -261,21 +261,69 @@ impl<'a> Lexer<'a> {
         }
     }
     fn get_number_token<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> TokenClass {
+
+        let mut number = Lexer::get_number(iter);
+        if let Some(&c) = iter.peek() {
+            match c {
+                '\'' => {
+                    iter.next();
+                    if let Some(c_next) = iter.next() {
+                        if (c_next == 'x') | (c_next == 'b') | (c_next == 'h') | (c_next == 'd') {
+                            number.push_str(&format!("'{}{}", c_next, Lexer::get_number(iter)));
+                            return TokenClass::Number(number);
+                        }
+                        else {
+                            panic!("unexptected character {}", c_next);
+                        }
+                    }
+                }
+                'x' | 'b' => {
+                    iter.next();
+                    number.push_str(&format!("{}{}", c, Lexer::get_number(iter)));
+                    return TokenClass::Number(number);
+                }
+                _ => {
+                    return TokenClass::Number(number);
+                }
+            }
+        }
+        panic!("cannot get character");
+    }
+
+    fn get_number<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> String {
         let mut number = String::new();
         while let Some(&c_next) = iter.peek() {
-            /* TODO
-             * now, this function can receive the digit value.
-             * have to consider hex, oct, bin formats.
-             */
-            if c_next.is_numeric() | (c_next == '_') {
+            if c_next.is_digit(16) | (c_next == '_') {
                 number.push_str(&c_next.to_string());
                 iter.next();
-            } else {
+            }
+            else {
                 break;
             }
         }
 
-        TokenClass::Number(number)
+        number
+    }
+
+    fn get_verilog_style_cardinal<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> Result<String, &str> {
+        if let Some(&c) = iter.peek() {
+            if c == '\'' {
+                iter.next();
+            }
+            else {
+                return Err("this is not verilog style number");
+            }
+        }
+        else {
+            panic!("error");
+        }
+
+        if let Some(c) = iter.next() {
+            if (c == 'x') | (c == 'b') | (c == 'h') | (c == 'd') {
+                return Ok(format!("'{}", c));
+            }
+        }
+        panic!("an unknown character is detected");
     }
 
     fn get_string_until_newline<T: Iterator<Item = char>>(&self, iter: &mut Peekable<T>) -> String {
@@ -939,5 +987,117 @@ mod lexer_test {
         assert_eq!(
                 l.next_token(),
                 Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 4));
+    }
+
+    // 2'b00
+    #[test]
+    fn number_00() {
+        let mut b = "#define SYSTEM_FUNCT_CONTROL    (2'b00)".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
+        );
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Macro(Macro::Define), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()), 1)
+        );
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Number("2'b00".to_string()), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::RightParen), 1));
+    }
+
+    // 4'hf
+    #[test]
+    fn number_01() {
+        let mut b = "#define SYSTEM_FUNCT_CONTROL    (4'hf)".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
+        );
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Macro(Macro::Define), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()), 1)
+        );
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Number("4'hf".to_string()), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::RightParen), 1));
+    }
+
+    // 0b1000
+    #[test]
+    fn number_02() {
+        let mut b = "#define SYSTEM_FUNCT_CONTROL    (0b1000)".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
+        );
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Macro(Macro::Define), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()), 1)
+        );
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Number("0b1000".to_string()), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::RightParen), 1));
+    }
+
+    // 0x1000
+    #[test]
+    fn number_03() {
+        let mut b = "#define SYSTEM_FUNCT_CONTROL    (0x1000)".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
+        );
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Macro(Macro::Define), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()), 1)
+        );
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Number("0x1000".to_string()), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::RightParen), 1));
     }
 }
