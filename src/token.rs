@@ -77,7 +77,8 @@ pub enum TokenClass {
     Symbol(Symbol),
     Operator(Operator),
     Macro(Macro),
-    Comment(String),
+    CStyleComment(String),
+    CPPStyleComment(Vec<String>),
     Newline,
     EndOfProgram,
 }

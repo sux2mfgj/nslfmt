@@ -4,6 +4,13 @@ use std::iter::Peekable;
 
 use token::*;
 
+enum CommentState {
+    Finished,
+    Continue,
+}
+struct CommentResult(String, CommentState);
+
+
 pub struct Lexer<'a> {
     pub line: usize,
     reader: &'a mut BufRead,
@@ -188,13 +195,22 @@ impl<'a> Lexer<'a> {
                         it.next();
                         if let Some(&slash) = it.peek() {
                             match slash {
+                                // single line comment
                                 '/' => {
                                     it.next();
                                     let comment = self.get_string_until_newline(&mut it);
                                     self.tokens.push_back(Token::new(
-                                        TokenClass::Comment(comment),
+                                        TokenClass::CStyleComment(comment),
                                         self.line,
                                     ));
+                                }
+                                // multi-line comment
+                                '*' => {
+                                    it.next();
+                                    let comment_list = self.get_string_for_multiline_comment(&mut it);
+                                    self.tokens.push_back(Token::new(
+                                            TokenClass::CPPStyleComment(comment_list),
+                                            self.line));
                                 }
                                 _ => {
                                     self.tokens.push_back(Token::new(
@@ -203,6 +219,9 @@ impl<'a> Lexer<'a> {
                                     ));
                                 }
                             }
+                        }
+                        else {
+                            panic!("panic");
                         }
                     }
                     '*' => {
@@ -264,6 +283,7 @@ impl<'a> Lexer<'a> {
             _ => TokenClass::Identifire(word),
         }
     }
+
     fn get_number_token<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> TokenClass {
         let mut number = Lexer::get_number(iter);
         if let Some(&c) = iter.peek() {
@@ -327,8 +347,61 @@ impl<'a> Lexer<'a> {
                 iter.next();
             }
         }
-        return word;
+        word
     }
+
+
+    fn get_comment_oneline<T: Iterator<Item = char>>(&mut self, iter : &mut Peekable<T>)
+        -> Option<CommentResult> {
+            let mut word = String::new();
+            let mut astarisc_flag = false;
+            while let Some(&c_next) = iter.peek() {
+                //self.supply_tokens();
+                iter.next();
+                match c_next {
+                    '\n' => {
+                        astarisc_flag = false;
+                        //word.push_str(&c_next.to_string());
+                        return Some(CommentResult(word, CommentState::Continue));
+                    }
+                    '*' => {
+                        word.push_str(&c_next.to_string());
+                        astarisc_flag = true;
+                    }
+                    '/' => {
+                        if astarisc_flag {
+                            word.pop();
+                            return Some(CommentResult(word, CommentState::Finished));
+                        }
+                        word.push_str(&c_next.to_string());
+                        astarisc_flag = false;
+                    }
+                    _ => {
+                        astarisc_flag = false;
+                        word.push_str(&c_next.to_string());
+                    }
+                }
+            }
+            return Some(CommentResult(word, CommentState::Finished));
+        }
+
+
+    fn get_string_for_multiline_comment<T: Iterator<Item = char>>(&mut self, iter : &mut Peekable<T>)
+        -> Vec<String> {
+            let mut result : Vec<String> = Vec::new();
+
+            while let Some(r) = self.get_comment_oneline(iter) {
+                result.push(r.0);
+                match r.1 {
+                    CommentState::Finished => {
+                        return result;
+                    }
+                    CommentState::Continue => {}
+                }
+            }
+            panic!("comment is not closed but got EOF");
+        }
+
 }
 
 #[cfg(test)]
@@ -954,7 +1027,7 @@ mod lexer_test {
         assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 1));
         assert_eq!(
             l.next_token(),
-            Token::new(TokenClass::Comment(" this is inputs.".to_string()), 2)
+            Token::new(TokenClass::CStyleComment(" this is inputs.".to_string()), 2)
         );
         assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 2));
         assert_eq!(
@@ -1146,4 +1219,45 @@ mod lexer_test {
             l.next_token(),
             Token::new(TokenClass::String("../hexs/rv32ui-p-xori.hex".to_string()), 1));
     }
+
+    #[test]
+    fn mutiline_comment_00() {
+        let mut b = "/**/".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        let result: Vec<String> = vec![""].iter().map(|s| s.to_string()).collect();
+
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::CPPStyleComment(result), 1));
+    }
+
+    #[test]
+    fn mutiline_comment_01() {
+        let mut b = "/* hello */".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        let result: Vec<String> = vec![" hello "].iter().map(|s| s.to_string()).collect();
+
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::CPPStyleComment(result), 1));
+    }
+
+    /*
+    #[test]
+    fn mutiline_comment_02() {
+        let mut b = "/*hello\n*/".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        let result: Vec<String> = vec!["hello", ""].iter().map(|s| s.to_string()).collect();
+
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::CPPStyleComment(result), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::EndOfProgram, 1));
+    }
+    */
 }

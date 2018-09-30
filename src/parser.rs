@@ -232,8 +232,8 @@ impl<'a> Parser<'a> {
             TokenClass::Operator(op) => {
                 return Ok(create_node!(ASTClass::Operator(op)));
             }
-            TokenClass::Comment(line) => {
-                return Ok(create_node!(ASTClass::Comment(line)));
+            TokenClass::CStyleComment(line) => {
+                return Ok(create_node!(ASTClass::CStyleComment(line)));
             }
             _ => {
                 panic!("unexptected token: {}", t);

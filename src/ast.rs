@@ -44,7 +44,8 @@ pub enum ASTClass {
     MacroDefine(Box<ASTNode>, String),
     //          operand     , operation   , operand
     Expression(Box<ASTNode>, Box<ASTNode>, Box<ASTNode>),
-    Comment(String),
+    CStyleComment(String),
+    CPPStyleComment(Vec<String>),
     Newline,
     EndOfProgram,
 }
@@ -182,7 +183,7 @@ impl fmt::Display for ASTNode {
             ASTClass::Newline => {
                 return write!(f, "\n");
             }
-            ASTClass::Comment(ref line) => {
+            ASTClass::CStyleComment(ref line) => {
                 return write!(f, "// {}\n", line);
             }
             _ => {
