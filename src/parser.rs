@@ -278,19 +278,31 @@ impl<'a> Parser<'a> {
     }
 
     fn get_string_or_newline_for_define(&mut self) -> Result<String, String> {
-        let mut string = String::new();
+        let mut t_list: Vec<Token> = vec![];
         loop {
             let t = self.lexer.next_token_nl();
             match t.class {
                 TokenClass::Newline | TokenClass::EndOfProgram => {
-                    if string.len() == 0 {
-                        return Ok(string);
-                    } else {
-                        return Ok(string.split_off(1));
+                    match t_list.last() {
+                        Some(ref t) => {
+                            let str_vec = t_list.iter().map(|t| format!("{}", t)).collect::<Vec<String>>();
+                            let result = str_vec.join("");
+                            // セミコロンのトークンのfmt::Displayの実装は、"; "となっていて
+                            // 後ろに空白を入れているが、
+                            // 最後にセミコロンが来た場合のみ、
+                            // 後ろの空白を削除して、最後の余分な空白を消している
+                            if t.class == TokenClass::Symbol(Symbol::Semicolon) {
+                                return Ok(result.trim_right().to_string());
+                            }
+                            return Ok(result);
+                        }
+                        None => {
+                            return Ok("".to_string());
+                        }
                     }
                 }
                 _ => {
-                    string.push_str(&format!("{}", t));
+                    t_list.push(t);
                 }
             }
         }

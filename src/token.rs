@@ -106,14 +106,17 @@ impl fmt::Display for Token {
             TokenClass::Number(ref num) => {
                 return write!(f, "{}", num);
             }
+            TokenClass::String(ref st)  => {
+                return write!(f, "\"{}\"", st);
+            }
             TokenClass::Symbol(Symbol::Input) => {
-                return write!(f, " input ");
+                return write!(f, "input ");
             }
             TokenClass::Symbol(Symbol::Output) => {
-                return write!(f, " output ");
+                return write!(f, "output ");
             }
             TokenClass::Symbol(Symbol::FuncOut) => {
-                return write!(f, " func_out ");
+                return write!(f, "func_out ");
             }
             TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                 return write!(f, "[ ");
@@ -122,13 +125,13 @@ impl fmt::Display for Token {
                 return write!(f, " ]");
             }
             TokenClass::Symbol(Symbol::LeftParen) => {
-                return write!(f, "(( ");
+                return write!(f, "( ");
             }
             TokenClass::Symbol(Symbol::RightParen) => {
                 return write!(f, " )");
             }
             TokenClass::Symbol(Symbol::Semicolon) => {
-                return write!(f, ";");
+                return write!(f, "; ");
             }
             TokenClass::Operator(Operator::Slash) => {
                 return write!(f, " / ");

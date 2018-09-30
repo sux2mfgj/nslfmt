@@ -177,4 +177,21 @@ mod generator_test {
         let ans = "#define HELLO ( 12 )\n".to_string();
         assert_eq!(out, ans);
     }
+
+    #[test]
+    fn define_path() {
+        let mut b = "#define MEMORY_HEX \"../hexs/rv32ui-p-xori.hex\"".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        let p = Parser::new(&mut l);
+        let mut io = Cursor::new(Vec::new());
+        {
+            let mut g = Generator::new(p, &mut io);
+            g.output_node();
+        }
+        let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+        let ans = "#define MEMORY_HEX \"../hexs/rv32ui-p-xori.hex\"\n".to_string();
+        assert_eq!(out, ans);
+
+    }
 }

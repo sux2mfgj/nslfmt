@@ -1127,4 +1127,23 @@ mod lexer_test {
             Token::new(TokenClass::Symbol(Symbol::RightParen), 1)
         );
     }
+
+    #[test]
+    fn define_path() {
+        let mut b = "#define MEMORY_HEX \"../hexs/rv32ui-p-xori.hex\"".as_bytes();
+        let mut l = Lexer::new(&mut b);
+
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Symbol(Symbol::Sharp), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Macro(Macro::Define), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::Identifire("MEMORY_HEX".to_string()), 1));
+        assert_eq!(
+            l.next_token(),
+            Token::new(TokenClass::String("../hexs/rv32ui-p-xori.hex".to_string()), 1));
+    }
 }
