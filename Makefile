@@ -1,15 +1,22 @@
+TEST_TARGET=lexer_test
 
 build:
 	cargo build
 
 autobuild:
-	while inotifywait -e close_write `find ./src`; do make build && make test; done
+	while inotifywait -e close_write `find ./{src,tests}`; do make build && make test; done
+
+auto_unittest:
+	while inotifywait -e close_write `find ./{src,tests}`; do make build && make test_module TEST_TARGET=$(TEST_TARGET); done
 
 run:
 	cargo run
 
 test:
 	cargo test
+
+test_module:
+	cargo test --test $(TEST_TARGET)
 
 coverage:
 	rustup run nightly cargo tarpaulin -v

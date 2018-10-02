@@ -6,15 +6,15 @@ use std::fs::File;
 use std::io::BufReader;
 use std::process;
 
-mod ast;
-mod generator;
-mod lexer;
-mod parser;
 mod token;
+mod lexer;
+// mod ast;
+// mod generator;
+// mod parser;
 
-use generator::Generator;
 use lexer::Lexer;
-use parser::Parser;
+// use parser::Parser;
+// use generator::Generator;
 
 fn print_version() {
     let version_info = format!(
@@ -69,6 +69,7 @@ fn main() {
     let mut b = BufReader::new(fd);
     let mut l = Lexer::new(&mut b);
 
+    /*
     let p = Parser::new(&mut l);
     let mut io = std::io::stdout();
 
@@ -81,4 +82,5 @@ fn main() {
             }
         }
     }
+    */
 }

@@ -89,6 +89,30 @@ pub struct Token {
     pub line: usize,
 }
 
+impl From<(TokenClass, usize)> for Token {
+    fn from(s: (TokenClass, usize)) -> Token {
+        Token::new(s.0, s.1)
+    }
+}
+
+impl From<(Symbol, usize)> for Token {
+    fn from(s: (Symbol, usize)) -> Token {
+        Token::new(TokenClass::Symbol(s.0), s.1)
+    }
+}
+
+impl From<(Operator, usize)> for Token {
+    fn from(s: (Operator, usize)) -> Token {
+        Token::new(TokenClass::Operator(s.0), s.1)
+    }
+}
+
+impl From<(Macro, usize)> for Token {
+    fn from(s: (Macro, usize)) -> Token {
+        Token::new(TokenClass::Macro(s.0), s.1)
+    }
+}
+
 impl Token {
     pub fn new(class: TokenClass, line: usize) -> Token {
         Token {

@@ -1,6 +1,6 @@
-use std::collections::LinkedList;
 use std::io::BufRead;
 use std::iter::Peekable;
+use std::vec::IntoIter;
 
 use token::*;
 
@@ -10,11 +10,12 @@ enum CommentState {
 }
 struct CommentResult(String, CommentState);
 
-
 pub struct Lexer<'a> {
     pub line: usize,
     reader: &'a mut BufRead,
-    tokens: LinkedList<Token>,
+    line_buffer: String,
+    iter: Peekable<IntoIter<char>>,
+    buffer: Vec<Token>,
 }
 
 impl<'a> Lexer<'a> {
@@ -22,10 +23,342 @@ impl<'a> Lexer<'a> {
         Lexer {
             line: 1,
             reader: reader,
-            tokens: LinkedList::new(),
+            line_buffer: "".to_string(),
+            iter: "".to_string().chars().collect::<Vec<_>>().into_iter().peekable(),
+            buffer: vec![],
         }
     }
 
+    pub fn check_next_token(&mut self, is_pass_nl: bool) -> Token {
+
+        if let Some(t) = self.buffer.first() {
+            return t.clone();
+        }
+
+        let next_token = self.next_token(is_pass_nl);
+        self.buffer.push(next_token.clone());
+        return next_token;
+    }
+
+    pub fn next_token(&mut self, is_pass_nl: bool) -> Token {
+
+        if self.buffer.len() != 0 {
+            return self.buffer.pop().unwrap();
+        }
+
+        if let Some(t) = self.supply_buffer() {
+            return t;
+        }
+        let mut t = self.generate_token();
+        while is_pass_nl && t.class == TokenClass::Newline {
+            t = self.next_token(is_pass_nl);
+        }
+        t
+    }
+
+    fn supply_buffer(&mut self) -> Option<Token> {
+
+        if self.iter.peek() == None {
+            let mut buf = Vec::<u8>::new();
+//             let size = self.reader.read_until(b'\n', &mut buf).expect(panic!("read_until"));
+            match self.reader.read_until(b'\n', &mut buf) {
+                Ok(size) => {
+                    if size == 0 {
+                        return Some(Token::from((TokenClass::EndOfProgram, self.line)));
+                    }
+                }
+                Err(e) => {
+//                     return Some(Token::from((TokenClass::EndOfProgram, self.line)));
+                    panic!("{}", e)
+                }
+            }
+            self.line_buffer = String::from_utf8(buf).unwrap();
+            self.iter = self.line_buffer
+                            .chars()
+                            .collect::<Vec<_>>()
+                            .into_iter()
+                            .peekable();
+
+            // TODO
+//             if self.iter.peek() == None {
+//                 return Some(Token::from((TokenClass::EndOfProgram, self.line)));
+//             }
+        }
+
+        None
+    }
+
+    fn generate_token(&mut self) -> Token {
+        loop {
+            if let Some(t) = self.supply_buffer() {
+                return t;
+            }
+            while let Some(&c) = self.iter.peek() {
+                match c {
+                    'a'...'z' | 'A'...'Z' | '_' => {
+                        let t = self.get_token_from_char();
+                        return Token::from((t, self.line));
+                    }
+                    // TODO
+                    '0'...'9' => {
+                        let t = self.get_number_token();
+                        return Token::from((t, self.line));
+                    }
+                    '{' => {
+                        self.iter.next();
+                        return Token::from((Symbol::OpeningBrace, self.line));
+                    }
+                    '}' => {
+                        self.iter.next();
+                        return Token::from((Symbol::ClosingBrace, self.line));
+                    }
+                    '(' => {
+                        self.iter.next();
+                        return Token::from((Symbol::LeftParen, self.line));
+                    }
+                    ')' => {
+                        self.iter.next();
+                        return Token::from((Symbol::RightParen, self.line));
+                    }
+                    '[' => {
+                        self.iter.next();
+                        return Token::from((Symbol::LeftSquareBracket, self.line));
+                    }
+                    ']' => {
+                        self.iter.next();
+                        return Token::from((Symbol::RightSquareBracket, self.line));
+                    }
+                    ';' => {
+                        self.iter.next();
+                        return Token::from((Symbol::Semicolon, self.line));
+                    }
+                    ':' => {
+                        self.iter.next();
+                        return Token::from((Symbol::Colon, self.line));
+                    }
+                    ',' => {
+                        self.iter.next();
+                        return Token::from((Symbol::Comma, self.line));
+                    }
+                    '.' => {
+                        self.iter.next();
+                        return Token::from((Symbol::Dot, self.line));
+                    }
+                    '#' => {
+                        self.iter.next();
+                        return Token::new(TokenClass::Symbol(Symbol::Sharp), self.line);
+                    }
+                    '*' => {
+                        self.iter.next();
+                        return Token::from((TokenClass::Operator(Operator::Asterisk), self.line));
+                    }
+                    '\'' => {
+                        self.iter.next();
+                        return Token::from((Symbol::SingleQuote, self.line));
+                    }
+                    '/' => {
+                        self.iter.next();
+                        if let Some(&slash) = self.iter.peek() {
+                            match slash {
+                                // single line comment
+                                '/' => {
+                                    self.iter.next();
+                                    let comment = self.get_string_until_newline();
+                                    return Token::from((TokenClass::CStyleComment(comment),
+                                        self.line));
+                                }
+                                // multi-line comment
+                                '*' => {
+                                    self.iter.next();
+                                    let comment_list = self.get_string_for_multiline_comment();
+                                    return Token::from((
+                                            TokenClass::CPPStyleComment(comment_list),
+                                            self.line));
+                                }
+                                _ => {
+                                    return Token::from((Operator::Slash, self.line))
+                                }
+                            }
+                        }
+                        else {
+                            panic!("panic");
+                        }
+                    }
+                    '"' => {
+                        self.iter.next();
+                        let mut name = String::new();
+                        loop {
+                            if let Some(nc) = self.iter.next() {
+                                if nc == '"' {
+                                    break;
+                                } else {
+                                    name.push_str(&nc.to_string());
+                                }
+                            } else {
+                                panic!("error");
+                            }
+                        }
+                        return Token::from((TokenClass::String(name), self.line));
+                    }
+                    '\n' => {
+                        let line: usize = self.line;
+                        self.line += 1;
+                        self.iter.next();
+                        return Token::from((TokenClass::Newline, line));
+                    }
+                    ' ' | '\t' => {
+                        self.iter.next();
+                    }
+                    _ => {
+                        panic!("invalid input {}", c);
+                    }
+                }
+            }
+        }
+    }
+
+    fn get_token_from_char(&mut self) -> TokenClass {
+        let mut word = String::new();
+        while let Some(&c_next) = self.iter.peek() {
+            if c_next.is_alphanumeric() | (c_next == '_') {
+                word.push_str(&c_next.to_string());
+                self.iter.next();
+            } else {
+                break;
+            }
+        }
+        match word.as_str() {
+            "declare" => TokenClass::Symbol(Symbol::Declare),
+            "module" => TokenClass::Symbol(Symbol::Module),
+            "input" => TokenClass::Symbol(Symbol::Input),
+            "output" => TokenClass::Symbol(Symbol::Output),
+            "inout" => TokenClass::Symbol(Symbol::InOut),
+            "func_in" => TokenClass::Symbol(Symbol::FuncIn),
+            "func_out" => TokenClass::Symbol(Symbol::FuncOut),
+            "include" => TokenClass::Macro(Macro::Include),
+            "define" => TokenClass::Macro(Macro::Define),
+            "undef" => TokenClass::Macro(Macro::Undef),
+            "ifdef" => TokenClass::Macro(Macro::Ifdef),
+            "ifndef" => TokenClass::Macro(Macro::Ifndef),
+            "else" => TokenClass::Macro(Macro::Else),
+            "endif" => TokenClass::Macro(Macro::Endif),
+            //TODO
+            _ => TokenClass::Identifire(word),
+        }
+    }
+
+    fn get_string_until_newline(&mut self) -> String {
+        let mut word = String::new();
+        while let Some(&c_next) = self.iter.peek() {
+            if c_next == '\n' {
+                break;
+            } else {
+                word.push_str(&c_next.to_string());
+                self.iter.next();
+            }
+        }
+        word
+    }
+
+    fn get_string_for_multiline_comment(&mut self) -> Vec<String> {
+            let mut result : Vec<String> = Vec::new();
+
+            while let Some(r) = self.get_comment_oneline() {
+                self.supply_buffer();
+                result.push(r.0);
+                match r.1 {
+                    CommentState::Finished => {
+                        return result;
+                    }
+                    CommentState::Continue => {}
+                }
+            }
+            panic!("comment is not closed but got EOF");
+        }
+
+    fn get_number_token(&mut self) -> TokenClass {
+        let mut number = self.get_number();
+        if let Some(&c) = self.iter.peek() {
+            match c {
+                '\'' => {
+                    self.iter.next();
+                    if let Some(c_next) = self.iter.next() {
+                        if (c_next == 'x')
+                            | (c_next == 'b')
+                            | (c_next == 'h')
+                            | (c_next == 'd')
+                        {
+                            number.push_str(&format!(
+                                "'{}{}",
+                                c_next,
+                                self.get_number()
+                            ));
+                            return TokenClass::Number(number);
+                        } else {
+                            panic!("unexptected character {}", c_next);
+                        }
+                    }
+                }
+                'x' | 'b' => {
+                    self.iter.next();
+                    number.push_str(&format!("{}{}", c, self.get_number()));
+                    return TokenClass::Number(number);
+                }
+                _ => {
+                    return TokenClass::Number(number);
+                }
+            }
+        }
+        panic!("cannot get character");
+    }
+
+    fn get_comment_oneline(&mut self) -> Option<CommentResult> {
+            let mut word = String::new();
+            let mut astarisc_flag = false;
+            while let Some(&c_next) = self.iter.peek() {
+                self.iter.next();
+                match c_next {
+                    '\n' => {
+                        astarisc_flag = false;
+                        //word.push_str(&c_next.to_string());
+                        return Some(CommentResult(word, CommentState::Continue));
+                    }
+                    '*' => {
+                        word.push_str(&c_next.to_string());
+                        astarisc_flag = true;
+                    }
+                    '/' => {
+                        if astarisc_flag {
+                            word.pop();
+                            return Some(CommentResult(word, CommentState::Finished));
+                        }
+                        word.push_str(&c_next.to_string());
+                        astarisc_flag = false;
+                    }
+                    _ => {
+                        astarisc_flag = false;
+                        word.push_str(&c_next.to_string());
+                    }
+                }
+            }
+            return Some(CommentResult(word, CommentState::Finished));
+        }
+
+    fn get_number(&mut self) -> String {
+        let mut number = String::new();
+        while let Some(&c_next) = self.iter.peek() {
+            if c_next.is_digit(16) | (c_next == '_') {
+                number.push_str(&c_next.to_string());
+                self.iter.next();
+            } else {
+                break;
+            }
+        }
+
+        number
+    }
+
+    /*
     pub fn next_token(&mut self) -> Token {
         self.pass_newlines();
         let t = self.tokens.pop_front();
@@ -67,6 +400,31 @@ impl<'a> Lexer<'a> {
             return self.pass_newlines();
         }
     }
+
+    fn get_line_for_buffer(reader: &'a mut BufRead) -> Option<String> {
+        let mut buf = Vec::<u8>::new();
+        let size = reader.read_until(b'\n', &mut buf).expect(panic!("read_until"));
+        if size == 0 {
+            return None;
+        }
+        else {
+            return Some(String::from_utf8(buf).expect("from_utf8"));
+        }
+    }
+
+    /*
+    fn supply_buffer(reader: &'a mut BufRead) -> Option<Box<Iterator<Item = char>>> {
+        let mut buf = Vec::<u8>::new();
+        let t = reader.read_until(b'\n', &mut buf).unwrap();
+        if t == 0 {
+            return None;
+        } else {
+            let s = String::from_utf8(buf).expect("from_utf8 failed");
+            let mut it = s.chars().peekable();
+            return Some(Box::new(it));
+        }
+    }
+    */
 
     fn supply_tokens(&mut self) {
         let mut buf = Vec::<u8>::new();
@@ -402,862 +760,5 @@ impl<'a> Lexer<'a> {
             panic!("comment is not closed but got EOF");
         }
 
-}
-
-#[cfg(test)]
-mod lexer_test {
-    use super::*;
-    use std::fs::File;
-    use std::io::BufReader;
-
-    #[test]
-    fn create_instance_with_string() {
-        let mut b = "declare hello {input ok; func_in(ok);}".as_bytes();
-        let _l = Lexer::new(&mut b);
-    }
-
-    #[test]
-    fn create_instance_with_file() {
-        let mut f = BufReader::new(File::open("test_code/fetch.nsl").unwrap());
-        let _l = Lexer::new(&mut f);
-    }
-
-    #[test]
-    fn get_token_str() {
-        let mut b = "declare".as_bytes();
-        let mut l = Lexer::new(&mut b);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Declare), 1)
-        );
-    }
-
-    #[test]
-    fn get_token_file() {
-        let mut f = BufReader::new(File::open("test_code/declare.nsl").unwrap());
-        let mut l = Lexer::new(&mut f);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Declare), 1)
-        );
-    }
-
-    #[test]
-    fn braces_and_newline() {
-        let mut b = "declare {  \n }".as_bytes();
-        let mut l = Lexer::new(&mut b);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Declare), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 2)
-        );
-    }
-
-    #[test]
-    fn declare_with_input() {
-        let mut b = BufReader::new(File::open("test_code/declare_01.nsl").unwrap());
-        let mut l = Lexer::new(&mut b);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Declare), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("hello".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 2)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Input), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 4)
-        );
-    }
-
-    #[test]
-    fn declare_func_in() {
-        let mut b = BufReader::new(File::open("test_code/declare_02.nsl").unwrap());
-        let mut l = Lexer::new(&mut b);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Declare), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("hello_google2".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 2)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Input), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::FuncIn), 4)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("sugoi".to_string()), 4)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 4)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 4)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 4)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 4)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 5)
-        );
-    }
-
-    #[test]
-    fn declare_func_out() {
-        let mut b = BufReader::new(File::open("test_code/declare_03.nsl").unwrap());
-        let mut l = Lexer::new(&mut b);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Declare), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("hel".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 2)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Input), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Input), 4)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("ggrks".to_string()), 4)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 4)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Output), 5)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("jk".to_string()), 5)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 5)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::FuncIn), 7)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("sugoi".to_string()), 7)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 7)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 7)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 7)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 7)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::FuncOut), 8)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("majika".to_string()), 8)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 8)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("jk".to_string()), 8)
-        );
-
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 8)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Colon), 8)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("ggrks".to_string()), 8)
-        );
-
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 8)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 9)
-        );
-        assert_eq!(l.next_token(), Token::new(TokenClass::EndOfProgram, 10));
-    }
-
-    #[test]
-    fn number() {
-        let mut b = "declare ok {input a[12];}".as_bytes();
-        let mut l = Lexer::new(&mut b);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Declare), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Input), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("a".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftSquareBracket), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Number("12".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightSquareBracket), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 1)
-        );
-    }
-
-    #[test]
-    fn declare_04() {
-        let mut b = BufReader::new(File::open("test_code/declare_04.nsl").unwrap());
-        let mut l = Lexer::new(&mut b);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Declare), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("test".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 2)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Input), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("aa".to_string()), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Input), 4)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("jk".to_string()), 4)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 4)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::FuncIn), 6)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 6)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 6)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("aa".to_string()), 6)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Comma), 6)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("jk".to_string()), 6)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 6)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 6)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 7)
-        );
-    }
-
-    #[test]
-    fn macro_include() {
-        let mut b = "#include \"hello.h\"\ndeclare ok {}".as_bytes();
-        let mut l = Lexer::new(&mut b);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Include), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::String("hello.h".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Declare), 2)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 2)
-        );
-    }
-
-    #[test]
-    fn macro_undef() {
-        let mut b = "#undef aaaa".as_bytes();
-        let mut l = Lexer::new(&mut b);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Undef), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("aaaa".to_string()), 1)
-        );
-    }
-
-    #[test]
-    fn macro_ifdef() {
-        let mut b = "#ifdef aaaa".as_bytes();
-        let mut l = Lexer::new(&mut b);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Ifdef), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("aaaa".to_string()), 1)
-        );
-    }
-
-    #[test]
-    fn macro_ifndef() {
-        let mut b = "#ifndef aaaa".as_bytes();
-        let mut l = Lexer::new(&mut b);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Ifndef), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("aaaa".to_string()), 1)
-        );
-    }
-
-    #[test]
-    fn macro_else() {
-        let mut b = "#else".as_bytes();
-        let mut l = Lexer::new(&mut b);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Else), 1)
-        );
-    }
-    #[test]
-    fn macro_endif() {
-        let mut b = "#endif".as_bytes();
-        let mut l = Lexer::new(&mut b);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Endif), 1)
-        );
-        assert_eq!(l.next_token(), Token::new(TokenClass::EndOfProgram, 1));
-    }
-
-    #[test]
-    fn macro_define() {
-        let mut b = "#define HELLO (12)".as_bytes();
-        let mut l = Lexer::new(&mut b);
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Define), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("HELLO".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Number("12".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 1)
-        );
-
-        assert_eq!(l.next_token(), Token::new(TokenClass::EndOfProgram, 1));
-    }
-
-    #[test]
-    fn newline_in_declare_block() {
-        let mut b = "declare ok{\n}".as_bytes();
-        let mut l = Lexer::new(&mut b);
-
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Declare), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 1)
-        );
-        assert_eq!(
-            l.check_next_token(),
-            Some(&Token::new(TokenClass::Newline, 1))
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 2)
-        );
-
-        assert_eq!(l.next_token(), Token::new(TokenClass::EndOfProgram, 2));
-    }
-
-    #[test]
-    fn next_token_nl() {
-        let mut b = "#define HELLO ok\n declare HELLO{\n}".as_bytes();
-        let mut l = Lexer::new(&mut b);
-
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Define), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("HELLO".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 1)
-        );
-        assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 1));
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Declare), 2)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("HELLO".to_string()), 2)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 2)
-        );
-        assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 2));
-        assert_eq!(
-            l.check_next_token(),
-            Some(&Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 3))
-        );
-    }
-
-    #[test]
-    fn comment_00() {
-        let mut b = "declare hello {
-                // this is inputs.
-                input ok[12];
-            }"
-            .as_bytes();
-        let mut l = Lexer::new(&mut b);
-
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Declare), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("hello".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::OpeningBrace), 1)
-        );
-        assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 1));
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::CStyleComment(" this is inputs.".to_string()), 2)
-        );
-        assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 2));
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Input), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("ok".to_string()), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftSquareBracket), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Number("12".to_string()), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightSquareBracket), 3)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Semicolon), 3)
-        );
-        assert_eq!(l.next_token_nl(), Token::new(TokenClass::Newline, 3));
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 4)
-        );
-    }
-
-    // 2'b00
-    #[test]
-    fn number_00() {
-        let mut b = "#define SYSTEM_FUNCT_CONTROL    (2'b00)".as_bytes();
-        let mut l = Lexer::new(&mut b);
-
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Define), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(
-                TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()),
-                1
-            )
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Number("2'b00".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 1)
-        );
-    }
-
-    // 4'hf
-    #[test]
-    fn number_01() {
-        let mut b = "#define SYSTEM_FUNCT_CONTROL    (4'hf)".as_bytes();
-        let mut l = Lexer::new(&mut b);
-
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Define), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(
-                TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()),
-                1
-            )
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Number("4'hf".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 1)
-        );
-    }
-
-    // 0b1000
-    #[test]
-    fn number_02() {
-        let mut b = "#define SYSTEM_FUNCT_CONTROL    (0b1000)".as_bytes();
-        let mut l = Lexer::new(&mut b);
-
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Define), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(
-                TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()),
-                1
-            )
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Number("0b1000".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 1)
-        );
-    }
-
-    // 0x1000
-    #[test]
-    fn number_03() {
-        let mut b = "#define SYSTEM_FUNCT_CONTROL    (0x1000)".as_bytes();
-        let mut l = Lexer::new(&mut b);
-
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Sharp), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Define), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(
-                TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()),
-                1
-            )
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::LeftParen), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Number("0x1000".to_string()), 1)
-        );
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::RightParen), 1)
-        );
-    }
-
-    #[test]
-    fn define_path() {
-        let mut b = "#define MEMORY_HEX \"../hexs/rv32ui-p-xori.hex\"".as_bytes();
-        let mut l = Lexer::new(&mut b);
-
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Symbol(Symbol::Sharp), 1));
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Macro(Macro::Define), 1));
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::Identifire("MEMORY_HEX".to_string()), 1));
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::String("../hexs/rv32ui-p-xori.hex".to_string()), 1));
-    }
-
-    #[test]
-    fn mutiline_comment_00() {
-        let mut b = "/**/".as_bytes();
-        let mut l = Lexer::new(&mut b);
-
-        let result: Vec<String> = vec![""].iter().map(|s| s.to_string()).collect();
-
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::CPPStyleComment(result), 1));
-    }
-
-    #[test]
-    fn mutiline_comment_01() {
-        let mut b = "/* hello */".as_bytes();
-        let mut l = Lexer::new(&mut b);
-
-        let result: Vec<String> = vec![" hello "].iter().map(|s| s.to_string()).collect();
-
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::CPPStyleComment(result), 1));
-    }
-
-    /*
-    #[test]
-    fn mutiline_comment_02() {
-        let mut b = "/*hello\n*/".as_bytes();
-        let mut l = Lexer::new(&mut b);
-
-        let result: Vec<String> = vec!["hello", ""].iter().map(|s| s.to_string()).collect();
-
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::CPPStyleComment(result), 1));
-        assert_eq!(
-            l.next_token(),
-            Token::new(TokenClass::EndOfProgram, 1));
-    }
     */
 }
