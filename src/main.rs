@@ -8,13 +8,13 @@ use std::process;
 
 mod token;
 mod lexer;
-// mod ast;
-// mod generator;
-// mod parser;
+mod ast;
+mod generator;
+mod parser;
 
 use lexer::Lexer;
-// use parser::Parser;
-// use generator::Generator;
+use parser::Parser;
+use generator::Generator;
 
 fn print_version() {
     let version_info = format!(
@@ -69,7 +69,6 @@ fn main() {
     let mut b = BufReader::new(fd);
     let mut l = Lexer::new(&mut b);
 
-    /*
     let p = Parser::new(&mut l);
     let mut io = std::io::stdout();
 
@@ -82,5 +81,4 @@ fn main() {
             }
         }
     }
-    */
 }

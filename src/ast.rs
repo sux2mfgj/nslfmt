@@ -186,6 +186,9 @@ impl fmt::Display for ASTNode {
             ASTClass::CStyleComment(ref line) => {
                 return write!(f, "// {}\n", line);
             }
+            ASTClass::CPPStyleComment(ref list) => {
+                return write!(f, "/*{}*/", list.join("\n"));
+            }
             _ => {
                 panic!(
                     "For the node {:?}, fmt::Display does not implemented yet.",

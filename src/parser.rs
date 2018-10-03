@@ -239,6 +239,9 @@ impl<'a> Parser<'a> {
             TokenClass::CStyleComment(line) => {
                 return Ok(create_node!(ASTClass::CStyleComment(line)));
             }
+            TokenClass::CPPStyleComment(list) => {
+                return Ok(create_node!(ASTClass::CPPStyleComment(list)));
+            }
             _ => {
                 panic!("unexptected token: {}", t);
             }

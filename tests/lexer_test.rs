@@ -888,3 +888,18 @@ fn mutiline_comment_02() {
         l.next_token(true),
         Token::new(TokenClass::EndOfProgram, 1));
 }
+
+#[test]
+fn mutiline_comment_03() {
+    let mut b = "/*\ndata lines\n*/".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    let result: Vec<String> = vec!["", "data lines", ""].iter().map(|s| s.to_string()).collect();
+
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::CPPStyleComment(result), 1));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::EndOfProgram, 1));
+}

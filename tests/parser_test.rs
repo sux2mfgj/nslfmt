@@ -451,3 +451,15 @@ fn define_macro3() {
     ));
     assert_eq!(p.next_ast().unwrap(), def_macro);
 }
+
+#[test]
+fn multi_line_comment() {
+    let mut b = "/*\ndata lines\n*/".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let multi_line = create_node!(ASTClass::CPPStyleComment(
+            vec!["".to_string(), "data lines".to_string(), "".to_string()]));
+
+    assert_eq!(p.next_ast().unwrap(), multi_line);
+}
