@@ -52,7 +52,6 @@ fn one_bit_input() {
     );
 }
 
-/*
 #[test]
 fn multi_bit_input() {
     let mut b = "declare ok{ input a[2]; }".as_bytes();
@@ -255,7 +254,8 @@ fn newline_in_declare_block() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let mut interfaces = vec![create_node!(ASTClass::Newline)];
+//     let mut interfaces = vec![create_node!(ASTClass::Newline)];
+    let mut interfaces = vec![];
     assert_eq!(
         p.next_ast().unwrap(),
         create_node!(ASTClass::Declare(
@@ -267,28 +267,28 @@ fn newline_in_declare_block() {
 
 #[test]
 fn declare_03() {
-    let mut b = BufReader::new(File::open("test_code/declare_03.nsl").unwrap());
+    let mut b = BufReader::new(File::open("nsl_samples/declare_03.nsl").unwrap());
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
     let mut interfaces = Vec::new();
-    interfaces.push(create_node!(ASTClass::Newline));
+//     interfaces.push(create_node!(ASTClass::Newline));
     interfaces.push(create_node!(ASTClass::Input(
         create_node!(ASTClass::Identifire("ok".to_string())),
         create_node!(ASTClass::Number("1".to_string()))
     )));
-    interfaces.push(create_node!(ASTClass::Newline));
+//     interfaces.push(create_node!(ASTClass::Newline));
     interfaces.push(create_node!(ASTClass::Input(
         create_node!(ASTClass::Identifire("ggrks".to_string())),
         create_node!(ASTClass::Number("1".to_string()))
     )));
-    interfaces.push(create_node!(ASTClass::Newline));
+//     interfaces.push(create_node!(ASTClass::Newline));
     interfaces.push(create_node!(ASTClass::Output(
         create_node!(ASTClass::Identifire("jk".to_string())),
         create_node!(ASTClass::Number("1".to_string()))
     )));
-    interfaces.push(create_node!(ASTClass::Newline));
-    interfaces.push(create_node!(ASTClass::Newline));
+//     interfaces.push(create_node!(ASTClass::Newline));
+//     interfaces.push(create_node!(ASTClass::Newline));
 
     let args1 = vec![create_node!(ASTClass::Identifire("ok".to_string()))];
     let func1 = create_node!(ASTClass::FuncIn(
@@ -305,9 +305,9 @@ fn declare_03() {
     ));
 
     interfaces.push(func1);
-    interfaces.push(create_node!(ASTClass::Newline));
+//     interfaces.push(create_node!(ASTClass::Newline));
     interfaces.push(func2);
-    interfaces.push(create_node!(ASTClass::Newline));
+//     interfaces.push(create_node!(ASTClass::Newline));
 
     assert_eq!(
         p.next_ast().unwrap(),
@@ -451,5 +451,3 @@ fn define_macro3() {
     ));
     assert_eq!(p.next_ast().unwrap(), def_macro);
 }
-
-*/
