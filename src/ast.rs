@@ -135,7 +135,7 @@ impl fmt::Display for ASTNode {
             }
             ASTClass::Block(ref list, nest) => {
                 let mut list_str = String::new();
-                let nest_tabs = "\t".repeat(nest);
+                let nest_tabs = "    ".repeat(nest);
                 let mut double_newline_flag = false;
                 for node in list {
                     match node.class {
@@ -187,7 +187,7 @@ impl fmt::Display for ASTNode {
                 return write!(f, "// {}\n", line);
             }
             ASTClass::CPPStyleComment(ref list) => {
-                return write!(f, "/*{}*/", list.join("\n"));
+                return write!(f, "/*{}*/\n", list.join("\n"));
             }
             _ => {
                 panic!(
