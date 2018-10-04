@@ -65,7 +65,7 @@ impl fmt::Display for ASTNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.class {
             ASTClass::Declare(ref id, ref interfaces) => {
-                return write!(f, "\ndeclare {}{}", id, interfaces);
+                return write!(f, "declare {}{}", id, interfaces);
             }
             ASTClass::Identifire(ref s) => {
                 return write!(f, "{}", s);
@@ -159,7 +159,7 @@ impl fmt::Display for ASTNode {
                     }
                 }
 
-                return write!(f, "\n{{\n{}}}\n\n", list_str);
+                return write!(f, "\n{{\n{}}}\n", list_str);
             }
             ASTClass::MacroInclude(ref path) => {
                 return write!(f, "#include {}\n", path);
@@ -181,7 +181,8 @@ impl fmt::Display for ASTNode {
                 return write!(f, "");
             }
             ASTClass::Newline => {
-                return write!(f, "\n");
+//                 return write!(f, "\n");
+                return write!(f, "");
             }
             ASTClass::CStyleComment(ref line) => {
                 return write!(f, "// {}\n", line);

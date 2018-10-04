@@ -15,7 +15,7 @@ fn end_of_program() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    assert_eq!(p.next_ast().err(), None);
+    assert_eq!(p.next_ast(true).err(), None);
 }
 
 #[test]
@@ -25,7 +25,7 @@ fn declare_only () {
     let mut p = Parser::new(&mut l);
 
     assert_eq!(
-        p.next_ast().unwrap(),
+        p.next_ast(true).unwrap(),
         create_node!(ASTClass::Declare(
                 create_node!(ASTClass::Identifire("ok".to_string())),
                 create_node!(ASTClass::Block(vec![], 1))))
@@ -47,7 +47,7 @@ fn one_bit_input() {
     let block = create_node!(ASTClass::Block(interfaces, 1));
     let id = create_node!(ASTClass::Identifire("ok".to_string()));
     assert_eq!(
-        p.next_ast().unwrap(),
+        p.next_ast(true).unwrap(),
         create_node!(ASTClass::Declare(id, block))
     );
 }
@@ -68,7 +68,7 @@ fn multi_bit_input() {
     let id = create_node!(ASTClass::Identifire("ok".to_string()));
 
     assert_eq!(
-        p.next_ast().unwrap(),
+        p.next_ast(true).unwrap(),
         create_node!(ASTClass::Declare(id, block))
     );
 }
@@ -94,7 +94,7 @@ fn expression_in_width_block_01() {
     let block = create_node!(ASTClass::Block(interfaces, 1));
 
     assert_eq!(
-        p.next_ast().unwrap(),
+        p.next_ast(true).unwrap(),
         create_node!(ASTClass::Declare(id, block))
     );
 }
@@ -125,7 +125,7 @@ fn expression_in_width_block_02() {
     let block = create_node!(ASTClass::Block(interfaces, 1));
 
     assert_eq!(
-        p.next_ast().unwrap(),
+        p.next_ast(true).unwrap(),
         create_node!(ASTClass::Declare(id, block))
     );
 }
@@ -147,7 +147,7 @@ fn output_inout() {
         create_node!(ASTClass::Number("12".to_string()))
     )));
     assert_eq!(
-        p.next_ast().unwrap(),
+        p.next_ast(true).unwrap(),
         create_node!(ASTClass::Declare(
             create_node!(ASTClass::Identifire("ok".to_string())),
             create_node!(ASTClass::Block(interfaces, 1))
@@ -176,7 +176,7 @@ fn func_in() {
     interfaces.push(func);
 
     assert_eq!(
-        p.next_ast().unwrap(),
+        p.next_ast(true).unwrap(),
         create_node!(ASTClass::Declare(
             create_node!(ASTClass::Identifire("ok".to_string())),
             create_node!(ASTClass::Block(interfaces, 1))
@@ -208,7 +208,7 @@ fn func_in_return() {
     interfaces.push(func);
 
     assert_eq!(
-        p.next_ast().unwrap(),
+        p.next_ast(true).unwrap(),
         create_node!(ASTClass::Declare(
             create_node!(ASTClass::Identifire("ok".to_string())),
             create_node!(ASTClass::Block(interfaces, 1))
@@ -240,7 +240,7 @@ fn func_out_return() {
     interfaces.push(func);
 
     assert_eq!(
-        p.next_ast().unwrap(),
+        p.next_ast(true).unwrap(),
         create_node!(ASTClass::Declare(
             create_node!(ASTClass::Identifire("ok".to_string())),
             create_node!(ASTClass::Block(interfaces, 1))
@@ -257,7 +257,7 @@ fn newline_in_declare_block() {
 //     let mut interfaces = vec![create_node!(ASTClass::Newline)];
     let mut interfaces = vec![];
     assert_eq!(
-        p.next_ast().unwrap(),
+        p.next_ast(true).unwrap(),
         create_node!(ASTClass::Declare(
             create_node!(ASTClass::Identifire("ok".to_string())),
             create_node!(ASTClass::Block(interfaces, 1))
@@ -310,7 +310,7 @@ fn declare_03() {
 //     interfaces.push(create_node!(ASTClass::Newline));
 
     assert_eq!(
-        p.next_ast().unwrap(),
+        p.next_ast(true).unwrap(),
         create_node!(ASTClass::Declare(
             create_node!(ASTClass::Identifire("hel".to_string())),
             create_node!(ASTClass::Block(interfaces, 1))
@@ -330,7 +330,7 @@ fn include_macro() {
         create_node!(ASTClass::Block(Vec::new(), 1))
     ));
     let include = create_node!(ASTClass::MacroInclude(path));
-    assert_eq!(p.next_ast().unwrap(), include);
+    assert_eq!(p.next_ast(true).unwrap(), include);
 }
 
 #[test]
@@ -342,7 +342,7 @@ fn undef_macro() {
     let undef = create_node!(ASTClass::MacroUndef(create_node!(
         ASTClass::Identifire("hello".to_string())
     )));
-    assert_eq!(p.next_ast().unwrap(), undef);
+    assert_eq!(p.next_ast(true).unwrap(), undef);
 }
 
 #[test]
@@ -354,7 +354,7 @@ fn ifdef_macro() {
     let ifdef = create_node!(ASTClass::MacroIfdef(create_node!(
         ASTClass::Identifire("hello".to_string())
     )));
-    assert_eq!(p.next_ast().unwrap(), ifdef);
+    assert_eq!(p.next_ast(true).unwrap(), ifdef);
 }
 
 #[test]
@@ -366,7 +366,7 @@ fn ifndef_macro() {
     let ifndef = create_node!(ASTClass::MacroIfndef(create_node!(
         ASTClass::Identifire("hello".to_string())
     )));
-    assert_eq!(p.next_ast().unwrap(), ifndef);
+    assert_eq!(p.next_ast(true).unwrap(), ifndef);
 }
 
 #[test]
@@ -379,8 +379,8 @@ fn endif_macro() {
         ASTClass::Identifire("hello".to_string())
     )));
     let endif = create_node!(ASTClass::MacroEndif);
-    assert_eq!(p.next_ast().unwrap(), ifndef);
-    assert_eq!(p.next_ast().unwrap(), endif);
+    assert_eq!(p.next_ast(true).unwrap(), ifndef);
+    assert_eq!(p.next_ast(true).unwrap(), endif);
 }
 
 #[test]
@@ -394,9 +394,9 @@ fn if_else_end() {
     )));
     let endif = create_node!(ASTClass::MacroEndif);
     let melse = create_node!(ASTClass::MacroElse);
-    assert_eq!(p.next_ast().unwrap(), ifndef);
-    assert_eq!(p.next_ast().unwrap(), melse);
-    assert_eq!(p.next_ast().unwrap(), endif);
+    assert_eq!(p.next_ast(true).unwrap(), ifndef);
+    assert_eq!(p.next_ast(true).unwrap(), melse);
+    assert_eq!(p.next_ast(true).unwrap(), endif);
 }
 
 #[test]
@@ -409,7 +409,7 @@ fn define_macro_nl() {
         create_node!(ASTClass::Identifire("HELLO".to_string())),
         "input ok;".to_string()
     ));
-    assert_eq!(p.next_ast().unwrap(), def_macro);
+    assert_eq!(p.next_ast(true).unwrap(), def_macro);
 }
 
 #[test]
@@ -422,7 +422,7 @@ fn define_macro_eof() {
         create_node!(ASTClass::Identifire("HELLO".to_string())),
         "input ok;".to_string()
     ));
-    assert_eq!(p.next_ast().unwrap(), def_macro);
+    assert_eq!(p.next_ast(true).unwrap(), def_macro);
 }
 
 #[test]
@@ -436,7 +436,7 @@ fn define_macro2() {
             create_node!(ASTClass::Identifire("AXI4_LITE_MASTER_INTERFACE".to_string())),
             "output awvalid; input awready; output awaddr[ AXI_ADDR_WIDTH ]; output awprot[ 3 ]; output wvalid; input wready; output wdata[ AXI_DATA_WIDTH ]; output wstrb[ AXI_DATA_WIDTH / 8 ]; input bvalid; output bready; input bresp[ 2 ]; output arvalid; input arready; output araddr[ AXI_ADDR_WIDTH ]; output arprot[ 3 ]; input rvalid; output rready; input rdata[ AXI_DATA_WIDTH ]; input rresp[ 2 ];".to_string()));
 
-    assert_eq!(p.next_ast().unwrap(), def_macro);
+    assert_eq!(p.next_ast(true).unwrap(), def_macro);
 }
 
 #[test]
@@ -449,7 +449,7 @@ fn define_macro3() {
         create_node!(ASTClass::Identifire("HELLO_ONLY".to_string())),
         "".to_string()
     ));
-    assert_eq!(p.next_ast().unwrap(), def_macro);
+    assert_eq!(p.next_ast(true).unwrap(), def_macro);
 }
 
 #[test]
@@ -461,5 +461,5 @@ fn multi_line_comment() {
     let multi_line = create_node!(ASTClass::CPPStyleComment(
             vec!["".to_string(), "data lines".to_string(), "".to_string()]));
 
-    assert_eq!(p.next_ast().unwrap(), multi_line);
+    assert_eq!(p.next_ast(true).unwrap(), multi_line);
 }

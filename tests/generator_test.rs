@@ -46,7 +46,7 @@ fn aware_indent_01() {
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-    let ans = "\ndeclare hello\n{\n\tinput ok;\n}\n\n".to_string();
+    let ans = "\ndeclare hello\n{\n    input ok;\n}\n\n".to_string();
     assert_eq!(out, ans);
 }
 
@@ -63,7 +63,7 @@ fn aware_indent_02() {
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-    let ans = "\ndeclare hello\n{\n\tinput ok[2];\n}\n\n".to_string();
+    let ans = "\ndeclare hello\n{\n    input ok[2];\n}\n\n".to_string();
     assert_eq!(out, ans);
 }
 
@@ -80,7 +80,7 @@ fn aware_indent_03() {
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-    let ans = "\ndeclare hello\n{\n\tinput ok[OK / 2];\n}\n\n".to_string();
+    let ans = "\ndeclare hello\n{\n    input ok[OK / 2];\n}\n\n".to_string();
     assert_eq!(out, ans);
 }
 
@@ -98,7 +98,7 @@ fn two_arguments() {
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
     let ans =
-        "\ndeclare hello\n{\n\tinput a;\n\tinput b;\n\tfunc_in aa(a, b);\n}\n\n"
+        "\ndeclare hello\n{\n    input a;\n    input b;\n    func_in aa(a, b);\n}\n\n"
             .to_string();
     assert_eq!(out, ans);
 }
@@ -115,7 +115,7 @@ fn new_by_file() {
         g.output_node();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans = "\ndeclare hello_google2\n{\n\tinput ok;\n\tfunc_in sugoi(ok);\n}\n\n"
+    let ans = "\ndeclare hello_google2\n{\n    input ok;\n    func_in sugoi(ok);\n}\n\n"
         .to_string();
     assert_eq!(out, ans);
 }
@@ -171,7 +171,7 @@ fn define_path() {
 
 #[test]
 fn comment_00() {
-    let mut b = "/*\ndata lines\n*/".as_bytes();
+    let mut b = "/*\ndata lines\n*/\n".as_bytes();
     let mut l = Lexer::new(&mut b);
 
     let p = Parser::new(&mut l);
@@ -181,7 +181,7 @@ fn comment_00() {
         g.output_node();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans = "/*\ndata lines\n*/".to_string();
+    let ans = "/*\ndata lines\n*/\n".to_string();
     assert_eq!(out, ans);
 
 }

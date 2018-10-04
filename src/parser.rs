@@ -28,20 +28,8 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn next_ast_enable_newline(&mut self) -> Result<Box<ASTNode>, ASTError> {
-        match self.lexer.check_next_token(false).class {
-            TokenClass::Newline => {
-                self.lexer.next_token(false);
-                return Ok(create_node!(ASTClass::Newline));
-            }
-            _ => {
-                return self.next_ast();
-            }
-        }
-    }
-
-    pub fn next_ast(&mut self) -> Result<Box<ASTNode>, ASTError> {
-        let t = self.lexer.next_token(true);
+    pub fn next_ast(&mut self, pass_newline: bool) -> Result<Box<ASTNode>, ASTError> {
+        let t = self.lexer.next_token(pass_newline);
         match t.class {
             TokenClass::Identifire(s) => {
                 return Ok(create_node!(ASTClass::Identifire(s)));
@@ -56,12 +44,12 @@ impl<'a> Parser<'a> {
                 return Ok(create_node!(ASTClass::EndOfProgram));
             }
             TokenClass::Symbol(Symbol::Declare) => {
-                let id = self.next_ast()?;
-                let block = self.next_ast()?;
+                let id = self.next_ast(true)?;
+                let block = self.next_ast(false)?;
                 return Ok(create_node!(ASTClass::Declare(id, block)));
             }
             TokenClass::Symbol(Symbol::Input) => {
-                let id = self.next_ast()?;
+                let id = self.next_ast(true)?;
 
                 match self.lexer.check_next_token(true).class {
                     TokenClass::Symbol(Symbol::Semicolon) => {
@@ -72,7 +60,7 @@ impl<'a> Parser<'a> {
                         )));
                     }
                     TokenClass::Symbol(Symbol::LeftSquareBracket) => {
-                        let width = self.next_ast()?;
+                        let width = self.next_ast(true)?;
                         let _semicolon = self.lexer.next_token(true);
                         return Ok(create_node!(ASTClass::Input(id, width)));
                     }
@@ -86,7 +74,7 @@ impl<'a> Parser<'a> {
             }
             //TODO use macro. almost same with Input and InOut.
             TokenClass::Symbol(Symbol::Output) => {
-                let id = self.next_ast()?;
+                let id = self.next_ast(true)?;
 
                 match self.lexer.check_next_token(true).class {
                     TokenClass::Symbol(Symbol::Semicolon) => {
@@ -97,7 +85,7 @@ impl<'a> Parser<'a> {
                         )));
                     }
                     TokenClass::Symbol(Symbol::LeftSquareBracket) => {
-                        let width = self.next_ast()?;
+                        let width = self.next_ast(true)?;
                         let _semicolon = self.lexer.next_token(true);
                         return Ok(create_node!(ASTClass::Output(id, width)));
                     }
@@ -111,7 +99,7 @@ impl<'a> Parser<'a> {
             }
             //TODO use macro
             TokenClass::Symbol(Symbol::InOut) => {
-                let id = self.next_ast()?;
+                let id = self.next_ast(true)?;
 
                 match self.lexer.check_next_token(true).class {
                     TokenClass::Symbol(Symbol::Semicolon) => {
@@ -122,7 +110,7 @@ impl<'a> Parser<'a> {
                         )));
                     }
                     TokenClass::Symbol(Symbol::LeftSquareBracket) => {
-                        let width = self.next_ast()?;
+                        let width = self.next_ast(true)?;
                         let _semicolon = self.lexer.next_token(true);
                         return Ok(create_node!(ASTClass::InOut(id, width)));
                     }
@@ -135,7 +123,7 @@ impl<'a> Parser<'a> {
                 }
             }
             TokenClass::Symbol(Symbol::FuncIn) => {
-                let id = self.next_ast()?;
+                let id = self.next_ast(true)?;
                 let args = self.generate_args_vec()?;
 
                 if let TokenClass::Symbol(Symbol::Colon) = self.lexer.next_token(true).class {
@@ -156,7 +144,7 @@ impl<'a> Parser<'a> {
                 }
             }
             TokenClass::Symbol(Symbol::FuncOut) => {
-                let id = self.next_ast()?;
+                let id = self.next_ast(true)?;
                 let args = self.generate_args_vec()?;
 
                 if let TokenClass::Symbol(Symbol::Colon) = self.lexer.next_token(true).class {
@@ -180,8 +168,7 @@ impl<'a> Parser<'a> {
                 let mut content = Vec::new();
                 self.number_of_next += 1;
                 loop {
-                    let next_t = self.lexer.check_next_token(true);
-//                     match self.lexer.check_next_token(true).class {
+                    let next_t = self.lexer.check_next_token(pass_newline);
                     match next_t.class {
                         TokenClass::Symbol(Symbol::ClosingBrace) => {
                             self.lexer.next_token(true);
@@ -198,14 +185,14 @@ impl<'a> Parser<'a> {
                             ));
                         }
                         _ => {
-                            let t = self.next_ast_enable_newline()?;
+                            let t = self.next_ast(pass_newline)?;
                             content.push(t);
                         }
                     }
                 }
             }
             TokenClass::Symbol(Symbol::LeftSquareBracket) => {
-                let left = self.next_ast()?;
+                let left = self.next_ast(true)?;
                 let expr = self.create_expression(left)?;
                 let next_token = self.lexer.next_token(true);
                 match next_token.class {
@@ -218,7 +205,7 @@ impl<'a> Parser<'a> {
                 }
             }
             TokenClass::Symbol(Symbol::LeftParen) => {
-                let first = self.next_ast()?;
+                let first = self.next_ast(true)?;
                 let expr = self.create_expression(first)?;
                 let next_token = self.lexer.next_token(true);
                 match next_token.class {
@@ -242,6 +229,10 @@ impl<'a> Parser<'a> {
             TokenClass::CPPStyleComment(list) => {
                 return Ok(create_node!(ASTClass::CPPStyleComment(list)));
             }
+            TokenClass::Newline => {
+                return Ok(create_node!(ASTClass::Newline));
+            }
+
             _ => {
                 panic!("unexptected token: {}", t);
             }
@@ -252,19 +243,19 @@ impl<'a> Parser<'a> {
         let t = self.lexer.next_token(true);
         match t.class {
             TokenClass::Macro(Macro::Include) => {
-                let path = self.next_ast()?;
+                let path = self.next_ast(true)?;
                 return Ok(create_node!(ASTClass::MacroInclude(path)));
             }
             TokenClass::Macro(Macro::Undef) => {
-                let id = self.next_ast()?;
+                let id = self.next_ast(true)?;
                 return Ok(create_node!(ASTClass::MacroUndef(id)));
             }
             TokenClass::Macro(Macro::Ifdef) => {
-                let id = self.next_ast()?;
+                let id = self.next_ast(true)?;
                 return Ok(create_node!(ASTClass::MacroIfdef(id)));
             }
             TokenClass::Macro(Macro::Ifndef) => {
-                let id = self.next_ast()?;
+                let id = self.next_ast(true)?;
                 return Ok(create_node!(ASTClass::MacroIfndef(id)));
             }
             TokenClass::Macro(Macro::Endif) => {
@@ -274,7 +265,7 @@ impl<'a> Parser<'a> {
                 return Ok(create_node!(ASTClass::MacroElse));
             }
             TokenClass::Macro(Macro::Define) => {
-                let id = self.next_ast()?;
+                let id = self.next_ast(true)?;
                 let val = self.get_string_or_newline_for_define().unwrap();
                 return Ok(create_node!(ASTClass::MacroDefine(id, val)));
             }
@@ -349,7 +340,7 @@ impl<'a> Parser<'a> {
                 let t = self.lexer.next_token(true);
                 match t.class {
                     TokenClass::Operator(op) => {
-                        let right = self.next_ast()?;
+                        let right = self.next_ast(true)?;
                         let op_node = create_node!(ASTClass::Operator(op));
                         let expr =
                             create_node!(ASTClass::Expression(node, op_node, right));
