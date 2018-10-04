@@ -1,14 +1,11 @@
-#[macro_use]
 extern crate nslfmt;
 
 use nslfmt::lexer::*;
-use nslfmt::token::*;
 use nslfmt::parser::*;
-use nslfmt::ast::*;
 use nslfmt::generator::*;
 
 use std::fs::File;
-use std::io::{self, BufReader, BufWriter, Cursor};
+use std::io::{BufReader, BufWriter, Cursor};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 static call_count: AtomicUsize = AtomicUsize::new(0);
@@ -25,11 +22,11 @@ fn new_by_stdout() {
     let mut io = Cursor::new(Vec::new());
     {
         let mut g = Generator::new(p, &mut io);
-        g.output_node();
+        g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-    let ans = "\ndeclare hello\n{\n}\n\n".to_string();
+    let ans = "declare hello\n{\n}\n".to_string();
     assert_eq!(out, ans);
 }
 
@@ -42,11 +39,11 @@ fn aware_indent_01() {
     let mut io = Cursor::new(Vec::new());
     {
         let mut g = Generator::new(p, &mut io);
-        g.output_node();
+        g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-    let ans = "\ndeclare hello\n{\n    input ok;\n}\n\n".to_string();
+    let ans = "declare hello\n{\n    input ok;\n}\n".to_string();
     assert_eq!(out, ans);
 }
 
@@ -59,11 +56,11 @@ fn aware_indent_02() {
     let mut io = Cursor::new(Vec::new());
     {
         let mut g = Generator::new(p, &mut io);
-        g.output_node();
+        g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-    let ans = "\ndeclare hello\n{\n    input ok[2];\n}\n\n".to_string();
+    let ans = "declare hello\n{\n    input ok[2];\n}\n".to_string();
     assert_eq!(out, ans);
 }
 
@@ -76,11 +73,11 @@ fn aware_indent_03() {
     let mut io = Cursor::new(Vec::new());
     {
         let mut g = Generator::new(p, &mut io);
-        g.output_node();
+        g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-    let ans = "\ndeclare hello\n{\n    input ok[OK / 2];\n}\n\n".to_string();
+    let ans = "declare hello\n{\n    input ok[OK / 2];\n}\n".to_string();
     assert_eq!(out, ans);
 }
 
@@ -93,12 +90,12 @@ fn two_arguments() {
     let mut io = Cursor::new(Vec::new());
     {
         let mut g = Generator::new(p, &mut io);
-        g.output_node();
+        g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
     let ans =
-        "\ndeclare hello\n{\n    input a;\n    input b;\n    func_in aa(a, b);\n}\n\n"
+        "declare hello\n{\n    input a;\n    input b;\n    func_in aa(a, b);\n}\n"
             .to_string();
     assert_eq!(out, ans);
 }
@@ -112,10 +109,10 @@ fn new_by_file() {
     let mut io = Cursor::new(Vec::new());
     {
         let mut g = Generator::new(p, &mut io);
-        g.output_node();
+        g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans = "\ndeclare hello_google2\n{\n    input ok;\n    func_in sugoi(ok);\n}\n\n"
+    let ans = "declare hello_google2\n{\n    input ok;\n    func_in sugoi(ok);\n}\n"
         .to_string();
     assert_eq!(out, ans);
 }
@@ -132,7 +129,7 @@ fn output_declare_to_file() {
 
     {
         let mut g = Generator::new(p, &mut io);
-        g.output_node();
+        g.output_node().unwrap();
     }
 }
 
@@ -145,7 +142,7 @@ fn parences() {
     let mut io = Cursor::new(Vec::new());
     {
         let mut g = Generator::new(p, &mut io);
-        g.output_node();
+        g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
     let ans = "#define HELLO ( 12 )\n".to_string();
@@ -161,7 +158,7 @@ fn define_path() {
     let mut io = Cursor::new(Vec::new());
     {
         let mut g = Generator::new(p, &mut io);
-        g.output_node();
+        g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
     let ans = "#define MEMORY_HEX \"../hexs/rv32ui-p-xori.hex\"\n".to_string();
@@ -178,7 +175,7 @@ fn comment_00() {
     let mut io = Cursor::new(Vec::new());
     {
         let mut g = Generator::new(p, &mut io);
-        g.output_node();
+        g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
     let ans = "/*\ndata lines\n*/\n".to_string();
