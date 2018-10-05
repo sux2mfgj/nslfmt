@@ -903,3 +903,27 @@ fn mutiline_comment_03() {
         l.next_token(true),
         Token::new(TokenClass::EndOfProgram, 1));
 }
+
+#[test]
+fn module_00() {
+
+    let mut b = "module test {}*/".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::Module, 1)));
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("test".to_string()), 1)));
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::OpeningBrace, 1)));
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::ClosingBrace, 1)));
+}
+
