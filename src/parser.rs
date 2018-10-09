@@ -166,19 +166,31 @@ impl<'a> Parser<'a> {
             }
             TokenClass::Symbol(Symbol::FuncSelf) => {
                 let id = self.next_ast(true)?;
-                let n_t = self.lexer.next_token(true);
-                match n_t.class {
-                    TokenClass::Symbol(Symbol::Semicolon) => {
-                        return Ok(create_node!(
-                            ASTClass::FuncSelf(
-                                id,
-                                None,
-                                None)));
-                    }
-                    _ => {
-                        panic!("{:?}", n_t);
-                    }
+                let mut n_t = self.lexer.check_next_token(true);
+
+                let mut args: Option<Vec<Box<ASTNode>>> = None;
+                let mut ret: Option<Box<ASTNode>> = None;
+
+                if n_t.class == TokenClass::Symbol(Symbol::LeftParen) {
+                    args = Some(self.generate_args_vec()?);
+                    n_t = self.lexer.check_next_token(true);
                 }
+
+                if n_t.class == TokenClass::Symbol(Symbol::Colon) {
+                    // pass colon
+                    let _t = self.lexer.next_token(true);
+                    ret = Some(self.next_ast(true)?);
+                }
+
+                // pass semicolon
+                let _t = self.lexer.next_token(true);
+
+                return Ok(
+                    create_node!(
+                        ASTClass::FuncSelf(
+                            id,
+                            args,
+                            ret)));
             }
             TokenClass::Symbol(Symbol::Wire) => {
                 let mut wire_list: Vec<(Box<ASTNode>, Box<ASTNode>)> = vec![];

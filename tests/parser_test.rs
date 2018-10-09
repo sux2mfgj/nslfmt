@@ -756,10 +756,9 @@ fn func_self_00() {
     assert_eq!(p.next_ast(true).unwrap(), module);
 }
 
-/*
 #[test]
 fn func_self_01() {
-    let mut b = "module test { wire a, b, c; func_self aa(a, b): c;}".as_bytes();
+    let mut b = "module test { wire a, b; func_self aa(a, b);}".as_bytes();
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
@@ -773,19 +772,15 @@ fn func_self_01() {
                     create_node!(ASTClass::Identifire("b".to_string())),
                     create_node!(ASTClass::Number("1".to_string())),
                 ),
-                (
-                    create_node!(ASTClass::Identifire("c".to_string())),
-                    create_node!(ASTClass::Number("1".to_string())),
-                ),
             ]));
 
     let func_self = create_node!(ASTClass::FuncSelf(
                 create_node!(ASTClass::Identifire("aa".to_string())),
-                vec![
+                Some(vec![
                         create_node!(ASTClass::Identifire("a".to_string())),
                         create_node!(ASTClass::Identifire("b".to_string())),
-                    ],
-                create_node!(ASTClass::Identifire("c".to_string())),
+                    ]),
+                None,
             ));
 
     let components = vec![
@@ -798,4 +793,69 @@ fn func_self_01() {
             create_node!(ASTClass::Block(components, 1))));
     assert_eq!(p.next_ast(true).unwrap(), module);
 }
-*/
+
+#[test]
+fn func_self_02() {
+    let mut b = "module test { wire a; func_self aa: a;}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let wire_def = create_node!(ASTClass::Wire(
+            vec![
+                (
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    create_node!(ASTClass::Number("1".to_string())),
+                ),
+            ]));
+
+    let func_self = create_node!(ASTClass::FuncSelf(
+                create_node!(ASTClass::Identifire("aa".to_string())),
+                None,
+                Some(create_node!(ASTClass::Identifire("a".to_string()))),
+            ));
+
+    let components = vec![
+        wire_def,
+        func_self,
+    ];
+    let module = create_node!(
+        ASTClass::Module(
+            create_node!(ASTClass::Identifire("test".to_string())),
+            create_node!(ASTClass::Block(components, 1))));
+    assert_eq!(p.next_ast(true).unwrap(), module);
+}
+
+#[test]
+fn func_self_03() {
+    let mut b = "module test { wire a, b; func_self aa(a): b;}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let wire_def = create_node!(ASTClass::Wire(
+            vec![
+                (
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    create_node!(ASTClass::Number("1".to_string())),
+                ),
+                (
+                    create_node!(ASTClass::Identifire("b".to_string())),
+                    create_node!(ASTClass::Number("1".to_string())),
+                ),
+            ]));
+
+    let func_self = create_node!(ASTClass::FuncSelf(
+                create_node!(ASTClass::Identifire("aa".to_string())),
+                Some(vec![create_node!(ASTClass::Identifire("a".to_string()))]),
+                Some(create_node!(ASTClass::Identifire("b".to_string()))),
+            ));
+
+    let components = vec![
+        wire_def,
+        func_self,
+    ];
+    let module = create_node!(
+        ASTClass::Module(
+            create_node!(ASTClass::Identifire("test".to_string())),
+            create_node!(ASTClass::Block(components, 1))));
+    assert_eq!(p.next_ast(true).unwrap(), module);
+}
