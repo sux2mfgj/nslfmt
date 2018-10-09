@@ -14,6 +14,7 @@ pub enum Symbol {
     Colon,              // :
     Comma,              // ,
     Dot,                // .
+    Equal,              // =
     Input,              // input
     Output,             // output
     InOut,              // inout
@@ -23,6 +24,7 @@ pub enum Symbol {
     DoubleQuote,        // "
     SingleQuote,        // '
     Wire,               // wire
+    Reg,                // reg
                         //TODO
                         // lack some symbols
 }

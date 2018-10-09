@@ -156,6 +156,10 @@ impl<'a> Lexer<'a> {
                         self.iter.next();
                         return Token::from((Symbol::SingleQuote, self.line));
                     }
+                    '=' => {
+                        self.iter.next();
+                        return Token::from((Symbol::Equal, self.line));
+                    }
                     '/' => {
                         self.iter.next();
                         if let Some(&slash) = self.iter.peek() {
@@ -243,6 +247,7 @@ impl<'a> Lexer<'a> {
             "else" => TokenClass::Macro(Macro::Else),
             "endif" => TokenClass::Macro(Macro::Endif),
             "wire" => TokenClass::Symbol(Symbol::Wire),
+            "reg" => TokenClass::Symbol(Symbol::Reg),
             //TODO
             _ => TokenClass::Identifire(word),
         }
