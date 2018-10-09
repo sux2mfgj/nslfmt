@@ -242,6 +242,7 @@ impl<'a> Lexer<'a> {
             "ifndef" => TokenClass::Macro(Macro::Ifndef),
             "else" => TokenClass::Macro(Macro::Else),
             "endif" => TokenClass::Macro(Macro::Endif),
+            "wire" => TokenClass::Symbol(Symbol::Wire),
             //TODO
             _ => TokenClass::Identifire(word),
         }

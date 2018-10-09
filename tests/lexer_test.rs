@@ -906,8 +906,7 @@ fn mutiline_comment_03() {
 
 #[test]
 fn module_00() {
-
-    let mut b = "module test {}*/".as_bytes();
+    let mut b = "module test {}".as_bytes();
     let mut l = Lexer::new(&mut b);
 
     assert_eq!(
@@ -925,5 +924,99 @@ fn module_00() {
     assert_eq!(
         l.next_token(true),
         Token::from((Symbol::ClosingBrace, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::EndOfProgram, 1));
 }
 
+#[test]
+fn module_wire_00() {
+
+    let mut b = "module test { wire ok; }".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::Module, 1)));
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("test".to_string()), 1)));
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::OpeningBrace, 1))
+        );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::Wire, 1))
+        );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("ok".to_string()), 1))
+        );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::Semicolon, 1))
+        );
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::ClosingBrace, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::EndOfProgram, 1));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::EndOfProgram, 1));
+}
+
+#[test]
+fn module_wire_01() {
+
+    let mut b = "module test { wire ok[12]; }".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::Module, 1)));
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("test".to_string()), 1)));
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::OpeningBrace, 1))
+        );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::Wire, 1))
+        );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("ok".to_string()), 1))
+        );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::LeftSquareBracket, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Number("12".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::RightSquareBracket, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::Semicolon, 1))
+        );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::ClosingBrace, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::EndOfProgram, 1));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::EndOfProgram, 1));
+}

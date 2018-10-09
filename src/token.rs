@@ -22,6 +22,7 @@ pub enum Symbol {
     Sharp,              // #
     DoubleQuote,        // "
     SingleQuote,        // '
+    Wire,               // wire
                         //TODO
                         // lack some symbols
 }

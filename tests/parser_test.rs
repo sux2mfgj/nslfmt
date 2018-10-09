@@ -464,3 +464,41 @@ fn multi_line_comment() {
 
     assert_eq!(p.next_ast(true).unwrap(), multi_line);
 }
+
+#[test]
+fn module_00() {
+    let mut b = "module test {}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let components = vec![];
+    let module = create_node!(
+        ASTClass::Module(
+            create_node!(ASTClass::Identifire("test".to_string())),
+            create_node!(ASTClass::Block(components, 1))));
+    assert_eq!(p.next_ast(true).unwrap(), module);
+}
+
+#[test]
+fn wire() {
+    let mut b = "module test {wire a;}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    // wire data, a[12];
+    //Wire<Vec<(String, String)>
+    let wire_def = create_node!(ASTClass::Wire(
+            vec![
+                (
+                create_node!(ASTClass::Identifire("a".to_string())),
+                create_node!(ASTClass::Number("1".to_string()))
+                )]));
+    let components = vec![
+        wire_def
+    ];
+    let module = create_node!(
+        ASTClass::Module(
+            create_node!(ASTClass::Identifire("test".to_string())),
+            create_node!(ASTClass::Block(components, 1))));
+    assert_eq!(p.next_ast(true).unwrap(), module);
+}

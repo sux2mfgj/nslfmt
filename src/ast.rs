@@ -17,6 +17,7 @@ pub enum ASTClass {
     Block(Vec<Box<ASTNode>>, usize),
     Operator(token::Operator),
 
+    // ----- Declare ------
     // identifire, block
     Declare(Box<ASTNode>, Box<ASTNode>),
 
@@ -35,6 +36,12 @@ pub enum ASTClass {
     Input(Box<ASTNode>, Box<ASTNode>),
     Output(Box<ASTNode>, Box<ASTNode>),
     InOut(Box<ASTNode>, Box<ASTNode>),
+
+    // ----- Module ------
+    // identifire, block
+    Module(Box<ASTNode>, Box<ASTNode>),
+
+    // ----- Macros ------
     MacroInclude(Box<ASTNode>),
     MacroUndef(Box<ASTNode>),
     MacroIfdef(Box<ASTNode>),
@@ -42,6 +49,12 @@ pub enum ASTClass {
     MacroElse,
     MacroEndif,
     MacroDefine(Box<ASTNode>, String),
+
+    // wire enable, data[12];
+    //              id        , width
+//     WireRegDefine(Box<ASTNode>, Box<ASTNode>),
+    Wire(Vec<(Box<ASTNode>, Box<ASTNode>)>),
+
     //          operand     , operation   , operand
     Expression(Box<ASTNode>, Box<ASTNode>, Box<ASTNode>),
     CStyleComment(String),
@@ -181,7 +194,6 @@ impl fmt::Display for ASTNode {
                 return write!(f, "");
             }
             ASTClass::Newline => {
-//                 return write!(f, "\n");
                 return write!(f, "");
             }
             ASTClass::CStyleComment(ref line) => {
