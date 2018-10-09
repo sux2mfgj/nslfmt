@@ -260,6 +260,11 @@ impl<'a> Parser<'a> {
                 self.lexer.next_token(true);
                 return None;
             }
+            TokenClass::Symbol(Symbol::Comma) => {
+                // pass a comma
+                self.lexer.next_token(true);
+                return self.wire_reg_defines();
+            }
             TokenClass::Identifire(_) => {
                 let id = self.next_ast(true).unwrap();
                 let next_t = self.lexer.check_next_token(true);
@@ -283,14 +288,14 @@ impl<'a> Parser<'a> {
                     }
                     TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                         // pass LeftSquareBracket "["
-                        self.lexer.next_token(true);
-                        let width_expr = self.next_ast(true);
+//                         self.lexer.next_token(true);
+                        let width_expr = self.next_ast(true).unwrap();
                         // pass RightSquareBracket "]"
-                        self.lexer.next_token(true);
+//                         self.lexer.next_token(true);
                         return Some(
                             (
                                 id,
-                                self.next_ast(true).unwrap()
+                                width_expr
                             ));
                     }
                     _ => {
