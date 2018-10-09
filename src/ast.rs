@@ -80,6 +80,9 @@ impl fmt::Display for ASTNode {
             ASTClass::Declare(ref id, ref interfaces) => {
                 return write!(f, "declare {}{}", id, interfaces);
             }
+            ASTClass::Module(ref id, ref contents) => {
+                return write!(f, "module {}{}", id, contents);
+            }
             ASTClass::Identifire(ref s) => {
                 return write!(f, "{}", s);
             }
@@ -94,6 +97,24 @@ impl fmt::Display for ASTNode {
             }
             ASTClass::Expression(ref operand1, ref operator, ref operand2) => {
                 return write!(f, "{} {} {}", operand1, operator, operand2)
+            }
+            ASTClass::Wire(ref list) => {
+                let id_list: Vec<String> = list.iter().map(|def|
+                                        match def.1.class {
+                                            ASTClass::Number(ref width) => {
+                                                if width == "1" {
+                                                    return format!("{}", def.0);
+                                                }
+                                                else {
+                                                    return format!("{}[{}]", def.0, def.1);
+                                                }
+                                            }
+                                            _ => {
+                                                panic!("wtf");
+                                            }
+                                        }).collect();
+                let def_str = id_list.join(", ");
+                return write!(f, "wire {};\n", def_str);
             }
             ASTClass::Input(ref id, ref expr) => {
                 if let ASTClass::Number(ref width) = expr.class {

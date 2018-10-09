@@ -180,5 +180,34 @@ fn comment_00() {
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
     let ans = "/*\ndata lines\n*/\n".to_string();
     assert_eq!(out, ans);
+}
 
+#[test]
+fn wire_00() {
+    let mut b = "module hello {\n  wire ok;\n}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let p = Parser::new(&mut l);
+    let mut io = Cursor::new(Vec::new());
+    {
+        let mut g = Generator::new(p, &mut io);
+        g.output_node().unwrap();
+    }
+    let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+    let ans = "module hello\n{\n    wire ok;\n}\n".to_string();
+    assert_eq!(out, ans);
+}
+
+#[test]
+fn wire_01() {
+    let mut b = "module hello {\n  wire ok\n, jk[\n23];\n}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let p = Parser::new(&mut l);
+    let mut io = Cursor::new(Vec::new());
+    {
+        let mut g = Generator::new(p, &mut io);
+        g.output_node().unwrap();
+    }
+    let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+    let ans = "module hello\n{\n    wire ok, jk[23];\n}\n".to_string();
+    assert_eq!(out, ans);
 }
