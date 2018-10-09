@@ -164,6 +164,22 @@ impl<'a> Parser<'a> {
                     )));
                 }
             }
+            TokenClass::Symbol(Symbol::FuncSelf) => {
+                let id = self.next_ast(true)?;
+                let n_t = self.lexer.next_token(true);
+                match n_t.class {
+                    TokenClass::Symbol(Symbol::Semicolon) => {
+                        return Ok(create_node!(
+                            ASTClass::FuncSelf(
+                                id,
+                                None,
+                                None)));
+                    }
+                    _ => {
+                        panic!("{:?}", n_t);
+                    }
+                }
+            }
             TokenClass::Symbol(Symbol::Wire) => {
                 let mut wire_list: Vec<(Box<ASTNode>, Box<ASTNode>)> = vec![];
                 //TODO

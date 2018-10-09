@@ -239,6 +239,7 @@ impl<'a> Lexer<'a> {
             "inout" => TokenClass::Symbol(Symbol::InOut),
             "func_in" => TokenClass::Symbol(Symbol::FuncIn),
             "func_out" => TokenClass::Symbol(Symbol::FuncOut),
+            "func_self" => TokenClass::Symbol(Symbol::FuncSelf),
             "include" => TokenClass::Macro(Macro::Include),
             "define" => TokenClass::Macro(Macro::Define),
             "undef" => TokenClass::Macro(Macro::Undef),

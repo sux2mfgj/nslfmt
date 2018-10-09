@@ -20,6 +20,7 @@ pub enum Symbol {
     InOut,              // inout
     FuncIn,             // func_in
     FuncOut,            // func_out
+    FuncSelf,
     Sharp,              // #
     DoubleQuote,        // "
     SingleQuote,        // '

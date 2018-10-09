@@ -23,9 +23,11 @@ pub enum ASTClass {
 
     // identifire, inputs, output
     FuncIn(Box<ASTNode>, Vec<Box<ASTNode>>, Box<ASTNode>),
-
     // identifire, outputs, input
     FuncOut(Box<ASTNode>, Vec<Box<ASTNode>>, Box<ASTNode>),
+    // identifire, inputs, output
+    FuncSelf(Box<ASTNode>, Option<Vec<Box<ASTNode>>>, Option<Box<ASTNode>>),
+
     /*
      *  identifire, expression or Identifire
      *  e.g.

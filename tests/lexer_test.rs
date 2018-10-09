@@ -1059,3 +1059,95 @@ fn reg_00() {
         l.next_token(true),
         Token::new(TokenClass::EndOfProgram, 1));
 }
+
+#[test]
+fn func_self_00() {
+    let mut b = "module test { wire a, b, c; func_self aa(a, b): c;}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::Module, 1)));
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("test".to_string()), 1)));
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::OpeningBrace, 1))
+        );
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::Wire, 1))
+        );
+
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("a".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::Symbol(Symbol::Comma), 1)
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("b".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::Symbol(Symbol::Comma), 1)
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("c".to_string()), 1)));
+
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::Symbol(Symbol::Semicolon), 1)
+    );
+
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::Symbol(Symbol::FuncSelf), 1)
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("aa".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::Symbol(Symbol::LeftParen), 1)
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("a".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::Symbol(Symbol::Comma), 1)
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("b".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::Symbol(Symbol::RightParen), 1)
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::Symbol(Symbol::Colon), 1)
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("c".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::Symbol(Symbol::Semicolon), 1)
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::ClosingBrace, 1))
+        );
+
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::EndOfProgram, 1));
+}
