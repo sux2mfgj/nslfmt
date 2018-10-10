@@ -142,6 +142,13 @@ impl<'a> Parser<'a> {
 
                 return Ok(create_node!(ASTClass::Wire(wire_list)));
             }
+            TokenClass::Symbol(Symbol::Reg) => {
+                let mut reg_list = vec![];
+                while let Some(def) = self.reg_defines() {
+                    reg_list.push(def);
+                }
+                return Ok(create_node!(ASTClass::Reg(reg_list)));
+            }
             _ => {
                 panic!("unexptected token {:?}", t);
             }
@@ -505,7 +512,6 @@ impl<'a> Parser<'a> {
                     }
                     TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                         let width = self.width_expression_ast().unwrap();
-
                         return Some(
                             (
                                 id,
@@ -519,6 +525,80 @@ impl<'a> Parser<'a> {
             }
             _ => {
                 panic!("unexptected token: {:?}", t);
+            }
+        }
+    }
+
+    fn reg_defines(&mut self) -> Option<(Box<ASTNode>, Option<Box<ASTNode>>, Option<Box<ASTNode>>)>
+    {
+        let t = self.lexer.check_next_token(true);
+        match t.class {
+            TokenClass::Symbol(Symbol::Semicolon) => {
+                // pass a semicolon
+                self.lexer.next_token(true);
+                return None;
+            }
+            TokenClass::Symbol(Symbol::Comma) => {
+                // pass a comma
+                self.lexer.next_token(true);
+                return self.reg_defines();
+            }
+            TokenClass::Identifire(_) => {
+                let id = self.next_ast().unwrap();
+                let next_t = self.lexer.check_next_token(true);
+                match next_t.class {
+                    TokenClass::Symbol(Symbol::Semicolon) => {
+                        return Some(
+                            (
+                                id,
+                                None,
+                                None,
+                            ));
+                    }
+                    TokenClass::Symbol(Symbol::LeftSquareBracket) => {
+                        let width_expr = self.width_expression_ast().unwrap();
+                        let nn_t = self.lexer.check_next_token(true);
+
+                        let mut init: Option<Box<ASTNode>> = None;
+                        if nn_t.class == TokenClass::Symbol(Symbol::Equal) {
+                            let _eq = self.lexer.next_token(true);
+                            init = Some(self.next_ast().unwrap());
+                        }
+                        return Some(
+                            (
+                                id,
+                                Some(width_expr),
+                                init,
+                            ));
+                    }
+                    TokenClass::Symbol(Symbol::Comma) => {
+                        // pass a comma
+                        self.lexer.next_token(true);
+                        return Some(
+                            (
+                                id,
+                                None,
+                                None,
+                            ));
+                    }
+                    TokenClass::Symbol(Symbol::Equal) => {
+                        let _eq = self.lexer.next_token(true);
+                        let init = Some(self.next_ast().unwrap());
+                        return Some(
+                            (
+                                id,
+                                None,
+                                init,
+                            ));
+
+                    }
+                    _ => {
+                        panic!("??? {:?}", next_t);
+                    }
+                }
+            }
+            _ => {
+                panic!("?? {:?}", t);
             }
         }
     }

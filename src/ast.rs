@@ -57,7 +57,7 @@ pub enum ASTClass {
     //              id    , width
     Wire(Vec<(Box<ASTNode>, Option<Box<ASTNode>>)>),
     //          id       , width       , initial_value
-    Reg(Vec<(Box<ASTNode>, Box<ASTNode>, Option<Box<ASTNode>>)>),
+    Reg(Vec<(Box<ASTNode>, Option<Box<ASTNode>>, Option<Box<ASTNode>>)>),
 
     //          operand     , operation   , operand
     Expression(Box<ASTNode>, Box<ASTNode>, Box<ASTNode>),

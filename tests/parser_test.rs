@@ -630,7 +630,6 @@ fn wire_05() {
     assert_eq!(p.next_ast_top().unwrap(), module);
 }
 
-/*
 
 #[test]
 fn reg_00() {
@@ -642,7 +641,7 @@ fn reg_00() {
             vec![
                 (
                     create_node!(ASTClass::Identifire("a".to_string())),
-                    create_node!(ASTClass::Number("1".to_string())),
+                    None,
                     None,
                 )
             ]));
@@ -656,6 +655,7 @@ fn reg_00() {
     assert_eq!(p.next_ast_top().unwrap(), module);
 }
 
+
 #[test]
 fn reg_01() {
     let mut b = "module test { reg a[12], b; }".as_bytes();
@@ -666,12 +666,12 @@ fn reg_01() {
             vec![
                 (
                     create_node!(ASTClass::Identifire("a".to_string())),
-                    create_node!(ASTClass::Number("12".to_string())),
+                    Some(create_node!(ASTClass::Number("12".to_string()))),
                     None,
                 ),
                 (
                     create_node!(ASTClass::Identifire("b".to_string())),
-                    create_node!(ASTClass::Number("1".to_string())),
+                    None,
                     None,
                 ),
             ]));
@@ -695,12 +695,12 @@ fn reg_02() {
             vec![
                 (
                     create_node!(ASTClass::Identifire("a".to_string())),
-                    create_node!(ASTClass::Number("4".to_string())),
+                    Some(create_node!(ASTClass::Number("4".to_string()))),
                     Some(create_node!(ASTClass::Number("4'b1001".to_string()))),
                 ),
                 (
                     create_node!(ASTClass::Identifire("b".to_string())),
-                    create_node!(ASTClass::Number("1".to_string())),
+                    None,
                     None,
                 ),
             ]));
@@ -724,12 +724,12 @@ fn reg_03() {
             vec![
                 (
                     create_node!(ASTClass::Identifire("a".to_string())),
-                    create_node!(ASTClass::Number("4".to_string())),
+                    Some(create_node!(ASTClass::Number("4".to_string()))),
                     Some(create_node!(ASTClass::Number("4'b1001".to_string()))),
                 ),
                 (
                     create_node!(ASTClass::Identifire("b".to_string())),
-                    create_node!(ASTClass::Number("12".to_string())),
+                    Some(create_node!(ASTClass::Number("12".to_string()))),
                     None,
                 ),
             ]));
@@ -742,6 +742,37 @@ fn reg_03() {
             create_node!(ASTClass::Block(components, 1))));
     assert_eq!(p.next_ast_top().unwrap(), module);
 }
+
+#[test]
+fn reg_04() {
+    let mut b = "module test { reg a = 1'b1, b[12]; }".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let reg_def = create_node!(ASTClass::Reg(
+            vec![
+                (
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    None,
+                    Some(create_node!(ASTClass::Number("1'b1".to_string()))),
+                ),
+                (
+                    create_node!(ASTClass::Identifire("b".to_string())),
+                    Some(create_node!(ASTClass::Number("12".to_string()))),
+                    None,
+                ),
+            ]));
+    let components = vec![
+        reg_def
+    ];
+    let module = create_node!(
+        ASTClass::Module(
+            create_node!(ASTClass::Identifire("test".to_string())),
+            create_node!(ASTClass::Block(components, 1))));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}
+
+/*
 
 #[test]
 fn func_self_00() {
