@@ -6,15 +6,15 @@ use std::fs::File;
 use std::io::BufReader;
 use std::process;
 
-mod token;
-mod lexer;
 mod ast;
 mod generator;
+mod lexer;
 mod parser;
+mod token;
 
+use generator::Generator;
 use lexer::Lexer;
 use parser::Parser;
-use generator::Generator;
 
 fn print_version() {
     let version_info = format!(

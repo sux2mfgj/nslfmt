@@ -1,8 +1,8 @@
 extern crate nslfmt;
 
+use nslfmt::generator::*;
 use nslfmt::lexer::*;
 use nslfmt::parser::*;
-use nslfmt::generator::*;
 
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Cursor};
@@ -94,9 +94,8 @@ fn two_arguments() {
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-    let ans =
-        "declare hello\n{\n    input a;\n    input b;\n    func_in aa(a, b);\n}\n"
-            .to_string();
+    let ans = "declare hello\n{\n    input a;\n    input b;\n    func_in aa(a, b);\n}\n"
+        .to_string();
     assert_eq!(out, ans);
 }
 
@@ -163,7 +162,6 @@ fn define_path() {
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
     let ans = "#define MEMORY_HEX \"../hexs/rv32ui-p-xori.hex\"\n".to_string();
     assert_eq!(out, ans);
-
 }
 
 #[test]

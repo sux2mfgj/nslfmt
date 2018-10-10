@@ -24,13 +24,17 @@ impl<'a> Lexer<'a> {
             line: 1,
             reader: reader,
             line_buffer: "".to_string(),
-            iter: "".to_string().chars().collect::<Vec<_>>().into_iter().peekable(),
+            iter: ""
+                .to_string()
+                .chars()
+                .collect::<Vec<_>>()
+                .into_iter()
+                .peekable(),
             buffer: vec![],
         }
     }
 
     pub fn check_next_token(&mut self, is_pass_nl: bool) -> Token {
-
         if let Some(t) = self.buffer.first() {
             return t.clone();
         }
@@ -41,7 +45,6 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn next_token(&mut self, is_pass_nl: bool) -> Token {
-
         if self.buffer.len() != 0 {
             return self.buffer.pop().unwrap();
         }
@@ -57,10 +60,9 @@ impl<'a> Lexer<'a> {
     }
 
     fn supply_buffer(&mut self) -> Option<Token> {
-
         if self.iter.peek() == None {
             let mut buf = Vec::<u8>::new();
-//             let size = self.reader.read_until(b'\n', &mut buf).expect(panic!("read_until"));
+            //             let size = self.reader.read_until(b'\n', &mut buf).expect(panic!("read_until"));
             match self.reader.read_until(b'\n', &mut buf) {
                 Ok(size) => {
                     if size == 0 {
@@ -68,21 +70,22 @@ impl<'a> Lexer<'a> {
                     }
                 }
                 Err(e) => {
-//                     return Some(Token::from((TokenClass::EndOfProgram, self.line)));
+                    //                     return Some(Token::from((TokenClass::EndOfProgram, self.line)));
                     panic!("{}", e)
                 }
             }
             self.line_buffer = String::from_utf8(buf).unwrap();
-            self.iter = self.line_buffer
-                            .chars()
-                            .collect::<Vec<_>>()
-                            .into_iter()
-                            .peekable();
+            self.iter = self
+                .line_buffer
+                .chars()
+                .collect::<Vec<_>>()
+                .into_iter()
+                .peekable();
 
             // TODO
-//             if self.iter.peek() == None {
-//                 return Some(Token::from((TokenClass::EndOfProgram, self.line)));
-//             }
+            //             if self.iter.peek() == None {
+            //                 return Some(Token::from((TokenClass::EndOfProgram, self.line)));
+            //             }
         }
 
         None
@@ -150,7 +153,10 @@ impl<'a> Lexer<'a> {
                     }
                     '*' => {
                         self.iter.next();
-                        return Token::from((TokenClass::Operator(Operator::Asterisk), self.line));
+                        return Token::from((
+                            TokenClass::Operator(Operator::Asterisk),
+                            self.line,
+                        ));
                     }
                     '\'' => {
                         self.iter.next();
@@ -168,23 +174,24 @@ impl<'a> Lexer<'a> {
                                 '/' => {
                                     self.iter.next();
                                     let comment = self.get_string_until_newline();
-                                    return Token::from((TokenClass::CStyleComment(comment),
-                                        self.line));
+                                    return Token::from((
+                                        TokenClass::CStyleComment(comment),
+                                        self.line,
+                                    ));
                                 }
                                 // multi-line comment
                                 '*' => {
                                     self.iter.next();
-                                    let comment_list = self.get_string_for_multiline_comment();
+                                    let comment_list =
+                                        self.get_string_for_multiline_comment();
                                     return Token::from((
-                                            TokenClass::CPPStyleComment(comment_list),
-                                            self.line));
+                                        TokenClass::CPPStyleComment(comment_list),
+                                        self.line,
+                                    ));
                                 }
-                                _ => {
-                                    return Token::from((Operator::Slash, self.line))
-                                }
+                                _ => return Token::from((Operator::Slash, self.line)),
                             }
-                        }
-                        else {
+                        } else {
                             panic!("panic");
                         }
                     }
@@ -268,20 +275,20 @@ impl<'a> Lexer<'a> {
     }
 
     fn get_string_for_multiline_comment(&mut self) -> Vec<String> {
-            let mut result : Vec<String> = Vec::new();
+        let mut result: Vec<String> = Vec::new();
 
-            while let Some(r) = self.get_comment_oneline() {
-                self.supply_buffer();
-                result.push(r.0);
-                match r.1 {
-                    CommentState::Finished => {
-                        return result;
-                    }
-                    CommentState::Continue => {}
+        while let Some(r) = self.get_comment_oneline() {
+            self.supply_buffer();
+            result.push(r.0);
+            match r.1 {
+                CommentState::Finished => {
+                    return result;
                 }
+                CommentState::Continue => {}
             }
-            panic!("comment is not closed but got EOF");
         }
+        panic!("comment is not closed but got EOF");
+    }
 
     fn get_number_token(&mut self) -> TokenClass {
         let mut number = self.get_number();
@@ -295,11 +302,7 @@ impl<'a> Lexer<'a> {
                             | (c_next == 'h')
                             | (c_next == 'd')
                         {
-                            number.push_str(&format!(
-                                "'{}{}",
-                                c_next,
-                                self.get_number()
-                            ));
+                            number.push_str(&format!("'{}{}", c_next, self.get_number()));
                             return TokenClass::Number(number);
                         } else {
                             panic!("unexptected character {}", c_next);
@@ -320,36 +323,36 @@ impl<'a> Lexer<'a> {
     }
 
     fn get_comment_oneline(&mut self) -> Option<CommentResult> {
-            let mut word = String::new();
-            let mut astarisc_flag = false;
-            while let Some(&c_next) = self.iter.peek() {
-                self.iter.next();
-                match c_next {
-                    '\n' => {
-                        astarisc_flag = false;
-                        //word.push_str(&c_next.to_string());
-                        return Some(CommentResult(word, CommentState::Continue));
+        let mut word = String::new();
+        let mut astarisc_flag = false;
+        while let Some(&c_next) = self.iter.peek() {
+            self.iter.next();
+            match c_next {
+                '\n' => {
+                    astarisc_flag = false;
+                    //word.push_str(&c_next.to_string());
+                    return Some(CommentResult(word, CommentState::Continue));
+                }
+                '*' => {
+                    word.push_str(&c_next.to_string());
+                    astarisc_flag = true;
+                }
+                '/' => {
+                    if astarisc_flag {
+                        word.pop();
+                        return Some(CommentResult(word, CommentState::Finished));
                     }
-                    '*' => {
-                        word.push_str(&c_next.to_string());
-                        astarisc_flag = true;
-                    }
-                    '/' => {
-                        if astarisc_flag {
-                            word.pop();
-                            return Some(CommentResult(word, CommentState::Finished));
-                        }
-                        word.push_str(&c_next.to_string());
-                        astarisc_flag = false;
-                    }
-                    _ => {
-                        astarisc_flag = false;
-                        word.push_str(&c_next.to_string());
-                    }
+                    word.push_str(&c_next.to_string());
+                    astarisc_flag = false;
+                }
+                _ => {
+                    astarisc_flag = false;
+                    word.push_str(&c_next.to_string());
                 }
             }
-            return Some(CommentResult(word, CommentState::Finished));
         }
+        return Some(CommentResult(word, CommentState::Finished));
+    }
 
     fn get_number(&mut self) -> String {
         let mut number = String::new();

@@ -26,7 +26,11 @@ pub enum ASTClass {
     // identifire, outputs, input
     FuncOut(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
     // identifire, inputs, output
-    FuncSelf(Box<ASTNode>, Option<Vec<Box<ASTNode>>>, Option<Box<ASTNode>>),
+    FuncSelf(
+        Box<ASTNode>,
+        Option<Vec<Box<ASTNode>>>,
+        Option<Box<ASTNode>>,
+    ),
 
     /*
      *  identifire, expression or Identifire
@@ -103,38 +107,36 @@ impl fmt::Display for ASTNode {
                 return write!(f, "{} {} {}", operand1, operator, operand2)
             }
             ASTClass::Wire(ref list) => {
-                let id_list: Vec<String> = list.iter().map(|def|
-                                            match def.1 {
-                                                Some(ref w) => {
-                                                    return format!("{}[{}]", def.0, w);
-                                                }
-                                                None => {
-                                                    return format!("{}", def.0);
-                                                }
-                                            }).collect();
+                let id_list: Vec<String> = list
+                    .iter()
+                    .map(|def| match def.1 {
+                        Some(ref w) => {
+                            return format!("{}[{}]", def.0, w);
+                        }
+                        None => {
+                            return format!("{}", def.0);
+                        }
+                    })
+                    .collect();
                 let def_str = id_list.join(", ");
                 return write!(f, "wire {};\n", def_str);
             }
-            ASTClass::Input(ref id, ref expr) => {
-                match expr {
-                    Some(width) => {
-                        return write!(f, "input {}[{}];\n", id, width);
-                    }
-                    None => {
-                        return write!(f, "input {};\n", id);
-                    }
+            ASTClass::Input(ref id, ref expr) => match expr {
+                Some(width) => {
+                    return write!(f, "input {}[{}];\n", id, width);
                 }
-            }
-            ASTClass::Output(ref id, ref expr) => {
-                match expr {
-                    Some(width) => {
-                        return write!(f, "output {}[{}];\n", id, width);
-                    }
-                    None => {
-                        return write!(f, "output {};\n", id);
-                    }
+                None => {
+                    return write!(f, "input {};\n", id);
                 }
-            }
+            },
+            ASTClass::Output(ref id, ref expr) => match expr {
+                Some(width) => {
+                    return write!(f, "output {}[{}];\n", id, width);
+                }
+                None => {
+                    return write!(f, "output {};\n", id);
+                }
+            },
             ASTClass::FuncIn(ref id, ref input_ids, ref output) => {
                 let str_input: Vec<String> =
                     input_ids.iter().map(|ident| format!("{}", ident)).collect();
@@ -196,16 +198,14 @@ impl fmt::Display for ASTNode {
             ASTClass::MacroIfndef(ref id) => {
                 return write!(f, "#ifndef {}\n", id);
             }
-            ASTClass::MacroDefine(ref id, ref string) => {
-                match string {
-                    Some(s) => {
-                        return write!(f, "#define {} {}\n", id, s);
-                    }
-                    None => {
-                        return write!(f, "#define {}\n", id);
-                    }
+            ASTClass::MacroDefine(ref id, ref string) => match string {
+                Some(s) => {
+                    return write!(f, "#define {} {}\n", id, s);
                 }
-            }
+                None => {
+                    return write!(f, "#define {}\n", id);
+                }
+            },
             ASTClass::MacroEndif => {
                 return write!(f, "#endif\n");
             }

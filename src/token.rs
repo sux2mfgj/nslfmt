@@ -21,13 +21,13 @@ pub enum Symbol {
     FuncIn,             // func_in
     FuncOut,            // func_out
     FuncSelf,
-    Sharp,              // #
-    DoubleQuote,        // "
-    SingleQuote,        // '
-    Wire,               // wire
-    Reg,                // reg
-                        //TODO
-                        // lack some symbols
+    Sharp,       // #
+    DoubleQuote, // "
+    SingleQuote, // '
+    Wire,        // wire
+    Reg,         // reg
+                 //TODO
+                 // lack some symbols
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -135,7 +135,7 @@ impl fmt::Display for Token {
             TokenClass::Number(ref num) => {
                 return write!(f, "{}", num);
             }
-            TokenClass::String(ref st)  => {
+            TokenClass::String(ref st) => {
                 return write!(f, "\"{}\"", st);
             }
             TokenClass::Symbol(Symbol::Input) => {
