@@ -18,7 +18,7 @@ io-wire     ::= "input"
 width-definition ::= [ "[" <width-expression> "]" ]
 
 width-expression    ::= <number>
-                    |   <width-expr> <operator> <width-expr>
+                    |   <width-expression> <operator> <width-expression>
 
 operator            ::= "/"
                     |   "*"

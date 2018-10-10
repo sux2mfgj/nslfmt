@@ -22,9 +22,9 @@ pub enum ASTClass {
     Declare(Box<ASTNode>, Box<ASTNode>),
 
     // identifire, inputs, output
-    FuncIn(Box<ASTNode>, Vec<Box<ASTNode>>, Box<ASTNode>),
+    FuncIn(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
     // identifire, outputs, input
-    FuncOut(Box<ASTNode>, Vec<Box<ASTNode>>, Box<ASTNode>),
+    FuncOut(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
     // identifire, inputs, output
     FuncSelf(Box<ASTNode>, Option<Vec<Box<ASTNode>>>, Option<Box<ASTNode>>),
 
@@ -35,13 +35,14 @@ pub enum ASTClass {
      *      input hello[B_WIDTH];
      *      input hello[3];
      */
-    Input(Box<ASTNode>, Box<ASTNode>),
-    Output(Box<ASTNode>, Box<ASTNode>),
-    InOut(Box<ASTNode>, Box<ASTNode>),
+    Input(Box<ASTNode>, Option<Box<ASTNode>>),
+    Output(Box<ASTNode>, Option<Box<ASTNode>>),
+    InOut(Box<ASTNode>, Option<Box<ASTNode>>),
 
     // ----- Module ------
     // identifire, block
     Module(Box<ASTNode>, Box<ASTNode>),
+    SubModule(Box<ASTNode>, Vec<Box<ASTNode>>),
 
     // ----- Macros ------
     MacroInclude(Box<ASTNode>),
@@ -50,7 +51,7 @@ pub enum ASTClass {
     MacroIfndef(Box<ASTNode>),
     MacroElse,
     MacroEndif,
-    MacroDefine(Box<ASTNode>, String),
+    MacroDefine(Box<ASTNode>, Option<String>),
 
     // wire enable, data[12];
     //              id    , width
@@ -120,54 +121,50 @@ impl fmt::Display for ASTNode {
                 return write!(f, "wire {};\n", def_str);
             }
             ASTClass::Input(ref id, ref expr) => {
-                if let ASTClass::Number(ref width) = expr.class {
-                    if width == "1" {
+                match expr {
+                    Some(width) => {
+                        return write!(f, "input {}[{}];\n", id, width);
+                    }
+                    None => {
                         return write!(f, "input {};\n", id);
-                    } else {
-                        return write!(f, "input {}[{}];\n", id, expr);
                     }
                 }
-                return write!(f, "input {}[{}];\n", id, expr);
             }
             ASTClass::Output(ref id, ref expr) => {
-                if let ASTClass::Number(ref width) = expr.class {
-                    if width == "1" {
+                match expr {
+                    Some(width) => {
+                        return write!(f, "output {}[{}];\n", id, width);
+                    }
+                    None => {
                         return write!(f, "output {};\n", id);
-                    } else {
-                        return write!(f, "output {}[{}];\n", id, expr);
                     }
                 }
-                return write!(f, "output {}[{}];\n", id, expr);
             }
             ASTClass::FuncIn(ref id, ref input_ids, ref output) => {
                 let str_input: Vec<String> =
                     input_ids.iter().map(|ident| format!("{}", ident)).collect();
                 //let args = str_input.connect(", ");
                 let args = str_input.join(", ");
-
-                if let ASTClass::Identifire(ref s) = output.class {
-                    if s.is_empty() {
-                        return write!(f, "func_in {}({});\n", id, args);
-                    } else {
-                        return write!(f, "func_in {}({}) : {};\n", id, args, output);
+                match output {
+                    Some(s) => {
+                        return write!(f, "func_in {}({}) : {};\n", id, args, s);
                     }
-                } else {
-                    panic!("UnExpectedToken at {}", line!());
+                    None => {
+                        return write!(f, "func_in {}({});\n", id, args);
+                    }
                 }
             }
             ASTClass::FuncOut(ref id, ref input_ids, ref output) => {
                 let str_input: Vec<String> =
                     input_ids.iter().map(|ident| format!("{}", ident)).collect();
                 let args = str_input.join(", ");
-
-                if let ASTClass::Identifire(ref s) = output.class {
-                    if s.is_empty() {
-                        return write!(f, "func_out {}({});\n", id, args);
-                    } else {
-                        return write!(f, "func_out {}({}) : {};\n", id, args, output);
+                match output {
+                    Some(s) => {
+                        return write!(f, "func_out {}({}) : {};\n", id, args, s);
                     }
-                } else {
-                    panic!("UnExpectedToken at {}", line!());
+                    None => {
+                        return write!(f, "func_out {}({});\n", id, args);
+                    }
                 }
             }
             ASTClass::Block(ref list, nest) => {
@@ -205,10 +202,13 @@ impl fmt::Display for ASTNode {
                 return write!(f, "#ifndef {}\n", id);
             }
             ASTClass::MacroDefine(ref id, ref string) => {
-                if string.len() == 0 {
-                    return write!(f, "#define {}\n", id);
-                } else {
-                    return write!(f, "#define {} {}\n", id, string);
+                match string {
+                    Some(s) => {
+                        return write!(f, "#define {} {}\n", id, s);
+                    }
+                    None => {
+                        return write!(f, "#define {}\n", id);
+                    }
                 }
             }
             ASTClass::MacroEndif => {
