@@ -37,6 +37,9 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::Declare) => {
                 self.declare_ast()
             }
+            TokenClass::Symbol(Symbol::Module) => {
+                self.module_ast()
+            }
             TokenClass::CPPStyleComment(list) => {
                 return Ok(create_node!(ASTClass::CPPStyleComment(list)));
             }
@@ -91,6 +94,59 @@ impl<'a> Parser<'a> {
         else {
             panic!("test");
         }
+    }
+
+    pub fn module_ast(&mut self) -> Result<Box<ASTNode>, ASTError> {
+        // <id>
+        let id_token = self.lexer.next_token(true);
+        let brace_token = self.lexer.next_token(false);
+        if let (TokenClass::Identifire(id_str), TokenClass::Symbol(Symbol::OpeningBrace))
+            = (id_token.class, brace_token.class)
+        {
+            let mut content = Vec::new();
+            loop {
+                let next_t = self.lexer.check_next_token(false);
+                match next_t.class {
+                    TokenClass::Symbol(Symbol::ClosingBrace) => {
+                        self.lexer.next_token(true);
+                        return Ok(
+                            create_node!(ASTClass::Module(
+                                    create_node!(ASTClass::Identifire(id_str)),
+                                    create_node!(ASTClass::Block(content, 1))
+                                    )));
+                    }
+                    TokenClass::EndOfProgram => {
+                        panic!("unexptected EOP {:?}", next_t);
+                    }
+                    _ => {
+                        let t = self.module_block_ast()?;
+                        content.push(t);
+                    }
+                }
+            }
+        }
+        else {
+            panic!("unexptected token");
+        }
+    }
+
+    fn module_block_ast(&mut self) -> Result<Box<ASTNode>, ASTError> {
+        let t = self.lexer.next_token(false);
+        match t.class {
+            TokenClass::Symbol(Symbol::Wire) => {
+//                 let mut wire_list: Vec<(Box<ASTNode>, Option<Box<ASTNode>)> = vec![];
+                let mut wire_list = vec![];
+                while let Some(def) = self.wire_defines() {
+                    wire_list.push(def);
+                }
+
+                return Ok(create_node!(ASTClass::Wire(wire_list)));
+            }
+            _ => {
+                panic!("unexptected token {:?}", t);
+            }
+        }
+
     }
 
     pub fn declare_block_ast(&mut self) -> Result<Box<ASTNode>, ASTError> {
@@ -413,6 +469,60 @@ impl<'a> Parser<'a> {
             }
         }
     }
+
+    fn wire_defines(&mut self) -> Option<(Box<ASTNode>, Option<Box<ASTNode>>)> {
+        let t = self.lexer.check_next_token(true);
+        match t.class {
+            TokenClass::Symbol(Symbol::Semicolon) => {
+                // pass a semicolon
+                self.lexer.next_token(true);
+                return None;
+            }
+            TokenClass::Symbol(Symbol::Comma) => {
+                // pass a comma
+                self.lexer.next_token(true);
+                return self.wire_defines();
+            }
+            TokenClass::Identifire(_) => {
+                let id = self.next_ast().unwrap();
+                let next_t = self.lexer.check_next_token(true);
+                match next_t.class {
+                    TokenClass::Symbol(Symbol::Semicolon) => {
+                        return Some(
+                            (
+                                id,
+                                None,
+                            ));
+                    }
+                    TokenClass::Symbol(Symbol::Comma) => {
+                        // pass a comma
+                        self.lexer.next_token(true);
+                        return Some(
+                            (
+                                id,
+                                None,
+                            ));
+                    }
+                    TokenClass::Symbol(Symbol::LeftSquareBracket) => {
+                        let width = self.width_expression_ast().unwrap();
+
+                        return Some(
+                            (
+                                id,
+                                Some(width),
+                            ));
+                    }
+                    _ => {
+                        panic!("{:?}", next_t);
+                    }
+                }
+            }
+            _ => {
+                panic!("unexptected token: {:?}", t);
+            }
+        }
+    }
+
     /*
     pub fn next_ast(&mut self, pass_newline: bool) -> Result<Box<ASTNode>, ASTError> {
         let t = self.lexer.next_token(pass_newline);

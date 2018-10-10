@@ -55,7 +55,7 @@ pub enum ASTClass {
 
     // wire enable, data[12];
     //              id    , width
-    Wire(Vec<(Box<ASTNode>, Box<ASTNode>)>),
+    Wire(Vec<(Box<ASTNode>, Option<Box<ASTNode>>)>),
     //          id       , width       , initial_value
     Reg(Vec<(Box<ASTNode>, Box<ASTNode>, Option<Box<ASTNode>>)>),
 
@@ -104,19 +104,14 @@ impl fmt::Display for ASTNode {
             }
             ASTClass::Wire(ref list) => {
                 let id_list: Vec<String> = list.iter().map(|def|
-                                        match def.1.class {
-                                            ASTClass::Number(ref width) => {
-                                                if width == "1" {
+                                            match def.1 {
+                                                Some(ref w) => {
+                                                    return format!("{}[{}]", def.0, w);
+                                                }
+                                                None => {
                                                     return format!("{}", def.0);
                                                 }
-                                                else {
-                                                    return format!("{}[{}]", def.0, def.1);
-                                                }
-                                            }
-                                            _ => {
-                                                panic!("wtf");
-                                            }
-                                        }).collect();
+                                            }).collect();
                 let def_str = id_list.join(", ");
                 return write!(f, "wire {};\n", def_str);
             }

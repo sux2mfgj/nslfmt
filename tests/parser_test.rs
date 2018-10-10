@@ -486,7 +486,6 @@ fn module_00() {
     assert_eq!(p.next_ast_top().unwrap(), module);
 }
 
-/*
 #[test]
 fn wire_01() {
     let mut b = "module test {wire a;}".as_bytes();
@@ -499,7 +498,7 @@ fn wire_01() {
             vec![
                 (
                 create_node!(ASTClass::Identifire("a".to_string())),
-                create_node!(ASTClass::Number("1".to_string()))
+                None,
                 )]));
     let components = vec![
         wire_def
@@ -523,11 +522,11 @@ fn wire_02() {
             vec![
                 (
                     create_node!(ASTClass::Identifire("a".to_string())),
-                    create_node!(ASTClass::Number("1".to_string()))
+                    None,
                 ),
                 (
                     create_node!(ASTClass::Identifire("b".to_string())),
-                    create_node!(ASTClass::Number("1".to_string()))
+                    None,
                 )
             ]));
     let components = vec![
@@ -552,11 +551,11 @@ fn wire_03() {
             vec![
                 (
                     create_node!(ASTClass::Identifire("a".to_string())),
-                    create_node!(ASTClass::Number("12".to_string()))
+                    Some(create_node!(ASTClass::Number("12".to_string())))
                 ),
                 (
                     create_node!(ASTClass::Identifire("b".to_string())),
-                    create_node!(ASTClass::Number("1".to_string()))
+                    None,
                 )
             ]));
     let components = vec![
@@ -581,11 +580,11 @@ fn wire_04() {
             vec![
                 (
                     create_node!(ASTClass::Identifire("a".to_string())),
-                    create_node!(ASTClass::Number("12".to_string()))
+                    Some(create_node!(ASTClass::Number("12".to_string())))
                 ),
                 (
                     create_node!(ASTClass::Identifire("b".to_string())),
-                    create_node!(ASTClass::Number("23".to_string()))
+                    Some(create_node!(ASTClass::Number("23".to_string())))
                 )
             ]));
     let components = vec![
@@ -610,15 +609,15 @@ fn wire_05() {
             vec![
                 (
                     create_node!(ASTClass::Identifire("a".to_string())),
-                    create_node!(ASTClass::Number("12".to_string()))
+                    Some(create_node!(ASTClass::Number("12".to_string())))
                 ),
                 (
                     create_node!(ASTClass::Identifire("b".to_string())),
-                    create_node!(ASTClass::Number("23".to_string()))
+                    Some(create_node!(ASTClass::Number("23".to_string())))
                 ),
                 (
                     create_node!(ASTClass::Identifire("c".to_string())),
-                    create_node!(ASTClass::Number("1".to_string()))
+                    None
                 )
             ]));
     let components = vec![
@@ -630,6 +629,8 @@ fn wire_05() {
             create_node!(ASTClass::Block(components, 1))));
     assert_eq!(p.next_ast_top().unwrap(), module);
 }
+
+/*
 
 #[test]
 fn reg_00() {
