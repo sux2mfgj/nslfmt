@@ -311,8 +311,45 @@ impl<'a> Parser<'a> {
                 }
             }
             TokenClass::Newline => Ok(create_node!(ASTClass::Newline)),
+            TokenClass::Identifire(_) => {
+                let mut tokens = vec![t];
+                while let Some(tt) = self.get_token_for_macro() {
+                    tokens.push(tt);
+                }
+                return Ok(create_node!(ASTClass::Macro_SubModule(tokens)));
+            }
             _ => {
                 panic!("unexptected token {:?}", t);
+            }
+        }
+    }
+
+    fn get_token_for_macro(&mut self) -> Option<Token> {
+        let t = self.lexer.check_next_token(true);
+        match t.class {
+            TokenClass::Symbol(Symbol::Input) => {
+                None
+            }
+            TokenClass::Symbol(Symbol::Output) => {
+                None
+            }
+            TokenClass::Symbol(Symbol::InOut) => {
+                None
+            }
+            TokenClass::Symbol(Symbol::FuncIn) => {
+                None
+            }
+            TokenClass::Symbol(Symbol::FuncOut) => {
+                None
+            }
+            TokenClass::Symbol(Symbol::Semicolon) => {
+                None
+            }
+            TokenClass::Symbol(Symbol::ClosingBrace) => {
+                None
+            }
+            _ => {
+                Some(self.lexer.next_token(true))
             }
         }
     }

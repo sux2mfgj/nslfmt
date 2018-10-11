@@ -75,6 +75,63 @@ fn multi_bit_input() {
 }
 
 #[test]
+fn macro_in_declare_00() {
+    let mut b = "declare ok{ input a[2]; \nTEST_INTERFACES\n}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let mut interfaces = Vec::new();
+    interfaces.push(create_node!(ASTClass::Input(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        Some(create_node!(ASTClass::Number("2".to_string()))))));
+    interfaces.push(create_node!(ASTClass::Newline));
+
+    let tv = vec![
+        Token::from((TokenClass::Identifire("TEST_INTERFACES".to_string()), 2)),
+    ];
+    interfaces.push(create_node!(ASTClass::Macro_SubModule(tv)));
+
+    let block = create_node!(ASTClass::Block(interfaces, 1));
+    let id = create_node!(ASTClass::Identifire("ok".to_string()));
+
+    assert_eq!(
+        p.next_ast_top().unwrap(),
+        create_node!(ASTClass::Declare(id, block))
+    );
+}
+
+#[test]
+fn macro_in_declare_01() {
+    let mut b = "declare ok{ input a[2]; \nTEST_INTERFACES\n func_in ok();}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let mut interfaces = Vec::new();
+    interfaces.push(create_node!(ASTClass::Input(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        Some(create_node!(ASTClass::Number("2".to_string()))))));
+    interfaces.push(create_node!(ASTClass::Newline));
+
+    let tv = vec![
+        Token::from((TokenClass::Identifire("TEST_INTERFACES".to_string()), 2)),
+    ];
+    interfaces.push(create_node!(ASTClass::Macro_SubModule(tv)));
+    interfaces.push(
+        create_node!(ASTClass::FuncIn(
+                create_node!(ASTClass::Identifire("ok".to_string())),
+                vec![],
+                None)));
+
+    let block = create_node!(ASTClass::Block(interfaces, 1));
+    let id = create_node!(ASTClass::Identifire("ok".to_string()));
+
+    assert_eq!(
+        p.next_ast_top().unwrap(),
+        create_node!(ASTClass::Declare(id, block))
+    );
+}
+
+#[test]
 fn expression_in_width_block_01() {
     let mut b = "declare ok{ input a[OK / 2]; }".as_bytes();
     let mut l = Lexer::new(&mut b);

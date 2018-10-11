@@ -46,7 +46,7 @@ pub enum ASTClass {
     // ----- Module ------
     // identifire, block
     Module(Box<ASTNode>, Box<ASTNode>),
-    SubModule(Box<ASTNode>, Vec<Box<ASTNode>>),
+    Macro_SubModule(Vec<token::Token>),
 
     // ----- Macros ------
     MacroInclude(Box<ASTNode>),
