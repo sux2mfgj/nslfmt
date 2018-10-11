@@ -257,6 +257,8 @@ impl<'a> Lexer<'a> {
             "wire" => TokenClass::Symbol(Symbol::Wire),
             "reg" => TokenClass::Symbol(Symbol::Reg),
             "proc_name" => TokenClass::Symbol(Symbol::ProcName),
+            "state_name" => TokenClass::Symbol(Symbol::StateName),
+            "mem" => TokenClass::Symbol(Symbol::Mem),
             //TODO
             _ => TokenClass::Identifire(word),
         }

@@ -27,9 +27,10 @@ pub enum Symbol {
     Wire,        // wire
     Reg,         // reg
     ProcName,           // proc_name
-
-                 //TODO
-                 // lack some symbols
+    StateName,          // state_name
+    Mem,                // mem
+    //TODO
+    // lack some symbols
 }
 
 #[derive(Debug, Clone, PartialEq)]

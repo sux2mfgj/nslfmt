@@ -48,6 +48,9 @@ pub enum ASTClass {
     Module(Box<ASTNode>, Box<ASTNode>),
     Macro_SubModule(Vec<token::Token>),
     ProcName(Box<ASTNode>, Option<Vec<Box<ASTNode>>>),
+    StateName(Vec<String>),
+    //  id          ,[12]        , [12]                 , initial value
+    Mem(Box<ASTNode>, Box<ASTNode>, Option<Box<ASTNode>>, Option<Vec<Box<ASTNode>>>),
 
     // ----- Macros ------
     MacroInclude(Box<ASTNode>),

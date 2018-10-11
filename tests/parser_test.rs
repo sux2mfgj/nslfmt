@@ -923,6 +923,132 @@ fn proc_01() {
     ));
     assert_eq!(p.next_ast_top().unwrap(), module);
 }
+
+#[test]
+fn state_name_00() {
+    let mut b = "module test { state_name state1;}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let components = vec![
+        create_node!(ASTClass::StateName(
+            vec!["state1".to_string()]))
+    ];
+    let module = create_node!(ASTClass::Module(
+        create_node!(ASTClass::Identifire("test".to_string())),
+        create_node!(ASTClass::Block(components, 1))
+    ));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}
+
+#[test]
+fn state_name_01() {
+    let mut b = "module test { state_name state1, state2;}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let components = vec![
+        create_node!(ASTClass::StateName(
+            vec![
+            "state1".to_string(),
+            "state2".to_string(),
+            ]))
+    ];
+    let module = create_node!(ASTClass::Module(
+        create_node!(ASTClass::Identifire("test".to_string())),
+        create_node!(ASTClass::Block(components, 1))
+    ));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}
+
+#[test]
+fn mem_00() {
+    let mut b = "module test {mem aa[12];}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let components = vec![
+        create_node!(ASTClass::Mem(
+            create_node!(ASTClass::Identifire("aa".to_string())),
+            create_node!(ASTClass::Number("12".to_string())),
+            None,
+            None,
+                ))
+    ];
+    let module = create_node!(ASTClass::Module(
+        create_node!(ASTClass::Identifire("test".to_string())),
+        create_node!(ASTClass::Block(components, 1))
+    ));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}
+
+#[test]
+fn mem_01() {
+    let mut b = "module test {mem aa[4] = {4'b1010};}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let components = vec![
+        create_node!(ASTClass::Mem(
+            create_node!(ASTClass::Identifire("aa".to_string())),
+            create_node!(ASTClass::Number("4".to_string())),
+            None,
+            Some(vec![create_node!(ASTClass::Number("4'b1010".to_string()))]),
+                ))
+    ];
+    let module = create_node!(ASTClass::Module(
+        create_node!(ASTClass::Identifire("test".to_string())),
+        create_node!(ASTClass::Block(components, 1))
+    ));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}
+
+#[test]
+fn mem_02() {
+    let mut b = "module test {mem aa[4][2] = {4'b1010, 4'b0101};}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let components = vec![
+        create_node!(ASTClass::Mem(
+            create_node!(ASTClass::Identifire("aa".to_string())),
+            create_node!(ASTClass::Number("4".to_string())),
+            Some(create_node!(ASTClass::Number("2".to_string()))),
+            Some(vec![
+                 create_node!(ASTClass::Number("4'b1010".to_string())),
+                 create_node!(ASTClass::Number("4'b0101".to_string())),
+            ]),
+                ))
+    ];
+    let module = create_node!(ASTClass::Module(
+        create_node!(ASTClass::Identifire("test".to_string())),
+        create_node!(ASTClass::Block(components, 1))
+    ));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}
+
+#[test]
+fn mem_03() {
+    let mut b = "module test {mem aa[4][2];}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let components = vec![
+        create_node!(ASTClass::Mem(
+            create_node!(ASTClass::Identifire("aa".to_string())),
+            create_node!(ASTClass::Number("4".to_string())),
+            Some(create_node!(ASTClass::Number("2".to_string()))),
+            None,
+            ))
+    ];
+    let module = create_node!(ASTClass::Module(
+        create_node!(ASTClass::Identifire("test".to_string())),
+        create_node!(ASTClass::Block(components, 1))
+    ));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}
+
+
 /*
 #[test]
 fn sub_module_00() {
