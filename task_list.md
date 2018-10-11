@@ -1,0 +1,74 @@
+
+- [ ] top
+    - [x] macros
+        - [x] include
+        - [x] undef
+        - [x] define
+        - [x] ifdef
+        - [x] ifndef
+        - [x] else
+        - [x] endif
+    - [ ] declare
+        - [ ] interface
+        - [ ] param_int
+        - [ ] param_str
+        - [x] input
+        - [x] output
+        - [x] inout
+        - [x] func_in
+        - [x] func_out
+        - [x] defined by macro
+    - [ ] module
+        - [ ] definition of internal components
+            - [x] wire
+            - [x] reg
+            - [x] func_self
+            - [x] proc_name
+            - [x] state
+            - [ ] wire or reg as define struct
+            - [ ] defined by macro
+        - [ ] definition of operations
+            - [ ] wire transfer
+            - [ ] reg transfer
+            - [ ] mem transfer
+            - [ ] pre-increment
+            - [ ] post-increment
+            - [ ] pre-decrement
+            - [ ] post-decrement
+            - [ ] bit operations
+            - [ ] arithmetic operations
+            - [ ] right side bit concatination
+            - [ ] left side bit concatination
+            - [ ] reduction operations
+            - [ ] repeate operation
+            - [ ] bit slice
+            - [ ] bit extention
+            - [ ] bit shurink?
+            - [ ] sign extention
+            - [ ] ternary operation
+            - [ ] blocks
+                - [ ] normal
+                - [ ] alt
+                - [ ] any
+                - [ ] if
+                - [ ] if-else
+                - [ ] seq
+                - [ ] while
+                - [ ] for
+                - [ ] func
+                - [ ] state
+                - [ ] proc
+            - [ ] label name
+            - [ ] label definition
+            - [ ] goto
+            - [ ] return
+            - [ ] finish
+            - [ ] invoke
+            - [ ] generate
+            - [ ] integer
+            - [ ] variable
+
+
+
+
+    - [ ] struct
