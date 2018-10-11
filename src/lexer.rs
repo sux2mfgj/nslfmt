@@ -256,6 +256,7 @@ impl<'a> Lexer<'a> {
             "endif" => TokenClass::Macro(Macro::Endif),
             "wire" => TokenClass::Symbol(Symbol::Wire),
             "reg" => TokenClass::Symbol(Symbol::Reg),
+            "proc_name" => TokenClass::Symbol(Symbol::ProcName),
             //TODO
             _ => TokenClass::Identifire(word),
         }

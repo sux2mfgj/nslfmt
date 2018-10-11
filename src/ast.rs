@@ -22,9 +22,9 @@ pub enum ASTClass {
     Declare(Box<ASTNode>, Box<ASTNode>),
 
     // identifire, inputs, output
-    FuncIn(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
+    FuncIn(Box<ASTNode>, Option<Vec<Box<ASTNode>>>, Option<Box<ASTNode>>),
     // identifire, outputs, input
-    FuncOut(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
+    FuncOut(Box<ASTNode>, Option<Vec<Box<ASTNode>>>, Option<Box<ASTNode>>),
     // identifire, inputs, output
     FuncSelf(
         Box<ASTNode>,
@@ -47,6 +47,7 @@ pub enum ASTClass {
     // identifire, block
     Module(Box<ASTNode>, Box<ASTNode>),
     Macro_SubModule(Vec<token::Token>),
+    ProcName(Box<ASTNode>, Option<Vec<Box<ASTNode>>>),
 
     // ----- Macros ------
     MacroInclude(Box<ASTNode>),
@@ -138,10 +139,18 @@ impl fmt::Display for ASTNode {
                 }
             },
             ASTClass::FuncIn(ref id, ref input_ids, ref output) => {
-                let str_input: Vec<String> =
-                    input_ids.iter().map(|ident| format!("{}", ident)).collect();
-                //let args = str_input.connect(", ");
-                let args = str_input.join(", ");
+                let mut args = "".to_string();
+                match input_ids {
+                    Some(ids) => {
+                        let str_input: Vec<String> =
+                            ids.iter().map(|ident| format!("{}", ident)).collect();
+                        //let args = str_input.connect(", ");
+                        args = str_input.join(", ");
+
+                    }
+                    None => {
+                    }
+                }
                 match output {
                     Some(s) => {
                         return write!(f, "func_in {}({}) : {};\n", id, args, s);
@@ -152,9 +161,15 @@ impl fmt::Display for ASTNode {
                 }
             }
             ASTClass::FuncOut(ref id, ref input_ids, ref output) => {
-                let str_input: Vec<String> =
-                    input_ids.iter().map(|ident| format!("{}", ident)).collect();
-                let args = str_input.join(", ");
+                let mut args = "".to_string();
+                match input_ids {
+                    Some(ids) => {
+                        let str_input: Vec<String> =
+                            ids.iter().map(|ident| format!("{}", ident)).collect();
+                        args = str_input.join(", ");
+                    }
+                    None => {}
+                }
                 match output {
                     Some(s) => {
                         return write!(f, "func_out {}({}) : {};\n", id, args, s);

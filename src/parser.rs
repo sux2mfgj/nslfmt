@@ -145,7 +145,8 @@ impl<'a> Parser<'a> {
                 let mut ret: Option<Box<ASTNode>> = None;
 
                 if n_t.class == TokenClass::Symbol(Symbol::LeftParen) {
-                    args = Some(self.generate_args_vec()?);
+//                     args = Some(self.generate_args_vec()?);
+                    args = self.generate_args_vec();
                     n_t = self.lexer.check_next_token(true);
                 }
 
@@ -160,6 +161,29 @@ impl<'a> Parser<'a> {
 
                 return Ok(create_node!(ASTClass::FuncSelf(id, args, ret)));
             }
+            TokenClass::Symbol(Symbol::ProcName) => {
+                if let TokenClass::Identifire(id_str) = self.lexer.next_token(true).class
+                {
+                    let arg = self.generate_args_vec();
+                    // pass semicolon
+                    let _t = self.lexer.next_token(true);
+
+                    Ok(create_node!(ASTClass::ProcName(
+                                create_node!(ASTClass::Identifire(id_str)),
+                                arg)))
+                }
+                else {
+                    panic!("unexptected token")
+                }
+            }
+//             TokenClass::Identifire(_) => {
+//                 let mut tokens = vec![t];
+//                 while let Some(tt) = self.get_token_for_macro_in_module() {
+//                     tokens.push(tt);
+//                 }
+//
+//                 return Ok(create_node!(ASTClass::Macro_SubModule(tokens)));
+//             }
             _ => {
                 panic!("unexptected token {:?}", t);
             }
@@ -253,7 +277,7 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::FuncIn) => {
                 if let TokenClass::Identifire(id_str) = self.lexer.next_token(true).class
                 {
-                    let args = self.generate_args_vec()?;
+                    let args = self.generate_args_vec();
                     if let TokenClass::Symbol(Symbol::Colon) =
                         self.lexer.next_token(true).class
                     {
@@ -283,7 +307,7 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::FuncOut) => {
                 if let TokenClass::Identifire(id_str) = self.lexer.next_token(true).class
                 {
-                    let args = self.generate_args_vec()?;
+                    let args = self.generate_args_vec();
                     if let TokenClass::Symbol(Symbol::Colon) =
                         self.lexer.next_token(true).class
                     {
@@ -313,7 +337,7 @@ impl<'a> Parser<'a> {
             TokenClass::Newline => Ok(create_node!(ASTClass::Newline)),
             TokenClass::Identifire(_) => {
                 let mut tokens = vec![t];
-                while let Some(tt) = self.get_token_for_macro() {
+                while let Some(tt) = self.get_token_for_macro_in_declare() {
                     tokens.push(tt);
                 }
                 return Ok(create_node!(ASTClass::Macro_SubModule(tokens)));
@@ -324,7 +348,14 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn get_token_for_macro(&mut self) -> Option<Token> {
+//     fn get_token_for_macro_in_module(&mut self) -> Option<Token> {
+//         let t = self.lexer.check_next_token(true);
+//         match t.class {
+//
+//         }
+//     }
+
+    fn get_token_for_macro_in_declare(&mut self) -> Option<Token> {
         let t = self.lexer.check_next_token(true);
         match t.class {
             TokenClass::Symbol(Symbol::Input) => {
@@ -409,7 +440,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn generate_args_vec(&mut self) -> Result<Vec<Box<ASTNode>>, ASTError> {
+    fn generate_args_vec(&mut self) -> Option<Vec<Box<ASTNode>>> {
         let left_paren = self.lexer.next_token(true);
         if let TokenClass::Symbol(Symbol::LeftParen) = left_paren.class {
         } else {
@@ -421,7 +452,12 @@ impl<'a> Parser<'a> {
             let token = self.lexer.next_token(true);
             match token.class {
                 TokenClass::Symbol(Symbol::RightParen) => {
-                    return Ok(args);
+                    if args.len() == 0 {
+                        return None;
+                    }
+                    else {
+                        return Some(args);
+                    }
                 }
                 TokenClass::Symbol(Symbol::Comma) => {}
                 TokenClass::Identifire(id) => {

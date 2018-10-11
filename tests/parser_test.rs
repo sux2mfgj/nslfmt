@@ -119,7 +119,7 @@ fn macro_in_declare_01() {
     interfaces.push(
         create_node!(ASTClass::FuncIn(
                 create_node!(ASTClass::Identifire("ok".to_string())),
-                vec![],
+                None,
                 None)));
 
     let block = create_node!(ASTClass::Block(interfaces, 1));
@@ -228,7 +228,7 @@ fn func_in() {
     let args = vec![create_node!(ASTClass::Identifire("a".to_string()))];
     let func = create_node!(ASTClass::FuncIn(
         create_node!(ASTClass::Identifire("ok".to_string())),
-        args,
+        Some(args),
         None,
     ));
     interfaces.push(func);
@@ -260,7 +260,7 @@ fn func_in_return() {
     let args = vec![create_node!(ASTClass::Identifire("a".to_string()))];
     let func = create_node!(ASTClass::FuncIn(
         create_node!(ASTClass::Identifire("ok".to_string())),
-        args,
+        Some(args),
         Some(create_node!(ASTClass::Identifire("c".to_string())))
     ));
     interfaces.push(func);
@@ -292,7 +292,7 @@ fn func_out_return() {
     let args = vec![create_node!(ASTClass::Identifire("a".to_string()))];
     let func = create_node!(ASTClass::FuncOut(
         create_node!(ASTClass::Identifire("ok".to_string())),
-        args,
+        Some(args),
         Some(create_node!(ASTClass::Identifire("c".to_string())))
     ));
     interfaces.push(func);
@@ -881,6 +881,48 @@ fn func_self_03() {
     assert_eq!(p.next_ast_top().unwrap(), module);
 }
 
+#[test]
+fn proc_00() {
+    let mut b = "module test { proc_name proc_a(); }".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let components = vec![
+        create_node!(ASTClass::ProcName(
+                create_node!(ASTClass::Identifire("proc_a".to_string())),
+                None))
+    ];
+    let module = create_node!(ASTClass::Module(
+        create_node!(ASTClass::Identifire("test".to_string())),
+        create_node!(ASTClass::Block(components, 1))
+    ));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}
+
+#[test]
+fn proc_01() {
+    let mut b = "module test { reg r1; proc_name proc_a(r1); }".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let reg_def = create_node!(ASTClass::Reg(vec![(
+        create_node!(ASTClass::Identifire("r1".to_string())),
+        None,
+        None,
+    )]));
+
+    let components = vec![
+        reg_def,
+        create_node!(ASTClass::ProcName(
+                create_node!(ASTClass::Identifire("proc_a".to_string())),
+                Some(vec![create_node!(ASTClass::Identifire("r1".to_string()))])))
+    ];
+    let module = create_node!(ASTClass::Module(
+        create_node!(ASTClass::Identifire("test".to_string())),
+        create_node!(ASTClass::Block(components, 1))
+    ));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}
 /*
 #[test]
 fn sub_module_00() {
@@ -889,11 +931,11 @@ fn sub_module_00() {
     let mut p = Parser::new(&mut l);
 
     let sub = create_node!(
-        ASTClass::SubModule(
-            create_node!(ASTClass::Identifire("a_controller".to_string())),
-            vec![
-                create_node!(ASTClass::Identifire("controller".to_string()))
-            ]));
+            ASTClass::Macro_SubModule(
+                vec![
+                    Token::from((TokenClass::Identifire("a_controller".to_string()), 1)),
+                    Token::from((TokenClass::Identifire("controller".to_string()), 1)),
+                ]));
     let components = vec![
         sub
     ];
@@ -904,5 +946,4 @@ fn sub_module_00() {
 
     assert_eq!(p.next_ast_top().unwrap(), module);
 }
-
 */

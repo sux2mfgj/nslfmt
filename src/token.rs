@@ -26,6 +26,8 @@ pub enum Symbol {
     SingleQuote, // '
     Wire,        // wire
     Reg,         // reg
+    ProcName,           // proc_name
+
                  //TODO
                  // lack some symbols
 }
