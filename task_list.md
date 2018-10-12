@@ -67,8 +67,4 @@
             - [ ] generate
             - [ ] integer
             - [ ] variable
-
-
-
-
     - [ ] struct
