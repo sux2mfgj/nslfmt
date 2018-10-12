@@ -28,7 +28,7 @@
             - [ ] wire or reg as define struct
             - [ ] defined by macro
         - [ ] definition of operations
-            - [ ] wire transfer
+            - [x] wire transfer
             - [ ] reg transfer
             - [ ] mem transfer
             - [ ] pre-increment

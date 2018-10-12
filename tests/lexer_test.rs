@@ -1183,3 +1183,77 @@ fn mem_00() {
     assert_eq!(l.next_token(true), Token::new(TokenClass::EndOfProgram, 1));
 }
 
+#[test]
+fn wire_assign_00() {
+    let mut b = "module test { wire a; a = 1'b1;}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    assert_eq!(l.next_token(true), Token::from((Symbol::Module, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("test".to_string()), 1))
+    );
+    assert_eq!(l.next_token(true), Token::from((Symbol::OpeningBrace, 1)));
+    assert_eq!(l.next_token(true), Token::from((Symbol::Wire, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("a".to_string()), 1))
+    );
+    assert_eq!(l.next_token(true), Token::from((Symbol::Semicolon, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("a".to_string()), 1))
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::Equal, 1))
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Number("1'b1".to_string()), 1))
+    );
+    assert_eq!(l.next_token(true), Token::from((Symbol::Semicolon, 1)));
+    assert_eq!(l.next_token(true), Token::from((Symbol::ClosingBrace, 1)));
+    assert_eq!(l.next_token(true), Token::new(TokenClass::EndOfProgram, 1));
+}
+
+#[test]
+fn plus_00() {
+    let mut b = "module test { wire a; a = a + 1'b1;}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(l.next_token(true), Token::from((Symbol::Module, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("test".to_string()), 1))
+    );
+    assert_eq!(l.next_token(true), Token::from((Symbol::OpeningBrace, 1)));
+    assert_eq!(l.next_token(true), Token::from((Symbol::Wire, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("a".to_string()), 1))
+    );
+    assert_eq!(l.next_token(true), Token::from((Symbol::Semicolon, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("a".to_string()), 1))
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::Equal, 1))
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("a".to_string()), 1))
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Operator::Plus, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Number("1'b1".to_string()), 1))
+    );
+    assert_eq!(l.next_token(true), Token::from((Symbol::Semicolon, 1)));
+
+    assert_eq!(l.next_token(true), Token::from((Symbol::ClosingBrace, 1)));
+    assert_eq!(l.next_token(true), Token::new(TokenClass::EndOfProgram, 1));
+}

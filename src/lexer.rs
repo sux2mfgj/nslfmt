@@ -158,6 +158,13 @@ impl<'a> Lexer<'a> {
                             self.line,
                         ));
                     }
+                    '+' => {
+                        self.iter.next();
+                        return Token::from((
+                            TokenClass::Operator(Operator::Plus),
+                            self.line,
+                        ));
+                    }
                     '\'' => {
                         self.iter.next();
                         return Token::from((Symbol::SingleQuote, self.line));

@@ -51,6 +51,8 @@ pub enum ASTClass {
     StateName(Vec<String>),
     //  id          ,[12]        , [12]                 , initial value
     Mem(Box<ASTNode>, Box<ASTNode>, Option<Box<ASTNode>>, Option<Vec<Box<ASTNode>>>),
+    //     id          , expression
+    Assign(Box<ASTNode>, Box<ASTNode>),
 
     // ----- Macros ------
     MacroInclude(Box<ASTNode>),
