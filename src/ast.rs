@@ -208,6 +208,9 @@ impl fmt::Display for ASTNode {
                     }
                 }
             }
+            ASTClass::Func(ref id, ref block) => {
+                return write!(f, "func {}{}", id, block);
+            }
             ASTClass::FuncCall(ref id, ref args) => {
                 let arg_str = args
                     .iter()
