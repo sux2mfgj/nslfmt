@@ -234,23 +234,28 @@ impl<'a> Parser<'a> {
 
             }
             TokenClass::Identifire(id_str) => {
-                if let TokenClass::Symbol(Symbol::Equal) = self.lexer.next_token(true).class {
-                    let left = self.next_ast().unwrap();
-                    let expr = self.create_expression(left).unwrap();
-                    let _semicolon = self.lexer.next_token(true);
-                    return Ok(create_node!(ASTClass::Assign(
-                                create_node!(ASTClass::Identifire(id_str)),
-                                expr)));
+                let t = self.lexer.next_token(true);
+                match t.class {
+                    TokenClass::Symbol(Symbol::Equal) => {
+                        let left = self.next_ast().unwrap();
+                        let expr = self.create_expression(left).unwrap();
+                        let _semicolon = self.lexer.next_token(true);
+                        return Ok(create_node!(ASTClass::Assign(
+                                    create_node!(ASTClass::Identifire(id_str)),
+                                    expr)));
+                    }
+                    TokenClass::Symbol(Symbol::RegAssign) => {
+                        let left = self.next_ast().unwrap();
+                        let expr = self.create_expression(left).unwrap();
+                        let _semicolon = self.lexer.next_token(true);
+                        return Ok(create_node!(ASTClass::Assign(
+                                    create_node!(ASTClass::Identifire(id_str)),
+                                    expr)));
+                    }
+                    _ => {
+                        panic!("unexptected token {:?}", t);
+                    }
                 }
-                else {
-                    panic!("unexptected token");
-                }
-//                 let mut tokens = vec![t];
-//                 while let Some(tt) = self.get_token_for_macro_in_module() {
-//                     tokens.push(tt);
-//                 }
-//
-//                 return Ok(create_node!(ASTClass::Macro_SubModule(tokens)));
             }
             _ => {
                 panic!("unexptected token {:?}", t);

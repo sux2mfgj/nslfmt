@@ -15,6 +15,7 @@ pub enum Symbol {
     Comma,              // ,
     Dot,                // .
     Equal,              // =
+    RegAssign,           // :=
     Input,              // input
     Output,             // output
     InOut,              // inout

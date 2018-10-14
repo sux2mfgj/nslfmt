@@ -29,7 +29,7 @@
             - [ ] defined by macro
         - [ ] definition of operations
             - [x] wire transfer
-            - [ ] reg transfer
+            - [x] reg transfer
             - [ ] mem transfer
             - [ ] pre-increment
             - [ ] post-increment

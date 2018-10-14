@@ -1170,6 +1170,38 @@ fn wire_assign_03() {
     assert_eq!(p.next_ast_top().unwrap(), module);
 }
 
+#[test]
+fn reg_assign_00() {
+    let mut b = "module test { reg a; a := a + 1'b1;}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let wire = create_node!(ASTClass::Reg(
+                vec![
+                    (create_node!(ASTClass::Identifire("a".to_string())),
+                    None,
+                    None)]));
+
+    let expr = create_node!(ASTClass::Expression(
+            create_node!(ASTClass::Identifire("a".to_string())),
+            create_node!(ASTClass::Operator(Operator::Plus)),
+            create_node!(ASTClass::Number("1'b1".to_string())),
+            ));
+    let assign = create_node!(
+        ASTClass::Assign(
+            create_node!(ASTClass::Identifire("a".to_string())),
+            expr,
+        ));
+    let components = vec![
+        wire,
+        assign,
+    ];
+    let module = create_node!(ASTClass::Module(
+        create_node!(ASTClass::Identifire("test".to_string())),
+        create_node!(ASTClass::Block(components, 1))
+    ));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}
 /*
 #[test]
 fn sub_module_00() {
