@@ -102,6 +102,14 @@ impl<'a> Parser<'a> {
         }
     }
 
+    // TODO
+    // consider a one line expression which doesn't have parenthesis.
+    // like
+    // any
+    // {
+    //      test:
+    //          a := 4'b0010;
+    // }
     fn module_block(&mut self) -> Box<ASTNode> {
         let brace_token = self.lexer.next_token(true);
         if TokenClass::Symbol(Symbol::OpeningBrace) == brace_token.class {

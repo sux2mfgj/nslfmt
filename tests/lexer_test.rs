@@ -1354,3 +1354,14 @@ fn any_block_00() {
     assert_eq!(l.next_token(true), Token::from((Symbol::OpeningBrace, 1)));
     assert_eq!(l.next_token(true), Token::from((Symbol::ClosingBrace, 1)));
 }
+
+#[test]
+fn or_00() {
+    let mut b = "return a | b;".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(l.next_token(true), Token::from((Symbol::Return, 1)));
+    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("a".to_string()), 1)));
+    assert_eq!(l.next_token(true), Token::from((Operator::Pipe, 1)));
+    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("b".to_string()), 1)));
+}

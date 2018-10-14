@@ -153,21 +153,25 @@ impl<'a> Lexer<'a> {
                     }
                     '#' => {
                         self.iter.next();
-                        return Token::new(TokenClass::Symbol(Symbol::Sharp), self.line);
+                        return Token::from((Symbol::Sharp, self.line));
                     }
                     '*' => {
                         self.iter.next();
                         return Token::from((
-                            TokenClass::Operator(Operator::Asterisk),
+                            Operator::Asterisk,
                             self.line,
                         ));
                     }
                     '+' => {
                         self.iter.next();
                         return Token::from((
-                            TokenClass::Operator(Operator::Plus),
+                            Operator::Plus,
                             self.line,
                         ));
+                    }
+                    '|' => {
+                        self.iter.next();
+                        return Token::from((Operator::Pipe, self.line));
                     }
                     '\'' => {
                         self.iter.next();
