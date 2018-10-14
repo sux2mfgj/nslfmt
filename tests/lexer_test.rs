@@ -1304,3 +1304,44 @@ fn reg_assignment_00() {
     assert_eq!(l.next_token(true), Token::from((Symbol::ClosingBrace, 1)));
     assert_eq!(l.next_token(true), Token::new(TokenClass::EndOfProgram, 1));
 }
+
+#[test]
+fn func_block_00() {
+    let mut b = "func test {}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(l.next_token(true), Token::from((Symbol::Func, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::Identifire("test".to_string()), 1)
+    );
+    assert_eq!(l.next_token(true), Token::from((Symbol::OpeningBrace, 1)));
+    assert_eq!(l.next_token(true), Token::from((Symbol::ClosingBrace, 1)));
+}
+
+#[test]
+fn func_block_return() {
+    let mut b = "func test { return mtvec; }".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(l.next_token(true), Token::from((Symbol::Func, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::Identifire("test".to_string()), 1)
+    );
+    assert_eq!(l.next_token(true), Token::from((Symbol::OpeningBrace, 1)));
+    assert_eq!(l.next_token(true), Token::from((Symbol::Return, 1)));
+    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("mtvec".to_string()), 1)));
+    assert_eq!(l.next_token(true), Token::from((Symbol::Semicolon, 1)));
+    assert_eq!(l.next_token(true), Token::from((Symbol::ClosingBrace, 1)));
+}
+
+#[test]
+fn any_block_00() {
+    let mut b = "any {}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(l.next_token(true), Token::from((Symbol::Any, 1)));
+    assert_eq!(l.next_token(true), Token::from((Symbol::OpeningBrace, 1)));
+    assert_eq!(l.next_token(true), Token::from((Symbol::ClosingBrace, 1)));
+}

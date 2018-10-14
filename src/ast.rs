@@ -14,7 +14,7 @@ pub enum ASTClass {
      *          func_out ok() : hello;
      *      }
      */
-    Block(Vec<Box<ASTNode>>, usize),
+    Block(Vec<Box<ASTNode>>),
     Operator(token::Operator),
 
     // ----- Declare ------
@@ -53,6 +53,11 @@ pub enum ASTClass {
     Mem(Box<ASTNode>, Box<ASTNode>, Option<Box<ASTNode>>, Option<Vec<Box<ASTNode>>>),
     //     id          , expression
     Assign(Box<ASTNode>, Box<ASTNode>),
+    //   id          , block
+    Func(Box<ASTNode>, Box<ASTNode>),
+    //  expression       , block
+    Any(Vec<(Box<ASTNode>, Box<ASTNode>)>),
+    Return(Box<ASTNode>),
 
     // ----- Macros ------
     MacroInclude(Box<ASTNode>),
@@ -184,9 +189,10 @@ impl fmt::Display for ASTNode {
                     }
                 }
             }
-            ASTClass::Block(ref list, nest) => {
+            ASTClass::Block(ref list) => {
                 let mut list_str = String::new();
-                let nest_tabs = "    ".repeat(nest);
+                //TODO
+                let nest_tabs = "    ".repeat(1);
                 let mut double_newline_flag = false;
                 for node in list {
                     match node.class {

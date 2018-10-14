@@ -176,8 +176,18 @@ impl<'a> Lexer<'a> {
                     }
                     '=' => {
                         self.iter.next();
+                        if let Some(&equal) = self.iter.peek() {
+                            match equal {
+                                '=' => {
+                                    self.iter.next();
+                                    return Token::from((Operator::Equal, self.line));
 
-                        return Token::from((Symbol::Equal, self.line));
+                                }
+                                _ => {
+                                    return Token::from((Symbol::Equal, self.line));
+                                }
+                            }
+                        }
                     }
                     '/' => {
                         self.iter.next();
@@ -272,6 +282,9 @@ impl<'a> Lexer<'a> {
             "proc_name" => TokenClass::Symbol(Symbol::ProcName),
             "state_name" => TokenClass::Symbol(Symbol::StateName),
             "mem" => TokenClass::Symbol(Symbol::Mem),
+            "func" => TokenClass::Symbol(Symbol::Func),
+            "return" => TokenClass::Symbol(Symbol::Return),
+            "any" => TokenClass::Symbol(Symbol::Any),
             //TODO
             _ => TokenClass::Identifire(word),
         }

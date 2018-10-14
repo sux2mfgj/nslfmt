@@ -22,6 +22,7 @@ pub enum Symbol {
     FuncIn,             // func_in
     FuncOut,            // func_out
     FuncSelf,
+    Func,        // func
     Sharp,       // #
     DoubleQuote, // "
     SingleQuote, // '
@@ -30,6 +31,8 @@ pub enum Symbol {
     ProcName,           // proc_name
     StateName,          // state_name
     Mem,                // mem
+    Return,             // return
+    Any,                // any
     //TODO
     // lack some symbols
 }
@@ -46,6 +49,7 @@ pub enum Operator {
     Pipe,       // |
     Hat,        // ^
     Tilde,      // ~
+    Equal,      // ==
 }
 
 impl fmt::Display for Operator {
