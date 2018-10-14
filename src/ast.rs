@@ -307,7 +307,7 @@ impl fmt::Display for ASTNode {
                 return write!(f, "");
             }
             ASTClass::CStyleComment(ref line) => {
-                return write!(f, "// {}\n", line);
+                return write!(f, "//{}\n", line);
             }
             ASTClass::CPPStyleComment(ref list) => {
                 return write!(f, "/*{}*/\n", list.join("\n"));

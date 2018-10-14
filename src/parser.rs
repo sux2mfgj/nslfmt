@@ -39,6 +39,9 @@ impl<'a> Parser<'a> {
             TokenClass::CPPStyleComment(list) => {
                 return Ok(create_node!(ASTClass::CPPStyleComment(list)));
             }
+            TokenClass::CStyleComment(s) => {
+                return Ok(create_node!(ASTClass::CStyleComment(s)));
+            }
             TokenClass::Newline => Ok(create_node!(ASTClass::Newline)),
             TokenClass::EndOfProgram => Ok(create_node!(ASTClass::EndOfProgram)),
             _ => {
