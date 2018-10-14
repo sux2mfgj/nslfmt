@@ -48,9 +48,15 @@ pub enum Operator {
     ShiftRight, // >>
     And,        // &
     Pipe,       // |
+    LogicAnd,   // &&
+    LogicOr,    // ||
     Hat,        // ^
     Tilde,      // ~
     Equal,      // ==
+    GreaterEq,  // >=
+    LessEq,     // <=
+    GreaterThan,// >
+    LessThan,   // <
 }
 
 impl fmt::Display for Operator {

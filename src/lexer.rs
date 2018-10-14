@@ -191,6 +191,49 @@ impl<'a> Lexer<'a> {
                             }
                         }
                     }
+                    '>' => {
+                        self.iter.next();
+                        if let Some(&eq) = self.iter.peek() {
+                            match eq {
+                                '=' => {
+                                    self.iter.next();
+                                    return Token::from((Operator::GreaterEq, self.line));
+                                }
+                                _ => {
+                                    return Token::from((Operator::GreaterThan, self.line));
+                                }
+                            }
+                        }
+                    }
+                    '<' => {
+                        self.iter.next();
+                        if let Some(&eq) = self.iter.peek() {
+                            match eq {
+                                '=' => {
+                                    self.iter.next();
+                                    return Token::from((Operator::LessEq, self.line));
+                                }
+                                _ => {
+                                    return Token::from((Operator::LessThan, self.line));
+                                }
+                            }
+                        }
+                    }
+                    '&' => {
+                        self.iter.next();
+                        if let Some(&and) = self.iter.peek() {
+                            match and {
+                                '&' => {
+                                    self.iter.next();
+                                    return Token::from((Operator::LogicAnd, self.line));
+                                }
+                                _ => {
+                                    return Token::from((Operator::And, self.line));
+                                }
+                            }
+                        }
+
+                    }
                     '/' => {
                         self.iter.next();
                         if let Some(&slash) = self.iter.peek() {

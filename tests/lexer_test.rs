@@ -1384,4 +1384,22 @@ fn any_else_00() {
     assert_eq!(l.next_token(true), Token::from((Symbol::ClosingBrace, 1)));
 }
 
+#[test]
+fn gt_lt_00() {
+    let mut b = "address >= 12'h3a0 && address <= 12'h3bf".as_bytes();
+    let mut l = Lexer::new(&mut b);
 
+    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("address".to_string()), 1)));
+    assert_eq!(l.next_token(true), Token::from((Operator::GreaterEq, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::Number("12'h3a0".to_string()), 1)
+    );
+    assert_eq!(l.next_token(true), Token::from((Operator::LogicAnd, 1)));
+    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("address".to_string()), 1)));
+    assert_eq!(l.next_token(true), Token::from((Operator::LessEq, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::new(TokenClass::Number("12'h3bf".to_string()), 1)
+    );
+}
