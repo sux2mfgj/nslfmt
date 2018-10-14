@@ -1329,3 +1329,37 @@ fn any_else_00() {
     ));
     assert_eq!(p.next_ast_top().unwrap(), module);
 }
+
+#[test]
+fn function_call_00() {
+    let mut b ="module test {error();}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let components = vec![create_node!(ASTClass::FuncCall(
+            create_node!(ASTClass::Identifire("error".to_string())),
+            None,
+            ))];
+    let module = create_node!(ASTClass::Module(
+        create_node!(ASTClass::Identifire("test".to_string())),
+        create_node!(ASTClass::Block(components))
+    ));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}
+
+#[test]
+fn function_call_01() {
+    let mut b ="module test {error(a);}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let components = vec![create_node!(ASTClass::FuncCall(
+            create_node!(ASTClass::Identifire("error".to_string())),
+            Some(vec![create_node!(ASTClass::Identifire("a".to_string()))]),
+            ))];
+    let module = create_node!(ASTClass::Module(
+        create_node!(ASTClass::Identifire("test".to_string())),
+        create_node!(ASTClass::Block(components))
+    ));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}

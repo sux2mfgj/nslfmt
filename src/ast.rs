@@ -72,6 +72,7 @@ pub enum ASTClass {
     Any(Vec<(Box<ASTNode>, Box<ASTNode>)>),
     Return(Box<ASTNode>),
     Else,
+    FuncCall(Box<ASTNode>, Option<Vec<Box<ASTNode>>>),
 
     // ----- Macros ------
     MacroInclude(Box<ASTNode>),

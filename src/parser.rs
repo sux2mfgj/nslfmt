@@ -169,7 +169,7 @@ impl<'a> Parser<'a> {
                 let mut ret: Option<Box<ASTNode>> = None;
 
                 if n_t.class == TokenClass::Symbol(Symbol::LeftParen) {
-                    args = self.generate_args_vec();
+                    args = self.generate_args_vec(false);
                     n_t = self.lexer.check_next_token(true);
                 }
 
@@ -188,7 +188,7 @@ impl<'a> Parser<'a> {
                 let _proc_name = self.lexer.next_token(true);
                 if let TokenClass::Identifire(id_str) = self.lexer.next_token(true).class
                 {
-                    let arg = self.generate_args_vec();
+                    let arg = self.generate_args_vec(false);
                     // pass semicolon
                     let _t = self.lexer.next_token(true);
 
@@ -278,6 +278,18 @@ impl<'a> Parser<'a> {
                             create_node!(ASTClass::Identifire(id_str)),
                             expr
                         )));
+                    }
+                    // function call
+                    TokenClass::Symbol(Symbol::LeftParen) => {
+                        let args = self.generate_args_vec(true);
+                        // pass semicolon
+                        let _t = self.lexer.next_token(true);
+                        return Some(
+                            create_node!(ASTClass::FuncCall(
+                                    create_node!(ASTClass::Identifire(id_str)),
+                                    args,
+                                    ))
+                            );
                     }
                     _ => {
                         panic!("unexptected token {:?}", t);
@@ -420,7 +432,7 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::FuncIn) => {
                 if let TokenClass::Identifire(id_str) = self.lexer.next_token(true).class
                 {
-                    let args = self.generate_args_vec();
+                    let args = self.generate_args_vec(false);
                     if let TokenClass::Symbol(Symbol::Colon) =
                         self.lexer.next_token(true).class
                     {
@@ -450,7 +462,7 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::FuncOut) => {
                 if let TokenClass::Identifire(id_str) = self.lexer.next_token(true).class
                 {
-                    let args = self.generate_args_vec();
+                    let args = self.generate_args_vec(false);
                     if let TokenClass::Symbol(Symbol::Colon) =
                         self.lexer.next_token(true).class
                     {
@@ -594,11 +606,13 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn generate_args_vec(&mut self) -> Option<Vec<Box<ASTNode>>> {
-        let left_paren = self.lexer.next_token(true);
-        if let TokenClass::Symbol(Symbol::LeftParen) = left_paren.class {
-        } else {
-            panic!("unexptected token {:?}", left_paren);
+    fn generate_args_vec(&mut self, is_read_left: bool) -> Option<Vec<Box<ASTNode>>> {
+        if !is_read_left {
+            let left_paren = self.lexer.next_token(true);
+            if let TokenClass::Symbol(Symbol::LeftParen) = left_paren.class {
+            } else {
+                panic!("unexptected token {:?}", left_paren);
+            }
         }
 
         let mut args = Vec::new();
