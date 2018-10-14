@@ -231,6 +231,24 @@ impl fmt::Display for ASTNode {
 
                 return write!(f, "\n{{\n{}}}\n", list_str);
             }
+            //          id       , width       , initial_value
+            ASTClass::Reg(ref list) => {
+                let l: Vec<String> = list
+                                        .iter()
+                                        .map(|ref r|
+                                             {
+                                                 let mut define = format!("{}", r.0);
+                                                 if let Some(ref width) = r.1 {
+                                                     define.push_str(&format!("[{}]", width))
+                                                 }
+                                                 if let Some(ref init) = r.2 {
+                                                     define.push_str(&format!(" = {}", init));
+                                                 }
+                                                 return define;
+                                             })
+                                        .collect();
+                write!(f, "reg {};\n", l.join(", "))
+            }
             ASTClass::MacroInclude(ref path) => {
                 return write!(f, "#include {}\n", path);
             }
