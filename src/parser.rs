@@ -262,8 +262,9 @@ impl<'a> Parser<'a> {
                 let t = self.lexer.next_token(true);
                 match t.class {
                     TokenClass::Symbol(Symbol::Equal) => {
-                        let left = self.next_ast().unwrap();
-                        let expr = self.create_expression(left).unwrap();
+//                         let left = self.next_ast().unwrap();
+//                         let expr = self.create_expression(left).unwrap();
+                        let expr = self.next_ast().unwrap();
                         let _semicolon = self.lexer.next_token(true);
                         return Some(create_node!(ASTClass::Assign(
                             create_node!(ASTClass::Identifire(id_str)),
@@ -271,8 +272,9 @@ impl<'a> Parser<'a> {
                         )));
                     }
                     TokenClass::Symbol(Symbol::RegAssign) => {
-                        let left = self.next_ast().unwrap();
-                        let expr = self.create_expression(left).unwrap();
+//                         let left = self.next_ast().unwrap();
+//                         let expr = self.create_expression(left).unwrap();
+                        let expr = self.next_ast().unwrap();
                         let _semicolon = self.lexer.next_token(true);
                         return Some(create_node!(ASTClass::RegAssign(
                             create_node!(ASTClass::Identifire(id_str)),
@@ -327,8 +329,10 @@ impl<'a> Parser<'a> {
                             self.lexer.next_token(true);
                             return Some(create_node!(ASTClass::Any(any_componens)));
                         }
-                        let left = self.next_ast()?;
-                        let expr = self.create_expression(left).unwrap();
+//                         let left = self.next_ast()?;
+//                         let expr = self.create_expression(left).unwrap();
+                        let expr = self.next_ast()?;
+//                         self.lexer.next_token(true);
 
                         if let TokenClass::Symbol(Symbol::Colon) =
                             self.lexer.next_token(true).class
@@ -548,7 +552,43 @@ impl<'a> Parser<'a> {
     pub fn next_ast(&mut self) -> Option<Box<ASTNode>> {
         let t = self.lexer.next_token(true);
         match t.class {
-            TokenClass::Identifire(s) => Some(create_node!(ASTClass::Identifire(s))),
+            TokenClass::Identifire(s) => {
+                match self.lexer.check_next_token(true).class {
+                    TokenClass::Operator(_) => {
+                        let t = self.lexer.next_token(true);
+                        match t.class {
+                            TokenClass::Operator(op) => {
+                                let node = create_node!(ASTClass::Identifire(s));
+                                let right = self.next_ast()?;
+                                let op_node = create_node!(ASTClass::Operator(op));
+                                let expr =
+                                    create_node!(ASTClass::Expression(node, op_node, right));
+                                self.create_expression(expr)
+                            }
+                            _ => {
+                                panic!("unexptected token {:?}", t);
+                            }
+                        }
+                    }
+//                     TokenClass::Symbol(Symbol::LeftParen) => { }
+                    // function call
+                    TokenClass::Symbol(Symbol::LeftParen) => {
+                        // pass LeftParen
+                        let args = self.generate_args_vec(false);
+                        // pass semicolon
+//                         let _t = self.lexer.next_token(true);
+                        return Some(
+                            create_node!(ASTClass::FuncCall(
+                                    create_node!(ASTClass::Identifire(s)),
+                                    args,
+                                    ))
+                            );
+                    }
+                    _ => {
+                        Some(create_node!(ASTClass::Identifire(s)))
+                    }
+                }
+            }
             TokenClass::Number(n) => Some(create_node!(ASTClass::Number(n))),
             TokenClass::Symbol(Symbol::Else) => Some(create_node!(ASTClass::Else)),
             _ => {

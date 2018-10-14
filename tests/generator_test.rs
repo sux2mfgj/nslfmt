@@ -302,7 +302,7 @@ fn assign_wire_00() {
 
 #[test]
 fn any_00() {
-    let mut b = "module test { reg a = 0; any {a : { a := 1; }} }".as_bytes();
+    let mut b = "module test { reg a = 0; any {a : \n{ a := 1; }} }".as_bytes();
     let mut l = Lexer::new(&mut b);
     let p = Parser::new(&mut l);
     let mut io = Cursor::new(Vec::new());
@@ -314,3 +314,5 @@ fn any_00() {
     let ans = "module test\n{\n    reg a = 0;\n    any\n{\na:\n{\n    a := 1;\n}\n}\n}\n".to_string();
     assert_eq!(out, ans);
 }
+
+

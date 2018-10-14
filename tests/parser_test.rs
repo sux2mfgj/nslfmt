@@ -1375,10 +1375,47 @@ fn wire_assign_04() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let components = vec![];
+    let wire_def = create_node!(ASTClass::Wire(vec![(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        None,
+    )]));
+
+    let components = vec![
+        wire_def,
+    ];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
     assert_eq!(p.next_ast_top().unwrap(), module);
-}*/
+}
+*/
+
+#[test]
+fn reg_assign_01() {
+    let mut b = "module test {mhartid := update(funct, mhartid, source);}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let func_call = create_node!(ASTClass::FuncCall(
+            create_node!(ASTClass::Identifire("update".to_string())),
+            vec![
+                create_node!(ASTClass::Identifire("funct".to_string())),
+                create_node!(ASTClass::Identifire("mhartid".to_string())),
+                create_node!(ASTClass::Identifire("source".to_string())),
+            ]));
+    let assign = create_node!(ASTClass::RegAssign(
+        create_node!(ASTClass::Identifire("mhartid".to_string())),
+        func_call,
+    ));
+
+    let components = vec![
+        assign,
+    ];
+    let module = create_node!(ASTClass::Module(
+        create_node!(ASTClass::Identifire("test".to_string())),
+        create_node!(ASTClass::Block(components))
+    ));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}
+
