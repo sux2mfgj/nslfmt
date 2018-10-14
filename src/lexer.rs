@@ -140,7 +140,6 @@ impl<'a> Lexer<'a> {
                         if let Some('=') = self.iter.peek() {
                             self.iter.next();
                             return Token::from((Symbol::RegAssign, self.line));
-
                         }
                         return Token::from((Symbol::Colon, self.line));
                     }
@@ -181,7 +180,6 @@ impl<'a> Lexer<'a> {
                                 '=' => {
                                     self.iter.next();
                                     return Token::from((Operator::Equal, self.line));
-
                                 }
                                 _ => {
                                     return Token::from((Symbol::Equal, self.line));

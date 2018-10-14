@@ -83,12 +83,14 @@ fn macro_in_declare_00() {
     let mut interfaces = Vec::new();
     interfaces.push(create_node!(ASTClass::Input(
         create_node!(ASTClass::Identifire("a".to_string())),
-        Some(create_node!(ASTClass::Number("2".to_string()))))));
+        Some(create_node!(ASTClass::Number("2".to_string())))
+    )));
     interfaces.push(create_node!(ASTClass::Newline));
 
-    let tv = vec![
-        Token::from((TokenClass::Identifire("TEST_INTERFACES".to_string()), 2)),
-    ];
+    let tv = vec![Token::from((
+        TokenClass::Identifire("TEST_INTERFACES".to_string()),
+        2,
+    ))];
     interfaces.push(create_node!(ASTClass::Macro_SubModule(tv)));
 
     let block = create_node!(ASTClass::Block(interfaces));
@@ -109,18 +111,20 @@ fn macro_in_declare_01() {
     let mut interfaces = Vec::new();
     interfaces.push(create_node!(ASTClass::Input(
         create_node!(ASTClass::Identifire("a".to_string())),
-        Some(create_node!(ASTClass::Number("2".to_string()))))));
+        Some(create_node!(ASTClass::Number("2".to_string())))
+    )));
     interfaces.push(create_node!(ASTClass::Newline));
 
-    let tv = vec![
-        Token::from((TokenClass::Identifire("TEST_INTERFACES".to_string()), 2)),
-    ];
+    let tv = vec![Token::from((
+        TokenClass::Identifire("TEST_INTERFACES".to_string()),
+        2,
+    ))];
     interfaces.push(create_node!(ASTClass::Macro_SubModule(tv)));
-    interfaces.push(
-        create_node!(ASTClass::FuncIn(
-                create_node!(ASTClass::Identifire("ok".to_string())),
-                None,
-                None)));
+    interfaces.push(create_node!(ASTClass::FuncIn(
+        create_node!(ASTClass::Identifire("ok".to_string())),
+        None,
+        None
+    )));
 
     let block = create_node!(ASTClass::Block(interfaces));
     let id = create_node!(ASTClass::Identifire("ok".to_string()));
@@ -887,11 +891,10 @@ fn proc_00() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let components = vec![
-        create_node!(ASTClass::ProcName(
-                create_node!(ASTClass::Identifire("proc_a".to_string())),
-                None))
-    ];
+    let components = vec![create_node!(ASTClass::ProcName(
+        create_node!(ASTClass::Identifire("proc_a".to_string())),
+        None
+    ))];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
@@ -914,8 +917,9 @@ fn proc_01() {
     let components = vec![
         reg_def,
         create_node!(ASTClass::ProcName(
-                create_node!(ASTClass::Identifire("proc_a".to_string())),
-                Some(vec![create_node!(ASTClass::Identifire("r1".to_string()))])))
+            create_node!(ASTClass::Identifire("proc_a".to_string())),
+            Some(vec![create_node!(ASTClass::Identifire("r1".to_string()))])
+        )),
     ];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
@@ -930,10 +934,9 @@ fn state_name_00() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let components = vec![
-        create_node!(ASTClass::StateName(
-            vec!["state1".to_string()]))
-    ];
+    let components = vec![create_node!(ASTClass::StateName(vec![
+        "state1".to_string(),
+    ]))];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
@@ -947,13 +950,10 @@ fn state_name_01() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let components = vec![
-        create_node!(ASTClass::StateName(
-            vec![
-            "state1".to_string(),
-            "state2".to_string(),
-            ]))
-    ];
+    let components = vec![create_node!(ASTClass::StateName(vec![
+        "state1".to_string(),
+        "state2".to_string(),
+    ]))];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
@@ -967,14 +967,12 @@ fn mem_00() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let components = vec![
-        create_node!(ASTClass::Mem(
-            create_node!(ASTClass::Identifire("aa".to_string())),
-            create_node!(ASTClass::Number("12".to_string())),
-            None,
-            None,
-                ))
-    ];
+    let components = vec![create_node!(ASTClass::Mem(
+        create_node!(ASTClass::Identifire("aa".to_string())),
+        create_node!(ASTClass::Number("12".to_string())),
+        None,
+        None,
+    ))];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
@@ -988,14 +986,12 @@ fn mem_01() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let components = vec![
-        create_node!(ASTClass::Mem(
-            create_node!(ASTClass::Identifire("aa".to_string())),
-            create_node!(ASTClass::Number("4".to_string())),
-            None,
-            Some(vec![create_node!(ASTClass::Number("4'b1010".to_string()))]),
-                ))
-    ];
+    let components = vec![create_node!(ASTClass::Mem(
+        create_node!(ASTClass::Identifire("aa".to_string())),
+        create_node!(ASTClass::Number("4".to_string())),
+        None,
+        Some(vec![create_node!(ASTClass::Number("4'b1010".to_string()))]),
+    ))];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
@@ -1009,17 +1005,15 @@ fn mem_02() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let components = vec![
-        create_node!(ASTClass::Mem(
-            create_node!(ASTClass::Identifire("aa".to_string())),
-            create_node!(ASTClass::Number("4".to_string())),
-            Some(create_node!(ASTClass::Number("2".to_string()))),
-            Some(vec![
-                 create_node!(ASTClass::Number("4'b1010".to_string())),
-                 create_node!(ASTClass::Number("4'b0101".to_string())),
-            ]),
-                ))
-    ];
+    let components = vec![create_node!(ASTClass::Mem(
+        create_node!(ASTClass::Identifire("aa".to_string())),
+        create_node!(ASTClass::Number("4".to_string())),
+        Some(create_node!(ASTClass::Number("2".to_string()))),
+        Some(vec![
+            create_node!(ASTClass::Number("4'b1010".to_string())),
+            create_node!(ASTClass::Number("4'b0101".to_string())),
+        ]),
+    ))];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
@@ -1033,14 +1027,12 @@ fn mem_03() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let components = vec![
-        create_node!(ASTClass::Mem(
-            create_node!(ASTClass::Identifire("aa".to_string())),
-            create_node!(ASTClass::Number("4".to_string())),
-            Some(create_node!(ASTClass::Number("2".to_string()))),
-            None,
-            ))
-    ];
+    let components = vec![create_node!(ASTClass::Mem(
+        create_node!(ASTClass::Identifire("aa".to_string())),
+        create_node!(ASTClass::Number("4".to_string())),
+        Some(create_node!(ASTClass::Number("2".to_string()))),
+        None,
+    ))];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
@@ -1054,19 +1046,15 @@ fn wire_assign_00() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let wire = create_node!(ASTClass::Wire(
-                vec![
-                    (create_node!(ASTClass::Identifire("a".to_string())),
-                    None)]));
-    let assign = create_node!(
-        ASTClass::Assign(
-            create_node!(ASTClass::Identifire("a".to_string())),
-            create_node!(ASTClass::Number("1'b1".to_string())),
-        ));
-    let components = vec![
-        wire,
-        assign,
-    ];
+    let wire = create_node!(ASTClass::Wire(vec![(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        None,
+    )]));
+    let assign = create_node!(ASTClass::Assign(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        create_node!(ASTClass::Number("1'b1".to_string())),
+    ));
+    let components = vec![wire, assign];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
@@ -1080,25 +1068,21 @@ fn wire_assign_01() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let wire = create_node!(ASTClass::Wire(
-                vec![
-                    (create_node!(ASTClass::Identifire("a".to_string())),
-                    None)]));
+    let wire = create_node!(ASTClass::Wire(vec![(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        None,
+    )]));
 
     let expr = create_node!(ASTClass::Expression(
-            create_node!(ASTClass::Identifire("a".to_string())),
-            create_node!(ASTClass::Operator(Operator::Plus)),
-            create_node!(ASTClass::Number("1'b1".to_string())),
-            ));
-    let assign = create_node!(
-        ASTClass::Assign(
-            create_node!(ASTClass::Identifire("a".to_string())),
-            expr,
-        ));
-    let components = vec![
-        wire,
-        assign,
-    ];
+        create_node!(ASTClass::Identifire("a".to_string())),
+        create_node!(ASTClass::Operator(Operator::Plus)),
+        create_node!(ASTClass::Number("1'b1".to_string())),
+    ));
+    let assign = create_node!(ASTClass::Assign(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        expr,
+    ));
+    let components = vec![wire, assign];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
@@ -1112,25 +1096,21 @@ fn wire_assign_02() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let wire = create_node!(ASTClass::Wire(
-                vec![
-                    (create_node!(ASTClass::Identifire("a".to_string())),
-                    None)]));
+    let wire = create_node!(ASTClass::Wire(vec![(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        None,
+    )]));
 
     let expr = create_node!(ASTClass::Expression(
-            create_node!(ASTClass::Identifire("a".to_string())),
-            create_node!(ASTClass::Operator(Operator::Plus)),
-            create_node!(ASTClass::Identifire("a".to_string())),
-            ));
-    let assign = create_node!(
-        ASTClass::Assign(
-            create_node!(ASTClass::Identifire("a".to_string())),
-            expr,
-        ));
-    let components = vec![
-        wire,
-        assign,
-    ];
+        create_node!(ASTClass::Identifire("a".to_string())),
+        create_node!(ASTClass::Operator(Operator::Plus)),
+        create_node!(ASTClass::Identifire("a".to_string())),
+    ));
+    let assign = create_node!(ASTClass::Assign(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        expr,
+    ));
+    let components = vec![wire, assign];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
@@ -1144,25 +1124,21 @@ fn wire_assign_03() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let wire = create_node!(ASTClass::Wire(
-                vec![
-                    (create_node!(ASTClass::Identifire("a".to_string())),
-                    None)]));
+    let wire = create_node!(ASTClass::Wire(vec![(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        None,
+    )]));
 
     let expr = create_node!(ASTClass::Expression(
-            create_node!(ASTClass::Identifire("a".to_string())),
-            create_node!(ASTClass::Operator(Operator::Plus)),
-            create_node!(ASTClass::Number("1'b1".to_string())),
-            ));
-    let assign = create_node!(
-        ASTClass::Assign(
-            create_node!(ASTClass::Identifire("a".to_string())),
-            expr,
-        ));
-    let components = vec![
-        wire,
-        assign,
-    ];
+        create_node!(ASTClass::Identifire("a".to_string())),
+        create_node!(ASTClass::Operator(Operator::Plus)),
+        create_node!(ASTClass::Number("1'b1".to_string())),
+    ));
+    let assign = create_node!(ASTClass::Assign(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        expr,
+    ));
+    let components = vec![wire, assign];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
@@ -1176,26 +1152,22 @@ fn reg_assign_00() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let wire = create_node!(ASTClass::Reg(
-                vec![
-                    (create_node!(ASTClass::Identifire("a".to_string())),
-                    None,
-                    None)]));
+    let wire = create_node!(ASTClass::Reg(vec![(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        None,
+        None,
+    )]));
 
     let expr = create_node!(ASTClass::Expression(
-            create_node!(ASTClass::Identifire("a".to_string())),
-            create_node!(ASTClass::Operator(Operator::Plus)),
-            create_node!(ASTClass::Number("1'b1".to_string())),
-            ));
-    let assign = create_node!(
-        ASTClass::Assign(
-            create_node!(ASTClass::Identifire("a".to_string())),
-            expr,
-        ));
-    let components = vec![
-        wire,
-        assign,
-    ];
+        create_node!(ASTClass::Identifire("a".to_string())),
+        create_node!(ASTClass::Operator(Operator::Plus)),
+        create_node!(ASTClass::Number("1'b1".to_string())),
+    ));
+    let assign = create_node!(ASTClass::Assign(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        expr,
+    ));
+    let components = vec![wire, assign];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
@@ -1209,10 +1181,10 @@ fn func_in_module_00() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let components = vec![
-        create_node!(ASTClass::Func(
-                create_node!(ASTClass::Identifire("ok".to_string())),
-                create_node!(ASTClass::Block(vec![]))))];
+    let components = vec![create_node!(ASTClass::Func(
+        create_node!(ASTClass::Identifire("ok".to_string())),
+        create_node!(ASTClass::Block(vec![]))
+    ))];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
@@ -1227,15 +1199,13 @@ fn return_00() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let func_components = vec![
-        create_node!(ASTClass::Return(
-                create_node!(ASTClass::Identifire("mtvec".to_string()))
-                ))
-    ];
-    let components = vec![
-        create_node!(ASTClass::Func(
-                create_node!(ASTClass::Identifire("ok".to_string())),
-                create_node!(ASTClass::Block(func_components))))];
+    let func_components = vec![create_node!(ASTClass::Return(create_node!(
+        ASTClass::Identifire("mtvec".to_string())
+    )))];
+    let components = vec![create_node!(ASTClass::Func(
+        create_node!(ASTClass::Identifire("ok".to_string())),
+        create_node!(ASTClass::Block(func_components))
+    ))];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
@@ -1250,11 +1220,7 @@ fn any_00() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let components = vec![
-        create_node!(ASTClass::Any(
-                vec![]
-                ))
-    ];
+    let components = vec![create_node!(ASTClass::Any(vec![]))];
 
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
@@ -1270,33 +1236,19 @@ fn any_01() {
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    let any_comp = vec![
-        (create_node!(ASTClass::Identifire("a".to_string())),
-         create_node!(ASTClass::Block(
-                 vec![
-                 create_node!(ASTClass::Assign(
-                         create_node!(ASTClass::Identifire("a".to_string())),
-                         create_node!(ASTClass::Number("1".to_string()))
-                         ))
-                 ]))
-        )
-    ];
-    let reg = create_node!(
-        ASTClass::Reg(
-            vec![
-                (
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    None,
-                    Some(create_node!(ASTClass::Number("0".to_string())))
-                )
-            ]
-        ));
-    let components = vec![
-        reg,
-        create_node!(ASTClass::Any(
-                any_comp
-                ))
-    ];
+    let any_comp = vec![(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        create_node!(ASTClass::Block(vec![create_node!(ASTClass::Assign(
+            create_node!(ASTClass::Identifire("a".to_string())),
+            create_node!(ASTClass::Number("1".to_string()))
+        ))])),
+    )];
+    let reg = create_node!(ASTClass::Reg(vec![(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        None,
+        Some(create_node!(ASTClass::Number("0".to_string()))),
+    )]));
+    let components = vec![reg, create_node!(ASTClass::Any(any_comp))];
 
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
@@ -1307,7 +1259,8 @@ fn any_01() {
 
 #[test]
 fn any_02() {
-    let mut b = "module test { reg a = 0; any {a : { a := 1; } a == 1'b1: { a := 0;}} }".as_bytes();
+    let mut b = "module test { reg a = 0; any {a : { a := 1; } a == 1'b1: { a := 0;}} }"
+        .as_bytes();
 
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
@@ -1320,42 +1273,25 @@ fn any_02() {
     let any_comp = vec![
         (
             create_node!(ASTClass::Identifire("a".to_string())),
-            create_node!(ASTClass::Block(
-                 vec![
-                 create_node!(ASTClass::Assign(
-                         create_node!(ASTClass::Identifire("a".to_string())),
-                         create_node!(ASTClass::Number("1".to_string()))
-                         ))
-                 ]))
+            create_node!(ASTClass::Block(vec![create_node!(ASTClass::Assign(
+                create_node!(ASTClass::Identifire("a".to_string())),
+                create_node!(ASTClass::Number("1".to_string()))
+            ))])),
         ),
         (
             expr,
-            create_node!(ASTClass::Block(
-                    vec![
-                    create_node!(ASTClass::Assign(
-                            create_node!(ASTClass::Identifire("a".to_string())),
-                            create_node!(ASTClass::Number("0".to_string()))
-                            ))
-                    ]
-                    ))
-            )
+            create_node!(ASTClass::Block(vec![create_node!(ASTClass::Assign(
+                create_node!(ASTClass::Identifire("a".to_string())),
+                create_node!(ASTClass::Number("0".to_string()))
+            ))])),
+        ),
     ];
-    let reg = create_node!(
-        ASTClass::Reg(
-            vec![
-                (
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    None,
-                    Some(create_node!(ASTClass::Number("0".to_string())))
-                )
-            ]
-        ));
-    let components = vec![
-        reg,
-        create_node!(ASTClass::Any(
-                any_comp
-                ))
-    ];
+    let reg = create_node!(ASTClass::Reg(vec![(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        None,
+        Some(create_node!(ASTClass::Number("0".to_string()))),
+    )]));
+    let components = vec![reg, create_node!(ASTClass::Any(any_comp))];
 
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),

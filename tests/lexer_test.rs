@@ -1116,7 +1116,10 @@ fn proc_00() {
 
     assert_eq!(l.next_token(true), Token::from((Symbol::OpeningBrace, 1)));
     assert_eq!(l.next_token(true), Token::from((Symbol::ProcName, 1)));
-    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("proc_a".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("proc_a".to_string()), 1))
+    );
     assert_eq!(l.next_token(true), Token::from((Symbol::LeftParen, 1)));
     assert_eq!(l.next_token(true), Token::from((Symbol::RightParen, 1)));
 
@@ -1143,7 +1146,10 @@ fn state_name_00() {
 
     assert_eq!(l.next_token(true), Token::from((Symbol::OpeningBrace, 1)));
     assert_eq!(l.next_token(true), Token::from((Symbol::StateName, 1)));
-    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("state1".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("state1".to_string()), 1))
+    );
 
     assert_eq!(
         l.next_token(true),
@@ -1168,11 +1174,23 @@ fn mem_00() {
 
     assert_eq!(l.next_token(true), Token::from((Symbol::OpeningBrace, 1)));
     assert_eq!(l.next_token(true), Token::from((Symbol::Mem, 1)));
-    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("aa".to_string()), 1)));
-    assert_eq!(l.next_token(true), Token::from((Symbol::LeftSquareBracket, 1)));
-    assert_eq!(l.next_token(true), Token::from((TokenClass::Number("12".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("aa".to_string()), 1))
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::LeftSquareBracket, 1))
+    );
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Number("12".to_string()), 1))
+    );
 
-    assert_eq!(l.next_token(true), Token::from((Symbol::RightSquareBracket, 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((Symbol::RightSquareBracket, 1))
+    );
 
     assert_eq!(
         l.next_token(true),
@@ -1203,10 +1221,7 @@ fn wire_assign_00() {
         l.next_token(true),
         Token::from((TokenClass::Identifire("a".to_string()), 1))
     );
-    assert_eq!(
-        l.next_token(true),
-        Token::from((Symbol::Equal, 1))
-    );
+    assert_eq!(l.next_token(true), Token::from((Symbol::Equal, 1)));
     assert_eq!(
         l.next_token(true),
         Token::from((TokenClass::Number("1'b1".to_string()), 1))
@@ -1237,17 +1252,12 @@ fn plus_00() {
         l.next_token(true),
         Token::from((TokenClass::Identifire("a".to_string()), 1))
     );
-    assert_eq!(
-        l.next_token(true),
-        Token::from((Symbol::Equal, 1))
-    );
+    assert_eq!(l.next_token(true), Token::from((Symbol::Equal, 1)));
     assert_eq!(
         l.next_token(true),
         Token::from((TokenClass::Identifire("a".to_string()), 1))
     );
-    assert_eq!(
-        l.next_token(true),
-        Token::from((Operator::Plus, 1)));
+    assert_eq!(l.next_token(true), Token::from((Operator::Plus, 1)));
     assert_eq!(
         l.next_token(true),
         Token::from((TokenClass::Number("1'b1".to_string()), 1))
@@ -1283,20 +1293,16 @@ fn reg_assignment_00() {
         l.next_token(true),
         Token::from((TokenClass::Identifire("a".to_string()), 1))
     );
-    assert_eq!(
-        l.next_token(true),
-        Token::from((Symbol::RegAssign, 1)),
-    );
+    assert_eq!(l.next_token(true), Token::from((Symbol::RegAssign, 1)),);
     assert_eq!(
         l.next_token(true),
         Token::from((TokenClass::Identifire("a".to_string()), 1))
     );
+    assert_eq!(l.next_token(true), Token::from((Operator::Plus, 1)));
     assert_eq!(
         l.next_token(true),
-        Token::from((Operator::Plus, 1)));
-    assert_eq!(
-        l.next_token(true),
-        Token::from((TokenClass::Number("1'b1".to_string()), 1)));
+        Token::from((TokenClass::Number("1'b1".to_string()), 1))
+    );
     assert_eq!(
         l.next_token(true),
         Token::new(TokenClass::Symbol(Symbol::Semicolon), 1)
@@ -1331,7 +1337,10 @@ fn func_block_return() {
     );
     assert_eq!(l.next_token(true), Token::from((Symbol::OpeningBrace, 1)));
     assert_eq!(l.next_token(true), Token::from((Symbol::Return, 1)));
-    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("mtvec".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("mtvec".to_string()), 1))
+    );
     assert_eq!(l.next_token(true), Token::from((Symbol::Semicolon, 1)));
     assert_eq!(l.next_token(true), Token::from((Symbol::ClosingBrace, 1)));
 }

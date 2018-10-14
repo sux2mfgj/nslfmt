@@ -15,7 +15,7 @@ pub enum Symbol {
     Comma,              // ,
     Dot,                // .
     Equal,              // =
-    RegAssign,           // :=
+    RegAssign,          // :=
     Input,              // input
     Output,             // output
     InOut,              // inout
@@ -28,13 +28,13 @@ pub enum Symbol {
     SingleQuote, // '
     Wire,        // wire
     Reg,         // reg
-    ProcName,           // proc_name
-    StateName,          // state_name
-    Mem,                // mem
-    Return,             // return
-    Any,                // any
-    //TODO
-    // lack some symbols
+    ProcName,    // proc_name
+    StateName,   // state_name
+    Mem,         // mem
+    Return,      // return
+    Any,         // any
+                 //TODO
+                 // lack some symbols
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -22,9 +22,17 @@ pub enum ASTClass {
     Declare(Box<ASTNode>, Box<ASTNode>),
 
     // identifire, inputs, output
-    FuncIn(Box<ASTNode>, Option<Vec<Box<ASTNode>>>, Option<Box<ASTNode>>),
+    FuncIn(
+        Box<ASTNode>,
+        Option<Vec<Box<ASTNode>>>,
+        Option<Box<ASTNode>>,
+    ),
     // identifire, outputs, input
-    FuncOut(Box<ASTNode>, Option<Vec<Box<ASTNode>>>, Option<Box<ASTNode>>),
+    FuncOut(
+        Box<ASTNode>,
+        Option<Vec<Box<ASTNode>>>,
+        Option<Box<ASTNode>>,
+    ),
     // identifire, inputs, output
     FuncSelf(
         Box<ASTNode>,
@@ -50,7 +58,12 @@ pub enum ASTClass {
     ProcName(Box<ASTNode>, Option<Vec<Box<ASTNode>>>),
     StateName(Vec<String>),
     //  id          ,[12]        , [12]                 , initial value
-    Mem(Box<ASTNode>, Box<ASTNode>, Option<Box<ASTNode>>, Option<Vec<Box<ASTNode>>>),
+    Mem(
+        Box<ASTNode>,
+        Box<ASTNode>,
+        Option<Box<ASTNode>>,
+        Option<Vec<Box<ASTNode>>>,
+    ),
     //     id          , expression
     Assign(Box<ASTNode>, Box<ASTNode>),
     //   id          , block
@@ -156,10 +169,8 @@ impl fmt::Display for ASTNode {
                             ids.iter().map(|ident| format!("{}", ident)).collect();
                         //let args = str_input.connect(", ");
                         args = str_input.join(", ");
-
                     }
-                    None => {
-                    }
+                    None => {}
                 }
                 match output {
                     Some(s) => {
