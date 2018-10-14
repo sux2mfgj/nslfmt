@@ -266,6 +266,9 @@ impl fmt::Display for ASTNode {
                                         .collect();
                 write!(f, "reg {};\n", l.join(", "))
             }
+            ASTClass::Return(ref expr) => {
+                write!(f, "return {};\n", expr)
+            }
             ASTClass::MacroInclude(ref path) => {
                 return write!(f, "#include {}\n", path);
             }
