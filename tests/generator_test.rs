@@ -284,3 +284,18 @@ fn return_00() {
     let ans = "module hello\n{\n    func ok\n{\n    return a;\n}\n}\n".to_string();
     assert_eq!(out, ans);
 }
+
+#[test]
+fn assign_wire_00() {
+    let mut b = "module hello {wire a;func ok {a = 1'b0;}}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let p = Parser::new(&mut l);
+    let mut io = Cursor::new(Vec::new());
+    {
+        let mut g = Generator::new(p, &mut io);
+        g.output_node().unwrap();
+    }
+    let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+    let ans = "module hello\n{\n    wire a;\n    func ok\n{\n    a = 1'b0;\n}\n}\n".to_string();
+    assert_eq!(out, ans);
+}

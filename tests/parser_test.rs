@@ -1364,3 +1364,18 @@ fn function_call_01() {
     ));
     assert_eq!(p.next_ast_top().unwrap(), module);
 }
+
+/*
+#[test]
+fn wire_assign_04() {
+    let mut b = "module hello {wire a;func ok {a = 1'b0;}}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let components = vec![];
+    let module = create_node!(ASTClass::Module(
+        create_node!(ASTClass::Identifire("test".to_string())),
+        create_node!(ASTClass::Block(components))
+    ));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}*/

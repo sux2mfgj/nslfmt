@@ -266,6 +266,9 @@ impl fmt::Display for ASTNode {
                                         .collect();
                 write!(f, "reg {};\n", l.join(", "))
             }
+            ASTClass::Assign(ref id, ref expr) => {
+                write!(f, "{} = {};\n", id, expr)
+            }
             ASTClass::Return(ref expr) => {
                 write!(f, "return {};\n", expr)
             }
