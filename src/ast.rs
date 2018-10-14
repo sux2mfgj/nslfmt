@@ -24,19 +24,19 @@ pub enum ASTClass {
     // identifire, inputs, output
     FuncIn(
         Box<ASTNode>,
-        Option<Vec<Box<ASTNode>>>,
+        Vec<Box<ASTNode>>,
         Option<Box<ASTNode>>,
     ),
     // identifire, outputs, input
     FuncOut(
         Box<ASTNode>,
-        Option<Vec<Box<ASTNode>>>,
+        Vec<Box<ASTNode>>,
         Option<Box<ASTNode>>,
     ),
     // identifire, inputs, output
     FuncSelf(
         Box<ASTNode>,
-        Option<Vec<Box<ASTNode>>>,
+        Vec<Box<ASTNode>>,
         Option<Box<ASTNode>>,
     ),
 
@@ -55,7 +55,7 @@ pub enum ASTClass {
     // identifire, block
     Module(Box<ASTNode>, Box<ASTNode>),
     Macro_SubModule(Vec<token::Token>),
-    ProcName(Box<ASTNode>, Option<Vec<Box<ASTNode>>>),
+    ProcName(Box<ASTNode>, Vec<Box<ASTNode>>),
     StateName(Vec<String>),
     //  id          ,[12]        , [12]                 , initial value
     Mem(
@@ -72,7 +72,7 @@ pub enum ASTClass {
     Any(Vec<(Box<ASTNode>, Box<ASTNode>)>),
     Return(Box<ASTNode>),
     Else,
-    FuncCall(Box<ASTNode>, Option<Vec<Box<ASTNode>>>),
+    FuncCall(Box<ASTNode>, Vec<Box<ASTNode>>),
 
     // ----- Macros ------
     MacroInclude(Box<ASTNode>),
@@ -164,16 +164,11 @@ impl fmt::Display for ASTNode {
                 }
             },
             ASTClass::FuncIn(ref id, ref input_ids, ref output) => {
-                let mut args = "".to_string();
-                match input_ids {
-                    Some(ids) => {
-                        let str_input: Vec<String> =
-                            ids.iter().map(|ident| format!("{}", ident)).collect();
-                        //let args = str_input.connect(", ");
-                        args = str_input.join(", ");
-                    }
-                    None => {}
-                }
+                let args = input_ids
+                    .iter()
+                    .map(|ident| format!("{}", ident))
+                    .collect::<Vec<String>>()
+                    .join(", ");
                 match output {
                     Some(s) => {
                         return write!(f, "func_in {}({}) : {};\n", id, args, s);
@@ -184,15 +179,11 @@ impl fmt::Display for ASTNode {
                 }
             }
             ASTClass::FuncOut(ref id, ref input_ids, ref output) => {
-                let mut args = "".to_string();
-                match input_ids {
-                    Some(ids) => {
-                        let str_input: Vec<String> =
-                            ids.iter().map(|ident| format!("{}", ident)).collect();
-                        args = str_input.join(", ");
-                    }
-                    None => {}
-                }
+                let args = input_ids
+                    .iter()
+                    .map(|ident| format!("{}", ident))
+                    .collect::<Vec<String>>()
+                    .join(", ");
                 match output {
                     Some(s) => {
                         return write!(f, "func_out {}({}) : {};\n", id, args, s);
@@ -203,15 +194,11 @@ impl fmt::Display for ASTNode {
                 }
             }
             ASTClass::FuncSelf(ref id, ref input_ids, ref output) => {
-                let mut args = "".to_string();
-                match input_ids {
-                    Some(ids) => {
-                        let str_input: Vec<String> =
-                            ids.iter().map(|ident| format!("{}", ident)).collect();
-                        args = str_input.join(", ");
-                    }
-                    None => {}
-                }
+                let args = input_ids
+                    .iter()
+                    .map(|ident| format!("{}", ident))
+                    .collect::<Vec<String>>()
+                    .join(", ");
                 match output {
                     Some(s) => {
                         return write!(f, "func_self {}({}) : {};\n", id, args, s);
@@ -220,6 +207,14 @@ impl fmt::Display for ASTNode {
                         return write!(f, "func_self {}({});\n", id, args);
                     }
                 }
+            }
+            ASTClass::FuncCall(ref id, ref args) => {
+                let arg_str = args
+                    .iter()
+                    .map(|id| format!("{}", id))
+                    .collect::<Vec<String>>()
+                    .join(", ");
+                return write!(f, "{}({});\n", id, arg_str);
             }
             ASTClass::Block(ref list) => {
                 let mut list_str = String::new();

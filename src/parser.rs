@@ -165,7 +165,7 @@ impl<'a> Parser<'a> {
                 let id = self.get_identifire().unwrap();
                 let mut n_t = self.lexer.check_next_token(true);
 
-                let mut args: Option<Vec<Box<ASTNode>>> = None;
+                let mut args = vec![];
                 let mut ret: Option<Box<ASTNode>> = None;
 
                 if n_t.class == TokenClass::Symbol(Symbol::LeftParen) {
@@ -606,7 +606,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn generate_args_vec(&mut self, is_read_left: bool) -> Option<Vec<Box<ASTNode>>> {
+    fn generate_args_vec(&mut self, is_read_left: bool) -> Vec<Box<ASTNode>> {
         if !is_read_left {
             let left_paren = self.lexer.next_token(true);
             if let TokenClass::Symbol(Symbol::LeftParen) = left_paren.class {
@@ -620,15 +620,14 @@ impl<'a> Parser<'a> {
             let token = self.lexer.next_token(true);
             match token.class {
                 TokenClass::Symbol(Symbol::RightParen) => {
-                    if args.len() == 0 {
-                        return None;
-                    } else {
-                        return Some(args);
-                    }
+                    return args;
                 }
                 TokenClass::Symbol(Symbol::Comma) => {}
                 TokenClass::Identifire(id) => {
                     args.push(create_node!(ASTClass::Identifire(id)));
+                }
+                TokenClass::Number(num) => {
+                    args.push(create_node!(ASTClass::Number(num)));
                 }
                 _ => {
                     panic!("unexptected token {:?}", token);

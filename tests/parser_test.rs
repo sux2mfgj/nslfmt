@@ -122,7 +122,7 @@ fn macro_in_declare_01() {
     interfaces.push(create_node!(ASTClass::Macro_SubModule(tv)));
     interfaces.push(create_node!(ASTClass::FuncIn(
         create_node!(ASTClass::Identifire("ok".to_string())),
-        None,
+        vec![],
         None
     )));
 
@@ -232,7 +232,7 @@ fn func_in() {
     let args = vec![create_node!(ASTClass::Identifire("a".to_string()))];
     let func = create_node!(ASTClass::FuncIn(
         create_node!(ASTClass::Identifire("ok".to_string())),
-        Some(args),
+        args,
         None,
     ));
     interfaces.push(func);
@@ -264,7 +264,7 @@ fn func_in_return() {
     let args = vec![create_node!(ASTClass::Identifire("a".to_string()))];
     let func = create_node!(ASTClass::FuncIn(
         create_node!(ASTClass::Identifire("ok".to_string())),
-        Some(args),
+        args,
         Some(create_node!(ASTClass::Identifire("c".to_string())))
     ));
     interfaces.push(func);
@@ -296,7 +296,7 @@ fn func_out_return() {
     let args = vec![create_node!(ASTClass::Identifire("a".to_string()))];
     let func = create_node!(ASTClass::FuncOut(
         create_node!(ASTClass::Identifire("ok".to_string())),
-        Some(args),
+        args,
         Some(create_node!(ASTClass::Identifire("c".to_string())))
     ));
     interfaces.push(func);
@@ -796,7 +796,7 @@ fn func_self_00() {
 
     let func_self = create_node!(ASTClass::FuncSelf(
         create_node!(ASTClass::Identifire("aa".to_string())),
-        None,
+        vec![],
         None,
     ));
 
@@ -821,10 +821,10 @@ fn func_self_01() {
 
     let func_self = create_node!(ASTClass::FuncSelf(
         create_node!(ASTClass::Identifire("aa".to_string())),
-        Some(vec![
+        vec![
             create_node!(ASTClass::Identifire("a".to_string())),
             create_node!(ASTClass::Identifire("b".to_string())),
-        ]),
+        ],
         None,
     ));
 
@@ -835,6 +835,7 @@ fn func_self_01() {
     ));
     assert_eq!(p.next_ast_top().unwrap(), module);
 }
+
 #[test]
 fn func_self_02() {
     let mut b = "module test { wire a; func_self aa: a;}".as_bytes();
@@ -848,7 +849,7 @@ fn func_self_02() {
 
     let func_self = create_node!(ASTClass::FuncSelf(
         create_node!(ASTClass::Identifire("aa".to_string())),
-        None,
+        vec![],
         Some(create_node!(ASTClass::Identifire("a".to_string()))),
     ));
 
@@ -873,7 +874,7 @@ fn func_self_03() {
 
     let func_self = create_node!(ASTClass::FuncSelf(
         create_node!(ASTClass::Identifire("aa".to_string())),
-        Some(vec![create_node!(ASTClass::Identifire("a".to_string()))]),
+        vec![create_node!(ASTClass::Identifire("a".to_string()))],
         Some(create_node!(ASTClass::Identifire("b".to_string()))),
     ));
 
@@ -893,7 +894,7 @@ fn proc_00() {
 
     let components = vec![create_node!(ASTClass::ProcName(
         create_node!(ASTClass::Identifire("proc_a".to_string())),
-        None
+        vec![]
     ))];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
@@ -918,7 +919,7 @@ fn proc_01() {
         reg_def,
         create_node!(ASTClass::ProcName(
             create_node!(ASTClass::Identifire("proc_a".to_string())),
-            Some(vec![create_node!(ASTClass::Identifire("r1".to_string()))])
+            vec![create_node!(ASTClass::Identifire("r1".to_string()))]
         )),
     ];
     let module = create_node!(ASTClass::Module(
@@ -1338,7 +1339,7 @@ fn function_call_00() {
 
     let components = vec![create_node!(ASTClass::FuncCall(
             create_node!(ASTClass::Identifire("error".to_string())),
-            None,
+            vec![],
             ))];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
@@ -1355,7 +1356,7 @@ fn function_call_01() {
 
     let components = vec![create_node!(ASTClass::FuncCall(
             create_node!(ASTClass::Identifire("error".to_string())),
-            Some(vec![create_node!(ASTClass::Identifire("a".to_string()))]),
+            vec![create_node!(ASTClass::Identifire("a".to_string()))],
             ))];
     let module = create_node!(ASTClass::Module(
         create_node!(ASTClass::Identifire("test".to_string())),
