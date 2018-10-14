@@ -594,6 +594,9 @@ impl<'a> Parser<'a> {
             }
             TokenClass::Number(n) => Some(create_node!(ASTClass::Number(n))),
             TokenClass::Symbol(Symbol::Else) => Some(create_node!(ASTClass::Else)),
+            TokenClass::CStyleComment(s) => {
+                Some(create_node!(ASTClass::CStyleComment(s)))
+            }
             _ => {
                 panic!("unexptected token {:?}", t);
             }
