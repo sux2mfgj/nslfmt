@@ -71,6 +71,7 @@ pub enum ASTClass {
     //  expression       , block
     Any(Vec<(Box<ASTNode>, Box<ASTNode>)>),
     Return(Box<ASTNode>),
+    Else,
 
     // ----- Macros ------
     MacroInclude(Box<ASTNode>),

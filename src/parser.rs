@@ -537,6 +537,7 @@ impl<'a> Parser<'a> {
         match t.class {
             TokenClass::Identifire(s) => Some(create_node!(ASTClass::Identifire(s))),
             TokenClass::Number(n) => Some(create_node!(ASTClass::Number(n))),
+            TokenClass::Symbol(Symbol::Else) => Some(create_node!(ASTClass::Else)),
             _ => {
                 panic!("unexptected token {:?}", t);
             }
@@ -694,7 +695,8 @@ impl<'a> Parser<'a> {
             TokenClass::Macro(Macro::Endif) => {
                 return Ok(create_node!(ASTClass::MacroEndif));
             }
-            TokenClass::Macro(Macro::Else) => {
+//             TokenClass::Macro(Macro::Else) => {
+            TokenClass::Symbol(Symbol::Else) => {
                 return Ok(create_node!(ASTClass::MacroElse));
             }
             TokenClass::Macro(Macro::Define) => {

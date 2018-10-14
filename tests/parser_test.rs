@@ -1299,3 +1299,33 @@ fn any_02() {
     ));
     assert_eq!(p.next_ast_top().unwrap(), module);
 }
+
+#[test]
+fn any_else_00() {
+    let mut b = "module test { reg a = 0; any {a : {} else: {}} }".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let any_comp = vec![
+        (
+            create_node!(ASTClass::Identifire("a".to_string())),
+            create_node!(ASTClass::Block(vec![])),
+        ),
+        (
+            create_node!(ASTClass::Else),
+            create_node!(ASTClass::Block(vec![])),
+        ),
+    ];
+    let reg = create_node!(ASTClass::Reg(vec![(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        None,
+        Some(create_node!(ASTClass::Number("0".to_string()))),
+    )]));
+    let components = vec![reg, create_node!(ASTClass::Any(any_comp))];
+
+    let module = create_node!(ASTClass::Module(
+        create_node!(ASTClass::Identifire("test".to_string())),
+        create_node!(ASTClass::Block(components))
+    ));
+    assert_eq!(p.next_ast_top().unwrap(), module);
+}

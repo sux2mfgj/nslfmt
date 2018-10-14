@@ -33,6 +33,7 @@ pub enum Symbol {
     Mem,         // mem
     Return,      // return
     Any,         // any
+    Else,        // eles
                  //TODO
                  // lack some symbols
 }
@@ -72,7 +73,8 @@ pub enum Macro {
     Undef,   // #undef
     Ifdef,   // #ifdef
     Ifndef,  // #ifndef
-    Else,    // #eles
+    //TODO
+//     Else,    // #eles
     Endif,   // #endif
 }
 

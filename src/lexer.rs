@@ -277,7 +277,7 @@ impl<'a> Lexer<'a> {
             "undef" => TokenClass::Macro(Macro::Undef),
             "ifdef" => TokenClass::Macro(Macro::Ifdef),
             "ifndef" => TokenClass::Macro(Macro::Ifndef),
-            "else" => TokenClass::Macro(Macro::Else),
+//             "else" => TokenClass::Macro(Macro::Else),
             "endif" => TokenClass::Macro(Macro::Endif),
             "wire" => TokenClass::Symbol(Symbol::Wire),
             "reg" => TokenClass::Symbol(Symbol::Reg),
@@ -287,6 +287,7 @@ impl<'a> Lexer<'a> {
             "func" => TokenClass::Symbol(Symbol::Func),
             "return" => TokenClass::Symbol(Symbol::Return),
             "any" => TokenClass::Symbol(Symbol::Any),
+            "else" => TokenClass::Symbol(Symbol::Else),
             //TODO
             _ => TokenClass::Identifire(word),
         }
