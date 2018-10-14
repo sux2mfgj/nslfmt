@@ -194,7 +194,7 @@ fn reg_00() {
     let ans = "module hello\n{\n    reg ok;\n}\n".to_string();
     assert_eq!(out, ans);
 }
-/*
+
 #[test]
 fn wire_00() {
     let mut b = "module hello {\n  wire ok;\n}".as_bytes();
@@ -224,4 +224,18 @@ fn wire_01() {
     let ans = "module hello\n{\n    wire ok, jk[23];\n}\n".to_string();
     assert_eq!(out, ans);
 }
-*/
+
+#[test]
+fn func_self_00() {
+    let mut b = "module hello {wire update_funct[2], update_result[32]; func_self update(update_funct): update_result;}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let p = Parser::new(&mut l);
+    let mut io = Cursor::new(Vec::new());
+    {
+        let mut g = Generator::new(p, &mut io);
+        g.output_node().unwrap();
+    }
+    let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+    let ans = "module hello\n{\n    wire update_funct[2], update_result[32];\n    func_self update(update_funct) : update_result;\n}\n".to_string();
+    assert_eq!(out, ans);
+}

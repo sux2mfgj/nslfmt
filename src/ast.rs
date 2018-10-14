@@ -202,6 +202,25 @@ impl fmt::Display for ASTNode {
                     }
                 }
             }
+            ASTClass::FuncSelf(ref id, ref input_ids, ref output) => {
+                let mut args = "".to_string();
+                match input_ids {
+                    Some(ids) => {
+                        let str_input: Vec<String> =
+                            ids.iter().map(|ident| format!("{}", ident)).collect();
+                        args = str_input.join(", ");
+                    }
+                    None => {}
+                }
+                match output {
+                    Some(s) => {
+                        return write!(f, "func_self {}({}) : {};\n", id, args, s);
+                    }
+                    None => {
+                        return write!(f, "func_self {}({});\n", id, args);
+                    }
+                }
+            }
             ASTClass::Block(ref list) => {
                 let mut list_str = String::new();
                 //TODO
