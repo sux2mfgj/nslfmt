@@ -34,6 +34,7 @@ impl<'a, 'b> Generator<'a, 'b> {
                     return Ok(());
                 }
                 _ => {
+                    double_newline_flag = false;
                     try!(self.writer.write(format!("{}", ast).as_bytes()));
                 }
             }

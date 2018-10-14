@@ -66,6 +66,7 @@ pub enum ASTClass {
     ),
     //     id          , expression
     Assign(Box<ASTNode>, Box<ASTNode>),
+    RegAssign(Box<ASTNode>, Box<ASTNode>),
     //   id          , block
     Func(Box<ASTNode>, Box<ASTNode>),
     //  expression       , block
@@ -269,8 +270,18 @@ impl fmt::Display for ASTNode {
             ASTClass::Assign(ref id, ref expr) => {
                 write!(f, "{} = {};\n", id, expr)
             }
+            ASTClass::RegAssign(ref id, ref expr) => {
+                write!(f, "{} := {};\n", id, expr)
+            }
             ASTClass::Return(ref expr) => {
                 write!(f, "return {};\n", expr)
+            }
+            ASTClass::Any(ref list) => {
+                write!(f, "any\n{{\n");
+                for (expr, block) in list {
+                    write!(f, "{}:{}", expr, block);
+                }
+                write!(f, "}}\n")
             }
             ASTClass::MacroInclude(ref path) => {
                 return write!(f, "#include {}\n", path);

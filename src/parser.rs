@@ -274,7 +274,7 @@ impl<'a> Parser<'a> {
                         let left = self.next_ast().unwrap();
                         let expr = self.create_expression(left).unwrap();
                         let _semicolon = self.lexer.next_token(true);
-                        return Some(create_node!(ASTClass::Assign(
+                        return Some(create_node!(ASTClass::RegAssign(
                             create_node!(ASTClass::Identifire(id_str)),
                             expr
                         )));
@@ -324,6 +324,7 @@ impl<'a> Parser<'a> {
                         if let TokenClass::Symbol(Symbol::ClosingBrace) =
                             self.lexer.check_next_token(true).class
                         {
+                            self.lexer.next_token(true);
                             return Some(create_node!(ASTClass::Any(any_componens)));
                         }
                         let left = self.next_ast()?;

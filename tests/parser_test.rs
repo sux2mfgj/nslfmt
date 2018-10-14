@@ -1164,7 +1164,7 @@ fn reg_assign_00() {
         create_node!(ASTClass::Operator(Operator::Plus)),
         create_node!(ASTClass::Number("1'b1".to_string())),
     ));
-    let assign = create_node!(ASTClass::Assign(
+    let assign = create_node!(ASTClass::RegAssign(
         create_node!(ASTClass::Identifire("a".to_string())),
         expr,
     ));
@@ -1228,6 +1228,7 @@ fn any_00() {
         create_node!(ASTClass::Block(components))
     ));
     assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast_top().unwrap(), create_node!(ASTClass::EndOfProgram));
 }
 
 #[test]
@@ -1239,7 +1240,7 @@ fn any_01() {
 
     let any_comp = vec![(
         create_node!(ASTClass::Identifire("a".to_string())),
-        create_node!(ASTClass::Block(vec![create_node!(ASTClass::Assign(
+        create_node!(ASTClass::Block(vec![create_node!(ASTClass::RegAssign(
             create_node!(ASTClass::Identifire("a".to_string())),
             create_node!(ASTClass::Number("1".to_string()))
         ))])),
@@ -1256,6 +1257,7 @@ fn any_01() {
         create_node!(ASTClass::Block(components))
     ));
     assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast_top().unwrap(), create_node!(ASTClass::EndOfProgram));
 }
 
 #[test]
@@ -1274,14 +1276,14 @@ fn any_02() {
     let any_comp = vec![
         (
             create_node!(ASTClass::Identifire("a".to_string())),
-            create_node!(ASTClass::Block(vec![create_node!(ASTClass::Assign(
+            create_node!(ASTClass::Block(vec![create_node!(ASTClass::RegAssign(
                 create_node!(ASTClass::Identifire("a".to_string())),
                 create_node!(ASTClass::Number("1".to_string()))
             ))])),
         ),
         (
             expr,
-            create_node!(ASTClass::Block(vec![create_node!(ASTClass::Assign(
+            create_node!(ASTClass::Block(vec![create_node!(ASTClass::RegAssign(
                 create_node!(ASTClass::Identifire("a".to_string())),
                 create_node!(ASTClass::Number("0".to_string()))
             ))])),
@@ -1363,6 +1365,7 @@ fn function_call_01() {
         create_node!(ASTClass::Block(components))
     ));
     assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast_top().unwrap(), create_node!(ASTClass::EndOfProgram));
 }
 
 /*
