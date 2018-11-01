@@ -505,6 +505,9 @@ impl<'a> Parser<'a> {
                 }
                 return Ok(create_node!(ASTClass::Macro_SubModule(tokens)));
             }
+            TokenClass::CStyleComment(text) => {
+                return Ok(create_node!(ASTClass::CStyleComment(text)));
+            }
             _ => {
                 panic!("unexptected token {:?}", t);
             }
