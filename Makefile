@@ -1,4 +1,7 @@
-TEST_TARGET=lexer_test
+TEST_TARGET			:= parser_test
+LOCAL_TEST_TARGET	:= module::wire_0
+INOTIFY				:= inotifywait -e close_write `find ./{src,tests}`
+
 
 build:
 	cargo build
@@ -9,6 +12,9 @@ autobuild:
 auto_unittest:
 	while inotifywait -e close_write `find ./{src,tests}`; do make build && make test_module TEST_TARGET=$(TEST_TARGET); done
 
+test_local_auto:
+	while $(INOTIFY); do make build && make test_local TEST_TARGET=$(TEST_TARGET) LOCAL_TEST_TARGET=$(LOCAL_TEST_TARGET); done
+
 run:
 	cargo run
 
@@ -17,6 +23,9 @@ test:
 
 test_module:
 	cargo test --test $(TEST_TARGET)
+
+test_local:
+	cargo test $(LOCAL_TEST_TARGET) --test $(TEST_TARGET)
 
 coverage:
 	rustup run nightly cargo tarpaulin -v

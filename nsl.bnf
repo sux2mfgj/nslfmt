@@ -18,6 +18,7 @@ io-wire     ::= "input"
 width-definition ::= [ "[" <width-expression> "]" ]
 
 width-expression    ::= <number>
+                    |   <identifire>
                     |   <width-expression> <operator> <width-expression>
 
 operator            ::= "/"
@@ -47,6 +48,7 @@ reg-wire-module-declaration ::= <reg-wire-definition>
                             |   <proc-declaration>
                             |   <state-declaration>
                             |   <func-declaration>
+                            |   <memory-declaration>
 
 reg-wire-definition ::= <reg-wire> <identifire> <width-declarator> [ "," <identifire> <width-declarator> ] ";"
 
@@ -63,6 +65,8 @@ proc-information    ::= <identifire> "(" <function-args> ")"
 state-declaration   ::= "state_name" <identifire> { "," <identifire> }* ";"
 
 func-declaration    ::= "func_self" <identifire> "(" <function-args> ")" <function-return> ";"
+
+memory-declaration  ::= "mem"
 
 module-behavior     ::= <assignment-expression>
                     |   <state-expression>
