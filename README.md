@@ -20,6 +20,18 @@ $ rustup run nightly RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo install ca
 $ rustup run nightly cargo run
 ```
 
+### Run the tests
+- all
+```
+$ cargo test
+```
+
+- unit test
+    - e.g run a test of wire_02 in parser_test.rs
+```
+$ cargo test module::wire_02 --test parser_test
+```
+
 ### [TODO](./task_list.md)
 
 ### References
