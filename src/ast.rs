@@ -56,13 +56,15 @@ pub enum ASTClass {
     Module(Box<ASTNode>, Box<ASTNode>),
     Macro_SubModule(Vec<token::Token>),
     ProcName(Box<ASTNode>, Vec<Box<ASTNode>>),
-    StateName(Vec<String>),
+    StateName(Vec<Box<ASTNode>>),
     //  id          ,[12]        , [12]                 , initial value
     Mem(
-        Box<ASTNode>,
-        Box<ASTNode>,
-        Option<Box<ASTNode>>,
-        Option<Vec<Box<ASTNode>>>,
+        Vec<(
+            Box<ASTNode>,
+            Box<ASTNode>,
+            Option<Box<ASTNode>>,
+            Option<Vec<Box<ASTNode>>>,
+        )>
     ),
     //     id          , expression
     Assign(Box<ASTNode>, Box<ASTNode>),
