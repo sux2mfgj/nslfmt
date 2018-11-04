@@ -6,17 +6,18 @@ use nslfmt::lexer::*;
 use nslfmt::parser::*;
 use nslfmt::token::*;
 
-// use std::fs::File;
-// use std::io::BufReader;
-/*
+use std::fs::File;
+use std::io::BufReader;
+
 #[test]
 fn end_of_program() {
     let mut b = "".as_bytes();
     let mut l = Lexer::new(&mut b);
     let mut p = Parser::new(&mut l);
 
-    assert_eq!(p.next_ast_top().err(), None);
+    assert_eq!(p.next_ast(), create_node!(ASTClass::EndOfProgram));
 }
+
 
 #[test]
 fn declare_only() {
@@ -25,12 +26,28 @@ fn declare_only() {
     let mut p = Parser::new(&mut l);
 
     assert_eq!(
-        p.next_ast_top().unwrap(),
+        p.next_ast(),
         create_node!(ASTClass::Declare(
             create_node!(ASTClass::Identifire("ok".to_string())),
             create_node!(ASTClass::Block(vec![]))
         ))
     )
+}
+
+#[test]
+fn newline_in_declare_block() {
+    let mut b = "declare ok {\n\n}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    assert_eq!(
+        p.next_ast(),
+        create_node!(ASTClass::Declare(
+                create_node!(ASTClass::Identifire("ok".to_string())),
+                create_node!(ASTClass::Block(vec![
+                                             create_node!(ASTClass::Newline),
+                                             create_node!(ASTClass::Newline),
+                ])))));
 }
 
 #[test]
@@ -48,7 +65,7 @@ fn one_bit_input() {
     let block = create_node!(ASTClass::Block(interfaces));
     let id = create_node!(ASTClass::Identifire("ok".to_string()));
     assert_eq!(
-        p.next_ast_top().unwrap(),
+        p.next_ast(),
         create_node!(ASTClass::Declare(id, block))
     );
 }
@@ -69,7 +86,30 @@ fn multi_bit_input() {
     let id = create_node!(ASTClass::Identifire("ok".to_string()));
 
     assert_eq!(
-        p.next_ast_top().unwrap(),
+        p.next_ast(),
+        create_node!(ASTClass::Declare(id, block))
+    );
+}
+
+#[test]
+fn expression_in_width_block_00() {
+    let mut b = "declare ok{ input a[OK]; }".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let mut p = Parser::new(&mut l);
+
+    let left = create_node!(ASTClass::Identifire("OK".to_string()));
+
+    let mut interfaces = Vec::new();
+    interfaces.push(create_node!(ASTClass::Input(
+        create_node!(ASTClass::Identifire("a".to_string())),
+        Some(left),
+    )));
+
+    let id = create_node!(ASTClass::Identifire("ok".to_string()));
+    let block = create_node!(ASTClass::Block(interfaces));
+
+    assert_eq!(
+        p.next_ast(),
         create_node!(ASTClass::Declare(id, block))
     );
 }
@@ -86,18 +126,14 @@ fn macro_in_declare_00() {
         Some(create_node!(ASTClass::Number("2".to_string())))
     )));
     interfaces.push(create_node!(ASTClass::Newline));
-
-    let tv = vec![Token::from((
-        TokenClass::Identifire("TEST_INTERFACES".to_string()),
-        2,
-    ))];
-    interfaces.push(create_node!(ASTClass::Macro_SubModule(tv)));
+    interfaces.push(create_node!(ASTClass::Identifire("TEST_INTERFACES".to_string())));
+    interfaces.push(create_node!(ASTClass::Newline));
 
     let block = create_node!(ASTClass::Block(interfaces));
     let id = create_node!(ASTClass::Identifire("ok".to_string()));
 
     assert_eq!(
-        p.next_ast_top().unwrap(),
+        p.next_ast(),
         create_node!(ASTClass::Declare(id, block))
     );
 }
@@ -114,12 +150,8 @@ fn macro_in_declare_01() {
         Some(create_node!(ASTClass::Number("2".to_string())))
     )));
     interfaces.push(create_node!(ASTClass::Newline));
-
-    let tv = vec![Token::from((
-        TokenClass::Identifire("TEST_INTERFACES".to_string()),
-        2,
-    ))];
-    interfaces.push(create_node!(ASTClass::Macro_SubModule(tv)));
+    interfaces.push(create_node!(ASTClass::Identifire("TEST_INTERFACES".to_string())));
+    interfaces.push(create_node!(ASTClass::Newline));
     interfaces.push(create_node!(ASTClass::FuncIn(
         create_node!(ASTClass::Identifire("ok".to_string())),
         vec![],
@@ -130,10 +162,11 @@ fn macro_in_declare_01() {
     let id = create_node!(ASTClass::Identifire("ok".to_string()));
 
     assert_eq!(
-        p.next_ast_top().unwrap(),
+        p.next_ast(),
         create_node!(ASTClass::Declare(id, block))
     );
 }
+
 
 #[test]
 fn expression_in_width_block_01() {
@@ -156,7 +189,7 @@ fn expression_in_width_block_01() {
     let block = create_node!(ASTClass::Block(interfaces));
 
     assert_eq!(
-        p.next_ast_top().unwrap(),
+        p.next_ast(),
         create_node!(ASTClass::Declare(id, block))
     );
 }
@@ -169,25 +202,28 @@ fn expression_in_width_block_02() {
 
     let left = create_node!(ASTClass::Identifire("OK".to_string()));
     let op = create_node!(ASTClass::Operator(Operator::Slash));
-    let right = create_node!(ASTClass::Number("4".to_string()));
-    let expr = create_node!(ASTClass::Expression(left, op, right));
+    let expr = create_node!(ASTClass::Expression(
+            create_node!(ASTClass::Number("4".to_string())),
+            create_node!(ASTClass::Operator(Operator::Asterisk)),
+            create_node!(ASTClass::Number("2".to_string())),
+            ));
 
-    let right2 = create_node!(ASTClass::Number("2".to_string()));
-
-    let op_ast = create_node!(ASTClass::Operator(Operator::Asterisk));
-    let expr2 = create_node!(ASTClass::Expression(expr, op_ast, right2));
+    let top_expr = create_node!(ASTClass::Expression(
+            left,
+            op,
+            expr));
 
     let mut interfaces = Vec::new();
     interfaces.push(create_node!(ASTClass::Input(
         create_node!(ASTClass::Identifire("a".to_string())),
-        Some(expr2)
+        Some(top_expr),
     )));
 
     let id = create_node!(ASTClass::Identifire("ok".to_string()));
     let block = create_node!(ASTClass::Block(interfaces));
 
     assert_eq!(
-        p.next_ast_top().unwrap(),
+        p.next_ast(),
         create_node!(ASTClass::Declare(id, block))
     );
 }
@@ -209,7 +245,7 @@ fn output_inout() {
         Some(create_node!(ASTClass::Number("12".to_string())))
     )));
     assert_eq!(
-        p.next_ast_top().unwrap(),
+        p.next_ast(),
         create_node!(ASTClass::Declare(
             create_node!(ASTClass::Identifire("ok".to_string())),
             create_node!(ASTClass::Block(interfaces))
@@ -238,7 +274,7 @@ fn func_in() {
     interfaces.push(func);
 
     assert_eq!(
-        p.next_ast_top().unwrap(),
+        p.next_ast(),
         create_node!(ASTClass::Declare(
             create_node!(ASTClass::Identifire("ok".to_string())),
             create_node!(ASTClass::Block(interfaces))
@@ -270,7 +306,7 @@ fn func_in_return() {
     interfaces.push(func);
 
     assert_eq!(
-        p.next_ast_top().unwrap(),
+        p.next_ast(),
         create_node!(ASTClass::Declare(
             create_node!(ASTClass::Identifire("ok".to_string())),
             create_node!(ASTClass::Block(interfaces))
@@ -302,7 +338,7 @@ fn func_out_return() {
     interfaces.push(func);
 
     assert_eq!(
-        p.next_ast_top().unwrap(),
+        p.next_ast(),
         create_node!(ASTClass::Declare(
             create_node!(ASTClass::Identifire("ok".to_string())),
             create_node!(ASTClass::Block(interfaces))
@@ -310,23 +346,6 @@ fn func_out_return() {
     );
 }
 
-#[test]
-fn newline_in_declare_block() {
-    let mut b = "declare ok{\n}".as_bytes();
-    let mut l = Lexer::new(&mut b);
-    let mut p = Parser::new(&mut l);
-
-    let interfaces = vec![create_node!(ASTClass::Newline)];
-    assert_eq!(
-        p.next_ast_top().unwrap(),
-        create_node!(ASTClass::Declare(
-            create_node!(ASTClass::Identifire("ok".to_string())),
-            create_node!(ASTClass::Block(interfaces))
-        ))
-    );
-}
-
-/*
 #[test]
 fn declare_03() {
     let mut b = BufReader::new(File::open("nsl_samples/declare_03.nsl").unwrap());
@@ -337,49 +356,49 @@ fn declare_03() {
     interfaces.push(create_node!(ASTClass::Newline));
     interfaces.push(create_node!(ASTClass::Input(
         create_node!(ASTClass::Identifire("ok".to_string())),
-        create_node!(ASTClass::Number("1".to_string()))
+        None,
     )));
-//     interfaces.push(create_node!(ASTClass::Newline));
+    interfaces.push(create_node!(ASTClass::Newline));
     interfaces.push(create_node!(ASTClass::Input(
         create_node!(ASTClass::Identifire("ggrks".to_string())),
-        create_node!(ASTClass::Number("1".to_string()))
+        None,
     )));
-//     interfaces.push(create_node!(ASTClass::Newline));
+    interfaces.push(create_node!(ASTClass::Newline));
     interfaces.push(create_node!(ASTClass::Output(
         create_node!(ASTClass::Identifire("jk".to_string())),
-        create_node!(ASTClass::Number("1".to_string()))
+        None,
     )));
-//     interfaces.push(create_node!(ASTClass::Newline));
-//     interfaces.push(create_node!(ASTClass::Newline));
+    interfaces.push(create_node!(ASTClass::Newline));
+    interfaces.push(create_node!(ASTClass::Newline));
 
     let args1 = vec![create_node!(ASTClass::Identifire("ok".to_string()))];
     let func1 = create_node!(ASTClass::FuncIn(
         create_node!(ASTClass::Identifire("sugoi".to_string())),
         args1,
-        create_node!(ASTClass::Identifire("".to_string()))
+        None,
     ));
 
     let args2 = vec![create_node!(ASTClass::Identifire("jk".to_string()))];
     let func2 = create_node!(ASTClass::FuncOut(
         create_node!(ASTClass::Identifire("majika".to_string())),
         args2,
-        create_node!(ASTClass::Identifire("ggrks".to_string()))
+        Some(create_node!(ASTClass::Identifire("ggrks".to_string())))
     ));
 
     interfaces.push(func1);
-//     interfaces.push(create_node!(ASTClass::Newline));
+    interfaces.push(create_node!(ASTClass::Newline));
     interfaces.push(func2);
-//     interfaces.push(create_node!(ASTClass::Newline));
+    interfaces.push(create_node!(ASTClass::Newline));
 
     assert_eq!(
-        p.next_ast_top().unwrap(),
+        p.next_ast(),
         create_node!(ASTClass::Declare(
             create_node!(ASTClass::Identifire("hel".to_string())),
             create_node!(ASTClass::Block(interfaces))
         ))
     );
 }
-*/
+
 
 #[test]
 fn include_macro() {
@@ -393,7 +412,7 @@ fn include_macro() {
         create_node!(ASTClass::Block(Vec::new()))
     ));
     let include = create_node!(ASTClass::MacroInclude(path));
-    assert_eq!(p.next_ast_top().unwrap(), include);
+    assert_eq!(p.next_ast(), include);
 }
 
 #[test]
@@ -405,7 +424,7 @@ fn undef_macro() {
     let undef = create_node!(ASTClass::MacroUndef(create_node!(ASTClass::Identifire(
         "hello".to_string()
     ))));
-    assert_eq!(p.next_ast_top().unwrap(), undef);
+    assert_eq!(p.next_ast(), undef);
 }
 
 #[test]
@@ -417,7 +436,7 @@ fn ifdef_macro() {
     let ifdef = create_node!(ASTClass::MacroIfdef(create_node!(ASTClass::Identifire(
         "hello".to_string()
     ))));
-    assert_eq!(p.next_ast_top().unwrap(), ifdef);
+    assert_eq!(p.next_ast(), ifdef);
 }
 
 #[test]
@@ -429,7 +448,7 @@ fn ifndef_macro() {
     let ifndef = create_node!(ASTClass::MacroIfndef(create_node!(ASTClass::Identifire(
         "hello".to_string()
     ))));
-    assert_eq!(p.next_ast_top().unwrap(), ifndef);
+    assert_eq!(p.next_ast(), ifndef);
 }
 
 #[test]
@@ -443,9 +462,9 @@ fn endif_macro() {
     ))));
     let nl = create_node!(ASTClass::Newline);
     let endif = create_node!(ASTClass::MacroEndif);
-    assert_eq!(p.next_ast_top().unwrap(), ifndef);
-    assert_eq!(p.next_ast_top().unwrap(), nl);
-    assert_eq!(p.next_ast_top().unwrap(), endif);
+    assert_eq!(p.next_ast(), ifndef);
+    assert_eq!(p.next_ast(), nl);
+    assert_eq!(p.next_ast(), endif);
 }
 
 #[test]
@@ -460,11 +479,11 @@ fn if_else_end() {
     let endif = create_node!(ASTClass::MacroEndif);
     let melse = create_node!(ASTClass::MacroElse);
     let nl = create_node!(ASTClass::Newline);
-    assert_eq!(p.next_ast_top().unwrap(), ifndef);
-    assert_eq!(p.next_ast_top().unwrap(), nl);
-    assert_eq!(p.next_ast_top().unwrap(), melse);
-    assert_eq!(p.next_ast_top().unwrap(), nl);
-    assert_eq!(p.next_ast_top().unwrap(), endif);
+    assert_eq!(p.next_ast(), ifndef);
+    assert_eq!(p.next_ast(), nl);
+    assert_eq!(p.next_ast(), melse);
+    assert_eq!(p.next_ast(), nl);
+    assert_eq!(p.next_ast(), endif);
 }
 
 #[test]
@@ -477,7 +496,7 @@ fn define_macro_nl() {
         create_node!(ASTClass::Identifire("HELLO".to_string())),
         Some("input ok;".to_string())
     ));
-    assert_eq!(p.next_ast_top().unwrap(), def_macro);
+    assert_eq!(p.next_ast(), def_macro);
 }
 
 #[test]
@@ -490,7 +509,7 @@ fn define_macro_eof() {
         create_node!(ASTClass::Identifire("HELLO".to_string())),
         Some("input ok;".to_string())
     ));
-    assert_eq!(p.next_ast_top().unwrap(), def_macro);
+    assert_eq!(p.next_ast(), def_macro);
 }
 
 #[test]
@@ -504,7 +523,7 @@ fn define_macro2() {
             create_node!(ASTClass::Identifire("AXI4_LITE_MASTER_INTERFACE".to_string())),
             Some("output awvalid; input awready; output awaddr[ AXI_ADDR_WIDTH ]; output awprot[ 3 ]; output wvalid; input wready; output wdata[ AXI_DATA_WIDTH ]; output wstrb[ AXI_DATA_WIDTH / 8 ]; input bvalid; output bready; input bresp[ 2 ]; output arvalid; input arready; output araddr[ AXI_ADDR_WIDTH ]; output arprot[ 3 ]; input rvalid; output rready; input rdata[ AXI_DATA_WIDTH ]; input rresp[ 2 ];".to_string())));
 
-    assert_eq!(p.next_ast_top().unwrap(), def_macro);
+    assert_eq!(p.next_ast(), def_macro);
 }
 
 #[test]
@@ -517,7 +536,7 @@ fn define_macro3() {
         create_node!(ASTClass::Identifire("HELLO_ONLY".to_string())),
         None
     ));
-    assert_eq!(p.next_ast_top().unwrap(), def_macro);
+    assert_eq!(p.next_ast(), def_macro);
 }
 
 #[test]
@@ -532,9 +551,10 @@ fn multi_line_comment() {
         "".to_string(),
     ]));
 
-    assert_eq!(p.next_ast_top().unwrap(), multi_line);
+    assert_eq!(p.next_ast(), multi_line);
 }
 
+/*
 #[test]
 fn module_00() {
     let mut b = "module test {}".as_bytes();
@@ -546,9 +566,8 @@ fn module_00() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast(), module);
 }
-
 #[test]
 fn wire_01() {
     let mut b = "module test {wire a;}".as_bytes();
@@ -566,7 +585,7 @@ fn wire_01() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -586,7 +605,7 @@ fn wire_02() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -609,7 +628,7 @@ fn wire_03() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -635,7 +654,7 @@ fn wire_04() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -662,7 +681,7 @@ fn wire_05() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -681,7 +700,7 @@ fn reg_00() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -707,7 +726,7 @@ fn reg_01() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -733,7 +752,7 @@ fn reg_02() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -759,7 +778,7 @@ fn reg_03() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -785,7 +804,7 @@ fn reg_04() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -805,7 +824,7 @@ fn func_self_00() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -833,7 +852,7 @@ fn func_self_01() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -858,7 +877,7 @@ fn func_self_02() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -883,7 +902,7 @@ fn func_self_03() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -900,7 +919,7 @@ fn proc_00() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -926,7 +945,7 @@ fn proc_01() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -942,7 +961,7 @@ fn state_name_00() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -959,7 +978,7 @@ fn state_name_01() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -978,7 +997,7 @@ fn mem_00() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -997,7 +1016,7 @@ fn mem_01() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -1019,7 +1038,7 @@ fn mem_02() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -1038,7 +1057,7 @@ fn mem_03() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -1060,7 +1079,7 @@ fn wire_assign_00() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -1088,7 +1107,7 @@ fn wire_assign_01() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -1116,7 +1135,7 @@ fn wire_assign_02() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -1144,7 +1163,7 @@ fn wire_assign_03() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -1173,7 +1192,7 @@ fn reg_assign_00() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -1190,7 +1209,7 @@ fn func_in_module_00() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -1211,7 +1230,7 @@ fn return_00() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -1227,8 +1246,8 @@ fn any_00() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
-    assert_eq!(p.next_ast_top().unwrap(), create_node!(ASTClass::EndOfProgram));
+    assert_eq!(p.next_ast().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), create_node!(ASTClass::EndOfProgram));
 }
 
 #[test]
@@ -1256,8 +1275,8 @@ fn any_01() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
-    assert_eq!(p.next_ast_top().unwrap(), create_node!(ASTClass::EndOfProgram));
+    assert_eq!(p.next_ast().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), create_node!(ASTClass::EndOfProgram));
 }
 
 #[test]
@@ -1300,7 +1319,7 @@ fn any_02() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -1330,7 +1349,7 @@ fn any_else_00() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -1347,7 +1366,7 @@ fn function_call_00() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 
 #[test]
@@ -1364,8 +1383,8 @@ fn function_call_01() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
-    assert_eq!(p.next_ast_top().unwrap(), create_node!(ASTClass::EndOfProgram));
+    assert_eq!(p.next_ast().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), create_node!(ASTClass::EndOfProgram));
 }
 
 /*
@@ -1387,7 +1406,7 @@ fn wire_assign_04() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 */
 
@@ -1416,6 +1435,6 @@ fn reg_assign_01() {
         create_node!(ASTClass::Identifire("test".to_string())),
         create_node!(ASTClass::Block(components))
     ));
-    assert_eq!(p.next_ast_top().unwrap(), module);
+    assert_eq!(p.next_ast().unwrap(), module);
 }
 */
