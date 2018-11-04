@@ -69,8 +69,8 @@ fn main() {
     let mut b = BufReader::new(fd);
     let mut l = Lexer::new(&mut b);
 
-    //let p = Parser::new(&mut l);
-    //let mut io = std::io::stdout();
+    let p = Parser::new(&mut l);
+    let mut io = std::io::stdout();
 
     /*
     {

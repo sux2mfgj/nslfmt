@@ -8,7 +8,7 @@ use nslfmt::token::*;
 
 // use std::fs::File;
 // use std::io::BufReader;
-
+/*
 #[test]
 fn end_of_program() {
     let mut b = "".as_bytes();
@@ -1418,4 +1418,4 @@ fn reg_assign_01() {
     ));
     assert_eq!(p.next_ast_top().unwrap(), module);
 }
-
+*/

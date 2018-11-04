@@ -10,6 +10,7 @@ enum CommentState {
 }
 struct CommentResult(String, CommentState);
 
+//#[derive(Debug, Clone, PartialEq)]
 pub struct Lexer<'a> {
     pub line: usize,
     reader: &'a mut BufRead,

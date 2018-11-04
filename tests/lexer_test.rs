@@ -1400,6 +1400,6 @@ fn gt_lt_00() {
     assert_eq!(l.next_token(true), Token::from((Operator::LessEq, 1)));
     assert_eq!(
         l.next_token(true),
-        Token::new(TokenClass::Number("12'h3bf".to_string()), 1)
+        Token::new(TokenClass::Number("12'h3b0".to_string()), 1)
     );
 }

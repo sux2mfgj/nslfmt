@@ -2,7 +2,6 @@ use ast::*;
 use lexer::*;
 use token::*;
 
-#[derive(Debug, Clone, PartialEq)]
 pub struct Parser<'a> {
     lexer: &'a mut Lexer<'a>,
     number_of_nest: usize,

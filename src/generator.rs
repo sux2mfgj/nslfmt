@@ -18,6 +18,7 @@ impl<'a, 'b> Generator<'a, 'b> {
 
     pub fn output_node(&mut self) -> Result<(), io::Error> {
         let mut double_newline_flag = false;
+        /*
         loop {
             let ast = self.parser.next_ast_top().unwrap();
             match ast.class {
@@ -39,5 +40,7 @@ impl<'a, 'b> Generator<'a, 'b> {
                 }
             }
         }
+        */
+        Ok(())
     }
 }
