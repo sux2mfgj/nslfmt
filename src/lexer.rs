@@ -35,6 +35,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    /*
     pub fn check_next_token(&mut self, is_pass_nl: bool) -> Token {
         if let Some(t) = self.buffer.first() {
             return t.clone();
@@ -44,6 +45,7 @@ impl<'a> Lexer<'a> {
         self.buffer.push(next_token.clone());
         return next_token;
     }
+    */
 
     pub fn next_token(&mut self, is_pass_nl: bool) -> Token {
         if self.buffer.len() != 0 {
@@ -332,6 +334,7 @@ impl<'a> Lexer<'a> {
             "return" => TokenClass::Symbol(Symbol::Return),
             "any" => TokenClass::Symbol(Symbol::Any),
             "else" => TokenClass::Symbol(Symbol::Else),
+            "state" => TokenClass::Symbol(Symbol::State),
             //TODO
             _ => TokenClass::Identifire(word),
         }

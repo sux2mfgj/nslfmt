@@ -242,7 +242,7 @@ fn func_self_00() {
 
 #[test]
 fn func_call_00() {
-    let mut b = "module hello { error(12'bf3f); }".as_bytes();
+    let mut b = "module hello { error(12'df3f); }".as_bytes();
     let mut l = Lexer::new(&mut b);
     let p = Parser::new(&mut l);
     let mut io = Cursor::new(Vec::new());
@@ -251,7 +251,7 @@ fn func_call_00() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans = "module hello\n{\n    error(12'bf3f);\n}\n".to_string();
+    let ans = "module hello\n{\n    error(12'df3f);\n}\n".to_string();
     assert_eq!(out, ans);
 }
 

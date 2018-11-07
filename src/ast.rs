@@ -54,7 +54,7 @@ pub enum ASTClass {
     // ----- Module ------
     // identifire, block
     Module(Box<ASTNode>, Box<ASTNode>),
-    Macro_SubModule(Vec<token::Token>),
+    //MacroSubModule(Vec<token::Token>),
     ProcName(Box<ASTNode>, Vec<Box<ASTNode>>),
     StateName(Vec<Box<ASTNode>>),
     //  id          ,[12]        , [12]                 , initial value
@@ -76,6 +76,8 @@ pub enum ASTClass {
     Return(Box<ASTNode>),
     Else,
     FuncCall(Box<ASTNode>, Vec<Box<ASTNode>>),
+    //  state name, block
+    State(Box<ASTNode>, Box<ASTNode>),
 
     // ----- Macros ------
     MacroInclude(Box<ASTNode>),
@@ -285,17 +287,17 @@ impl fmt::Display for ASTNode {
                 write!(f, "return {};\n", expr)
             }
             ASTClass::Any(ref list) => {
-                write!(f, "any\n{{\n");
+                write!(f, "any\n{{\n")?;
                 for (expr, block) in list {
-                    write!(f, "{}:{}", expr, block);
+                    write!(f, "{}:{}", expr, block)?;
                 }
                 write!(f, "}}\n")
             }
             ASTClass::MacroInclude(ref path) => {
-                return write!(f, "#include {}\n", path);
+                write!(f, "#include {}\n", path)
             }
             ASTClass::MacroIfndef(ref id) => {
-                return write!(f, "#ifndef {}\n", id);
+                write!(f, "#ifndef {}\n", id)
             }
             ASTClass::MacroDefine(ref id, ref string) => match string {
                 Some(s) => {

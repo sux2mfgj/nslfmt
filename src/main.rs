@@ -72,7 +72,6 @@ fn main() {
     let p = Parser::new(&mut l);
     let mut io = std::io::stdout();
 
-    /*
     {
         let mut g = Generator::new(p, &mut io);
         match g.output_node() {
@@ -82,5 +81,4 @@ fn main() {
             }
         }
     }
-    */
 }

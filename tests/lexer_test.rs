@@ -622,7 +622,7 @@ fn next_token_nl() {
     );
     assert_eq!(l.next_token(false), Token::new(TokenClass::Newline, 2));
     assert_eq!(
-        l.check_next_token(true),
+        l.next_token(true),
         Token::new(TokenClass::Symbol(Symbol::ClosingBrace), 3)
     );
 }
@@ -1400,6 +1400,17 @@ fn gt_lt_00() {
     assert_eq!(l.next_token(true), Token::from((Operator::LessEq, 1)));
     assert_eq!(
         l.next_token(true),
-        Token::new(TokenClass::Number("12'h3b0".to_string()), 1)
+        Token::new(TokenClass::Number("12'h3bf".to_string()), 1)
     );
+}
+
+#[test]
+fn state_00() {
+    let mut b = "state idle {}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(l.next_token(true), Token::from((Symbol::State, 1)));
+    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("idle".to_string()), 1)));
+    assert_eq!(l.next_token(true), Token::from((Symbol::OpeningBrace, 1)));
+    assert_eq!(l.next_token(true), Token::from((Symbol::ClosingBrace, 1)));
 }

@@ -481,7 +481,9 @@ impl<'a> Parser<'a> {
                             any_components.push((create_node!(ASTClass::Else), block));
                         }
                         _ => {
-                            let (ast, nn_t) = self.expression_ast(next_t);
+                            //TODO is it collect?
+                            // nn_t is not used.
+                            let (ast, _nn_t) = self.expression_ast(next_t);
                             let opening_brace_token = self.lexer.next_token(true);
                             let block = self.module_behavior_ast(opening_brace_token);
                             any_components.push((ast, block));
@@ -489,6 +491,15 @@ impl<'a> Parser<'a> {
                     }
                 }
                 return create_node!(ASTClass::Any(any_components));
+            }
+            TokenClass::Symbol(Symbol::State) => {
+                let id_node = self.generate_id_node();
+                let next_token = self.lexer.next_token(true);
+                let block = self.module_behavior_ast(next_token);
+                return create_node!(ASTClass::State(id_node, block));
+            }
+            TokenClass::CStyleComment(comment) => {
+                return create_node!(ASTClass::CStyleComment(comment));
             }
             _ => {
                 unexpected_token!(t);
@@ -520,7 +531,7 @@ impl<'a> Parser<'a> {
                 }
                 unexpected_token!(nn_t);
             }
-            TokenClass::Symbol(LeftSquareBracket) => {
+            TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                 //let (width_ast, token) = self.width_expression_ast();
                 let next_t = self.lexer.next_token(true);
                 let (width_ast, token) = self.expression_ast(next_t);
@@ -562,7 +573,7 @@ impl<'a> Parser<'a> {
 
         self.check_right_square_bracket(token);
         let mut width_ast2: Option<Box<ASTNode>> = None;
-        let mut init_block: Option<Vec<Box<ASTNode>>> = None;
+//         let mut _init_block: Option<Vec<Box<ASTNode>>> = None;
 
         let mut t = self.lexer.next_token(true);
         if TokenClass::Symbol(Symbol::Semicolon) == t.class

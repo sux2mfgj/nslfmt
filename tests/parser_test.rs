@@ -1062,6 +1062,92 @@ mod module {
     }
 
     #[test]
+    fn state_procedure_00() {
+        let mut b = "module test { state_name state1, state2; state state1 {}}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+
+        let components = vec![
+            create_node!(
+                ASTClass::StateName(
+                    vec![
+                        create_node!(ASTClass::Identifire("state1".to_string())),
+                        create_node!(ASTClass::Identifire("state2".to_string())),
+                    ]
+                )
+            ),
+            create_node!(
+                ASTClass::State(
+                    create_node!(ASTClass::Identifire("state1".to_string())),
+                    create_node!(ASTClass::Block(vec![]))
+                )
+            ),
+        ];
+        let module = create_node!(ASTClass::Module(
+                create_node!(ASTClass::Identifire("test".to_string())),
+                create_node!(ASTClass::Block(components))
+                ));
+        assert_eq!(p.next_ast(), module);
+    }
+
+    #[test]
+    fn state_procedure_01() {
+        let mut b = "module test { state state1 {a = 1'b1;}}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let state_block = vec![
+            create_node!(ASTClass::Assign(
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    create_node!(ASTClass::Number("1'b1".to_string())),
+                    ))
+        ];
+
+        let components = vec![
+            create_node!(
+                ASTClass::State(
+                    create_node!(ASTClass::Identifire("state1".to_string())),
+                    create_node!(ASTClass::Block(state_block))
+                )
+            ),
+        ];
+        let module = create_node!(ASTClass::Module(
+                create_node!(ASTClass::Identifire("test".to_string())),
+                create_node!(ASTClass::Block(components))
+                ));
+        assert_eq!(p.next_ast(), module);
+    }
+
+    #[test]
+    fn state_procedure_02() {
+        let mut b = "module test { state state1 {error(a);}}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let state_block = vec![
+            create_node!(ASTClass::FuncCall(
+                create_node!(ASTClass::Identifire("error".to_string())),
+                vec![create_node!(ASTClass::Identifire("a".to_string()))],
+                )),
+        ];
+
+        let components = vec![
+            create_node!(
+                ASTClass::State(
+                    create_node!(ASTClass::Identifire("state1".to_string())),
+                    create_node!(ASTClass::Block(state_block))
+                )
+            ),
+        ];
+        let module = create_node!(ASTClass::Module(
+                create_node!(ASTClass::Identifire("test".to_string())),
+                create_node!(ASTClass::Block(components))
+                ));
+        assert_eq!(p.next_ast(), module);
+    }
+
+    #[test]
     fn mem_00() {
         let mut b = "module test {mem aa[12];}".as_bytes();
         let mut l = Lexer::new(&mut b);
@@ -1159,7 +1245,7 @@ mod module {
     fn mem_04() {
         let mut b = "mem a[12] = {1'b1, 1'b0, 1'b0, 1'b1}, b[3][4] = {4'b1110};".as_bytes();
         let mut l = Lexer::new(&mut b);
-        let mut p = Parser::new(&mut l);
+        let p = Parser::new(&mut l);
         let mem = create_node!(
             ASTClass::Mem(
                 vec![

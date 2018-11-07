@@ -24,7 +24,7 @@ pub enum Symbol {
     FuncSelf,
     Func,        // func
     Sharp,       // #
-    DoubleQuote, // "
+    //DoubleQuote, // "
     SingleQuote, // '
     Wire,        // wire
     Reg,         // reg
@@ -34,6 +34,7 @@ pub enum Symbol {
     Return,      // return
     Any,         // any
     Else,        // eles
+    State,
                  //TODO
                  // lack some symbols
 }
@@ -41,17 +42,17 @@ pub enum Symbol {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Operator {
     Plus,       // +
-    Minus,      // -
+    //Minus,      // -
     Asterisk,   // *
     Slash,      // /
-    ShiftLeft,  // <<
-    ShiftRight, // >>
+    //ShiftLeft,  // <<
+    //ShiftRight, // >>
     And,        // &
     Pipe,       // |
     LogicAnd,   // &&
-    LogicOr,    // ||
-    Hat,        // ^
-    Tilde,      // ~
+    //LogicOr,    // ||
+    //Hat,        // ^
+    //Tilde,      // ~
     Equal,      // ==
     GreaterEq,  // >=
     LessEq,     // <=

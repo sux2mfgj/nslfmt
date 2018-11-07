@@ -68,3 +68,7 @@
             - [ ] integer
             - [ ] variable
     - [ ] struct
+
+#### TODO
+- reforctring lexer
+    - don't need check_next_token
