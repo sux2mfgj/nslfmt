@@ -70,9 +70,9 @@ memory-declaration  ::= "mem"
 
 module-behavior     ::= <assignment-expression>
                     |   <state-expression>
-                    |   <func-expression>
                     |   <proc-expression>
                     |   <if-declaration>
+                    |   <expression>
                     |   <return-declaration>
 
 assignment-expression   ::= <wire-reg-assignment> | <expression>
@@ -80,8 +80,12 @@ wire-reg-assignment     ::= <identifire> <assigner> <expression> ";"
 assigner                ::= "=" | ":="
 expression              ::= <number>
                         |   <identifire>
+                        |   <func-expression>
                         |   <expression> <operator> <expression>
 
+func-expression     ::= <identifire> "(" <function-args> ")"
+
+; --- macros ---
 macro       ::= "#" <macro-syntax> <newline>
 macro-syntax    ::= <macro-define>
                 |   <macro-include>

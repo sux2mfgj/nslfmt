@@ -665,79 +665,42 @@ impl<'a> Parser<'a> {
      */
 
     fn expression_ast(&mut self, first_token: Token) -> (Box<ASTNode>, Token) {
-        let second_token = self.lexer.next_token(true);
-        match first_token.class {
+        let mut next_token: Token = self.lexer.next_token(true);
+        let node = match first_token.class {
             TokenClass::Number(num) => {
-                if let TokenClass::Operator(op) = second_token.class {
-                    let next_t = self.lexer.next_token(true);
-                    let (right_ast, token) = self.expression_ast(next_t);
-                    return (
-                        create_node!(
-                            ASTClass::Expression(
-                                create_node!(ASTClass::Number(num)),
-                                create_node!(ASTClass::Operator(op)),
-                                right_ast,
-                                )),
-                            token
-                        );
-
-                }
-                else {
-                    return (
-                        create_node!(ASTClass::Number(num)),
-                        second_token,
-                        )
-                }
+                create_node!(ASTClass::Number(num))
             }
             TokenClass::Identifire(id_str) => {
-                if let TokenClass::Operator(op) = second_token.class {
-                    let next_t = self.lexer.next_token(true);
-                    let (right_ast, token) = self.expression_ast(next_t);
-                    return (
-                        create_node!(
-                            ASTClass::Expression(
-                                create_node!(ASTClass::Identifire(id_str)),
-                                create_node!(ASTClass::Operator(op)),
-                                right_ast,
-                                )),
-                            token
-                        );
+                let id_node = create_node!(ASTClass::Identifire(id_str));
+                if let TokenClass::Symbol(Symbol::LeftParen) = next_token.class
+                {
+                    let (args_vec, nn_t) = self.generate_args_vec(next_token);
+                    next_token = nn_t;
+                    create_node!(ASTClass::FuncCall(id_node, args_vec))
                 }
-                else if let TokenClass::Symbol(Symbol::LeftParen) = second_token.class {
-                    let (args_vec, next_t) = self.generate_args_vec(second_token);
-                    let func_call_node = create_node!(
-                            ASTClass::FuncCall(
-                                create_node!(ASTClass::Identifire(id_str)),
-                                args_vec
-                                )
-                            );
-
-                    if let TokenClass::Operator(op) = next_t.class {
-                        let nn_t = self.lexer.next_token(true);
-                        let (right_ast, nnn_t) = self.expression_ast(nn_t);
-                        return (
-                            create_node!(
-                                ASTClass::Expression(
-                                    func_call_node,
-                                    create_node!(ASTClass::Operator(op)),
-                                    right_ast
-                                ))
-                            , nnn_t);
-                    }
-                    return (func_call_node, next_t);
+                else
+                {
+                    id_node
                 }
-                else {
-                    return (
-                        create_node!(ASTClass::Identifire(id_str)),
-                        second_token,
-                        )
-                }
-            }
-            TokenClass::Symbol(Symbol::ClosingBrace) => {
-                not_implemented!();
             }
             _ => {
                 unexpected_token!(first_token);
+            }
+        };
+        match next_token.class {
+            TokenClass::Operator(op) => {
+                let third_token = self.lexer.next_token(true);
+                let (right_ast, nn_t) = self.expression_ast(third_token);
+                return (
+                    create_node!(ASTClass::Expression(
+                        node,
+                        create_node!(ASTClass::Operator(op)),
+                        right_ast,
+                    )),
+                    nn_t);
+            }
+            _ => {
+                return (node, next_token);
             }
         }
     }
