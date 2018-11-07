@@ -1332,6 +1332,25 @@ mod module {
 
         let components = vec![create_node!(ASTClass::Func(
             create_node!(ASTClass::Identifire("ok".to_string())),
+            None,
+            create_node!(ASTClass::Block(vec![]))
+        ))];
+        let module = create_node!(ASTClass::Module(
+            create_node!(ASTClass::Identifire("test".to_string())),
+            create_node!(ASTClass::Block(components))
+        ));
+        assert_eq!(p.next_ast(), module);
+    }
+
+    #[test]
+    fn func_in_module_01() {
+        let mut b = "module test { func ok.enable {} }".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let components = vec![create_node!(ASTClass::Func(
+            create_node!(ASTClass::Identifire("ok".to_string())),
+            Some(create_node!(ASTClass::Identifire("enable".to_string()))),
             create_node!(ASTClass::Block(vec![]))
         ))];
         let module = create_node!(ASTClass::Module(
@@ -1353,6 +1372,7 @@ mod module {
         )))];
         let components = vec![create_node!(ASTClass::Func(
             create_node!(ASTClass::Identifire("ok".to_string())),
+            None,
             create_node!(ASTClass::Block(func_components))
         ))];
         let module = create_node!(ASTClass::Module(
@@ -1517,7 +1537,7 @@ mod module {
     }
 
     #[test]
-    fn wire_assign_04() {
+    fn func_in_00() {
         let mut b = "module hello {wire a;func ok {a = 1'b0;}}".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
@@ -1526,19 +1546,34 @@ mod module {
             create_node!(ASTClass::Identifire("a".to_string())),
             None,
         )]));
+        let func_block = create_node!(
+            ASTClass::Block(
+                vec![
+                    create_node!(ASTClass::Assign(
+                            create_node!(ASTClass::Identifire("a".to_string())),
+                            create_node!(ASTClass::Number("1'b0".to_string())))),
+                ]
+                )
+            );
+        let func_def = create_node!(ASTClass::Func(
+                create_node!(ASTClass::Identifire("ok".to_string())),
+                None,
+                func_block,
+                ));
 
         let components = vec![
             wire_def,
+            func_def,
         ];
         let module = create_node!(ASTClass::Module(
-            create_node!(ASTClass::Identifire("test".to_string())),
+            create_node!(ASTClass::Identifire("hello".to_string())),
             create_node!(ASTClass::Block(components))
         ));
         assert_eq!(p.next_ast(), module);
     }
 
     #[test]
-    fn reg_assign_01() {
+    fn reg_func_00() {
         let mut b = "module test {mhartid := update(funct, mhartid, source);}".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
@@ -1565,4 +1600,38 @@ mod module {
         assert_eq!(p.next_ast(), module);
     }
 
+    #[test]
+    fn reg_func_01() {
+        let mut b = "module test {mhartid := update(funct, mhartid, source) + 4'b1;}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let func_call = create_node!(ASTClass::FuncCall(
+                create_node!(ASTClass::Identifire("update".to_string())),
+                vec![
+                    create_node!(ASTClass::Identifire("funct".to_string())),
+                    create_node!(ASTClass::Identifire("mhartid".to_string())),
+                    create_node!(ASTClass::Identifire("source".to_string())),
+                ]));
+        let expressiton = create_node!(
+            ASTClass::Expression(
+                func_call,
+                create_node!(ASTClass::Operator(Operator::Plus)),
+                create_node!(ASTClass::Number("4'b1".to_string()))
+                )
+            );
+        let assign = create_node!(ASTClass::RegAssign(
+            create_node!(ASTClass::Identifire("mhartid".to_string())),
+            expressiton,
+        ));
+
+        let components = vec![
+            assign,
+        ];
+        let module = create_node!(ASTClass::Module(
+            create_node!(ASTClass::Identifire("test".to_string())),
+            create_node!(ASTClass::Block(components))
+        ));
+        assert_eq!(p.next_ast(), module);
+    }
 }

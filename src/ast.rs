@@ -70,7 +70,7 @@ pub enum ASTClass {
     Assign(Box<ASTNode>, Box<ASTNode>),
     RegAssign(Box<ASTNode>, Box<ASTNode>),
     //   id          , block
-    Func(Box<ASTNode>, Box<ASTNode>),
+    Func(Box<ASTNode>, Option<Box<ASTNode>>, Box<ASTNode>),
     //  expression       , block
     Any(Vec<(Box<ASTNode>, Box<ASTNode>)>),
     Return(Box<ASTNode>),
@@ -211,8 +211,14 @@ impl fmt::Display for ASTNode {
                     }
                 }
             }
-            ASTClass::Func(ref id, ref block) => {
-                return write!(f, "func {}{}", id, block);
+            ASTClass::Func(ref id, ref func, ref block) => {
+                if let Some(node) = func
+                {
+                    return write!(f, "func {}.{}{}", id, node, block);
+                }
+                else {
+                    return write!(f, "func {}{}", id, block);
+                }
             }
             ASTClass::FuncCall(ref id, ref args) => {
                 let arg_str = args
