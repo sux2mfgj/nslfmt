@@ -22,23 +22,11 @@ pub enum ASTClass {
     Declare(Box<ASTNode>, Box<ASTNode>),
 
     // identifire, inputs, output
-    FuncIn(
-        Box<ASTNode>,
-        Vec<Box<ASTNode>>,
-        Option<Box<ASTNode>>,
-    ),
+    FuncIn(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
     // identifire, outputs, input
-    FuncOut(
-        Box<ASTNode>,
-        Vec<Box<ASTNode>>,
-        Option<Box<ASTNode>>,
-    ),
+    FuncOut(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
     // identifire, inputs, output
-    FuncSelf(
-        Box<ASTNode>,
-        Vec<Box<ASTNode>>,
-        Option<Box<ASTNode>>,
-    ),
+    FuncSelf(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
 
     /*
      *  identifire, expression or Identifire
@@ -64,7 +52,7 @@ pub enum ASTClass {
             Box<ASTNode>,
             Option<Box<ASTNode>>,
             Option<Vec<Box<ASTNode>>>,
-        )>
+        )>,
     ),
     //     id          , expression
     Assign(Box<ASTNode>, Box<ASTNode>),
@@ -214,11 +202,9 @@ impl fmt::Display for ASTNode {
                 }
             }
             ASTClass::Func(ref id, ref func, ref block) => {
-                if let Some(node) = func
-                {
+                if let Some(node) = func {
                     return write!(f, "func {}.{}{}", id, node, block);
-                }
-                else {
+                } else {
                     return write!(f, "func {}{}", id, block);
                 }
             }
@@ -262,30 +248,23 @@ impl fmt::Display for ASTNode {
             //          id       , width       , initial_value
             ASTClass::Reg(ref list) => {
                 let l: Vec<String> = list
-                                        .iter()
-                                        .map(|ref r|
-                                             {
-                                                 let mut define = format!("{}", r.0);
-                                                 if let Some(ref width) = r.1 {
-                                                     define.push_str(&format!("[{}]", width))
-                                                 }
-                                                 if let Some(ref init) = r.2 {
-                                                     define.push_str(&format!(" = {}", init));
-                                                 }
-                                                 return define;
-                                             })
-                                        .collect();
+                    .iter()
+                    .map(|ref r| {
+                        let mut define = format!("{}", r.0);
+                        if let Some(ref width) = r.1 {
+                            define.push_str(&format!("[{}]", width))
+                        }
+                        if let Some(ref init) = r.2 {
+                            define.push_str(&format!(" = {}", init));
+                        }
+                        return define;
+                    })
+                    .collect();
                 write!(f, "reg {};\n", l.join(", "))
             }
-            ASTClass::Assign(ref id, ref expr) => {
-                write!(f, "{} = {};\n", id, expr)
-            }
-            ASTClass::RegAssign(ref id, ref expr) => {
-                write!(f, "{} := {};\n", id, expr)
-            }
-            ASTClass::Return(ref expr) => {
-                write!(f, "return {};\n", expr)
-            }
+            ASTClass::Assign(ref id, ref expr) => write!(f, "{} = {};\n", id, expr),
+            ASTClass::RegAssign(ref id, ref expr) => write!(f, "{} := {};\n", id, expr),
+            ASTClass::Return(ref expr) => write!(f, "return {};\n", expr),
             ASTClass::Any(ref list) => {
                 write!(f, "any\n{{\n")?;
                 for (expr, block) in list {
@@ -293,12 +272,8 @@ impl fmt::Display for ASTNode {
                 }
                 write!(f, "}}\n")
             }
-            ASTClass::MacroInclude(ref path) => {
-                write!(f, "#include {}\n", path)
-            }
-            ASTClass::MacroIfndef(ref id) => {
-                write!(f, "#ifndef {}\n", id)
-            }
+            ASTClass::MacroInclude(ref path) => write!(f, "#include {}\n", path),
+            ASTClass::MacroIfndef(ref id) => write!(f, "#ifndef {}\n", id),
             ASTClass::MacroDefine(ref id, ref string) => match string {
                 Some(s) => {
                     return write!(f, "#define {} {}\n", id, s);

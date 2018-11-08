@@ -36,10 +36,10 @@ mod declare {
         assert_eq!(
             p.next_ast(),
             create_node!(ASTClass::Declare(
-                    create_node!(ASTClass::Identifire("ok".to_string())),
-                    create_node!(ASTClass::Block(vec![]))
-                    ))
-            )
+                create_node!(ASTClass::Identifire("ok".to_string())),
+                create_node!(ASTClass::Block(vec![]))
+            ))
+        )
     }
 
     #[test]
@@ -51,11 +51,13 @@ mod declare {
         assert_eq!(
             p.next_ast(),
             create_node!(ASTClass::Declare(
-                    create_node!(ASTClass::Identifire("ok".to_string())),
-                    create_node!(ASTClass::Block(vec![
-                                                 create_node!(ASTClass::Newline),
-                                                 create_node!(ASTClass::Newline),
-                    ])))));
+                create_node!(ASTClass::Identifire("ok".to_string())),
+                create_node!(ASTClass::Block(vec![
+                    create_node!(ASTClass::Newline),
+                    create_node!(ASTClass::Newline),
+                ]))
+            ))
+        );
     }
 
     #[test]
@@ -66,16 +68,13 @@ mod declare {
 
         let mut interfaces = Vec::new();
         interfaces.push(create_node!(ASTClass::Input(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    None,
-                    )));
+            create_node!(ASTClass::Identifire("a".to_string())),
+            None,
+        )));
 
         let block = create_node!(ASTClass::Block(interfaces));
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
-        assert_eq!(
-            p.next_ast(),
-            create_node!(ASTClass::Declare(id, block))
-            );
+        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block)));
     }
 
     #[test]
@@ -86,17 +85,14 @@ mod declare {
 
         let mut interfaces = Vec::new();
         interfaces.push(create_node!(ASTClass::Input(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    Some(create_node!(ASTClass::Number("2".to_string())))
-                    )));
+            create_node!(ASTClass::Identifire("a".to_string())),
+            Some(create_node!(ASTClass::Number("2".to_string())))
+        )));
 
         let block = create_node!(ASTClass::Block(interfaces));
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
 
-        assert_eq!(
-            p.next_ast(),
-            create_node!(ASTClass::Declare(id, block))
-            );
+        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block)));
     }
 
     #[test]
@@ -109,17 +105,14 @@ mod declare {
 
         let mut interfaces = Vec::new();
         interfaces.push(create_node!(ASTClass::Input(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    Some(left),
-                    )));
+            create_node!(ASTClass::Identifire("a".to_string())),
+            Some(left),
+        )));
 
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
         let block = create_node!(ASTClass::Block(interfaces));
 
-        assert_eq!(
-            p.next_ast(),
-            create_node!(ASTClass::Declare(id, block))
-            );
+        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block)));
     }
 
     #[test]
@@ -130,51 +123,49 @@ mod declare {
 
         let mut interfaces = Vec::new();
         interfaces.push(create_node!(ASTClass::Input(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    Some(create_node!(ASTClass::Number("2".to_string())))
-                    )));
+            create_node!(ASTClass::Identifire("a".to_string())),
+            Some(create_node!(ASTClass::Number("2".to_string())))
+        )));
         interfaces.push(create_node!(ASTClass::Newline));
-        interfaces.push(create_node!(ASTClass::Identifire("TEST_INTERFACES".to_string())));
+        interfaces.push(create_node!(ASTClass::Identifire(
+            "TEST_INTERFACES".to_string()
+        )));
         interfaces.push(create_node!(ASTClass::Newline));
 
         let block = create_node!(ASTClass::Block(interfaces));
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
 
-        assert_eq!(
-            p.next_ast(),
-            create_node!(ASTClass::Declare(id, block))
-            );
+        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block)));
     }
 
     #[test]
     fn macro_in_declare_01() {
-        let mut b = "declare ok{ input a[2]; \nTEST_INTERFACES\n func_in ok();}".as_bytes();
+        let mut b =
+            "declare ok{ input a[2]; \nTEST_INTERFACES\n func_in ok();}".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
         let mut interfaces = Vec::new();
         interfaces.push(create_node!(ASTClass::Input(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    Some(create_node!(ASTClass::Number("2".to_string())))
-                    )));
+            create_node!(ASTClass::Identifire("a".to_string())),
+            Some(create_node!(ASTClass::Number("2".to_string())))
+        )));
         interfaces.push(create_node!(ASTClass::Newline));
-        interfaces.push(create_node!(ASTClass::Identifire("TEST_INTERFACES".to_string())));
+        interfaces.push(create_node!(ASTClass::Identifire(
+            "TEST_INTERFACES".to_string()
+        )));
         interfaces.push(create_node!(ASTClass::Newline));
         interfaces.push(create_node!(ASTClass::FuncIn(
-                    create_node!(ASTClass::Identifire("ok".to_string())),
-                    vec![],
-                    None
-                    )));
+            create_node!(ASTClass::Identifire("ok".to_string())),
+            vec![],
+            None
+        )));
 
         let block = create_node!(ASTClass::Block(interfaces));
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
 
-        assert_eq!(
-            p.next_ast(),
-            create_node!(ASTClass::Declare(id, block))
-            );
+        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block)));
     }
-
 
     #[test]
     fn expression_in_width_block_01() {
@@ -189,20 +180,17 @@ mod declare {
 
         let mut interfaces = Vec::new();
         interfaces.push(create_node!(ASTClass::Input(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    Some(expr)
-                    )));
+            create_node!(ASTClass::Identifire("a".to_string())),
+            Some(expr)
+        )));
 
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
         let block = create_node!(ASTClass::Block(interfaces));
 
-        assert_eq!(
-            p.next_ast(),
-            create_node!(ASTClass::Declare(id, block))
-            );
+        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block)));
     }
 
-#[test]
+    #[test]
     fn expression_in_width_block_02() {
         let mut b = "declare ok{ input a[OK / 4 * 2]; }".as_bytes();
         let mut l = Lexer::new(&mut b);
@@ -211,29 +199,23 @@ mod declare {
         let left = create_node!(ASTClass::Identifire("OK".to_string()));
         let op = create_node!(ASTClass::Operator(Operator::Slash));
         let expr = create_node!(ASTClass::Expression(
-                create_node!(ASTClass::Number("4".to_string())),
-                create_node!(ASTClass::Operator(Operator::Asterisk)),
-                create_node!(ASTClass::Number("2".to_string())),
-                ));
+            create_node!(ASTClass::Number("4".to_string())),
+            create_node!(ASTClass::Operator(Operator::Asterisk)),
+            create_node!(ASTClass::Number("2".to_string())),
+        ));
 
-        let top_expr = create_node!(ASTClass::Expression(
-                left,
-                op,
-                expr));
+        let top_expr = create_node!(ASTClass::Expression(left, op, expr));
 
         let mut interfaces = Vec::new();
         interfaces.push(create_node!(ASTClass::Input(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    Some(top_expr),
-                    )));
+            create_node!(ASTClass::Identifire("a".to_string())),
+            Some(top_expr),
+        )));
 
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
         let block = create_node!(ASTClass::Block(interfaces));
 
-        assert_eq!(
-            p.next_ast(),
-            create_node!(ASTClass::Declare(id, block))
-            );
+        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block)));
     }
 
     #[test]
@@ -244,21 +226,21 @@ mod declare {
 
         let mut interfaces = Vec::new();
         interfaces.push(create_node!(ASTClass::Output(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    Some(create_node!(ASTClass::Number("2".to_string())))
-                    )));
+            create_node!(ASTClass::Identifire("a".to_string())),
+            Some(create_node!(ASTClass::Number("2".to_string())))
+        )));
 
         interfaces.push(create_node!(ASTClass::InOut(
-                    create_node!(ASTClass::Identifire("b".to_string())),
-                    Some(create_node!(ASTClass::Number("12".to_string())))
-                    )));
+            create_node!(ASTClass::Identifire("b".to_string())),
+            Some(create_node!(ASTClass::Number("12".to_string())))
+        )));
         assert_eq!(
             p.next_ast(),
             create_node!(ASTClass::Declare(
-                    create_node!(ASTClass::Identifire("ok".to_string())),
-                    create_node!(ASTClass::Block(interfaces))
-                    ))
-            );
+                create_node!(ASTClass::Identifire("ok".to_string())),
+                create_node!(ASTClass::Block(interfaces))
+            ))
+        );
     }
 
     #[test]
@@ -269,25 +251,25 @@ mod declare {
 
         let mut interfaces = Vec::new();
         interfaces.push(create_node!(ASTClass::Input(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    None,
-                    )));
+            create_node!(ASTClass::Identifire("a".to_string())),
+            None,
+        )));
 
         let args = vec![create_node!(ASTClass::Identifire("a".to_string()))];
         let func = create_node!(ASTClass::FuncIn(
-                create_node!(ASTClass::Identifire("ok".to_string())),
-                args,
-                None,
-                ));
+            create_node!(ASTClass::Identifire("ok".to_string())),
+            args,
+            None,
+        ));
         interfaces.push(func);
 
         assert_eq!(
             p.next_ast(),
             create_node!(ASTClass::Declare(
-                    create_node!(ASTClass::Identifire("ok".to_string())),
-                    create_node!(ASTClass::Block(interfaces))
-                    ))
-            );
+                create_node!(ASTClass::Identifire("ok".to_string())),
+                create_node!(ASTClass::Block(interfaces))
+            ))
+        );
     }
 
     #[test]
@@ -298,28 +280,28 @@ mod declare {
 
         let mut interfaces = Vec::new();
         interfaces.push(create_node!(ASTClass::Input(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    None,
-                    )));
+            create_node!(ASTClass::Identifire("a".to_string())),
+            None,
+        )));
         interfaces.push(create_node!(ASTClass::Output(
-                    create_node!(ASTClass::Identifire("c".to_string())),
-                    Some(create_node!(ASTClass::Number("2".to_string())))
-                    )));
+            create_node!(ASTClass::Identifire("c".to_string())),
+            Some(create_node!(ASTClass::Number("2".to_string())))
+        )));
         let args = vec![create_node!(ASTClass::Identifire("a".to_string()))];
         let func = create_node!(ASTClass::FuncIn(
-                create_node!(ASTClass::Identifire("ok".to_string())),
-                args,
-                Some(create_node!(ASTClass::Identifire("c".to_string())))
-                ));
+            create_node!(ASTClass::Identifire("ok".to_string())),
+            args,
+            Some(create_node!(ASTClass::Identifire("c".to_string())))
+        ));
         interfaces.push(func);
 
         assert_eq!(
             p.next_ast(),
             create_node!(ASTClass::Declare(
-                    create_node!(ASTClass::Identifire("ok".to_string())),
-                    create_node!(ASTClass::Block(interfaces))
-                    ))
-            );
+                create_node!(ASTClass::Identifire("ok".to_string())),
+                create_node!(ASTClass::Block(interfaces))
+            ))
+        );
     }
 
     #[test]
@@ -330,28 +312,28 @@ mod declare {
 
         let mut interfaces = Vec::new();
         interfaces.push(create_node!(ASTClass::Input(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    Some(create_node!(ASTClass::Number("3".to_string())))
-                    )));
+            create_node!(ASTClass::Identifire("a".to_string())),
+            Some(create_node!(ASTClass::Number("3".to_string())))
+        )));
         interfaces.push(create_node!(ASTClass::Output(
-                    create_node!(ASTClass::Identifire("c".to_string())),
-                    Some(create_node!(ASTClass::Number("2".to_string())))
-                    )));
+            create_node!(ASTClass::Identifire("c".to_string())),
+            Some(create_node!(ASTClass::Number("2".to_string())))
+        )));
         let args = vec![create_node!(ASTClass::Identifire("a".to_string()))];
         let func = create_node!(ASTClass::FuncOut(
-                create_node!(ASTClass::Identifire("ok".to_string())),
-                args,
-                Some(create_node!(ASTClass::Identifire("c".to_string())))
-                ));
+            create_node!(ASTClass::Identifire("ok".to_string())),
+            args,
+            Some(create_node!(ASTClass::Identifire("c".to_string())))
+        ));
         interfaces.push(func);
 
         assert_eq!(
             p.next_ast(),
             create_node!(ASTClass::Declare(
-                    create_node!(ASTClass::Identifire("ok".to_string())),
-                    create_node!(ASTClass::Block(interfaces))
-                    ))
-            );
+                create_node!(ASTClass::Identifire("ok".to_string())),
+                create_node!(ASTClass::Block(interfaces))
+            ))
+        );
     }
 
     #[test]
@@ -363,35 +345,35 @@ mod declare {
         let mut interfaces = Vec::new();
         interfaces.push(create_node!(ASTClass::Newline));
         interfaces.push(create_node!(ASTClass::Input(
-                    create_node!(ASTClass::Identifire("ok".to_string())),
-                    None,
-                    )));
+            create_node!(ASTClass::Identifire("ok".to_string())),
+            None,
+        )));
         interfaces.push(create_node!(ASTClass::Newline));
         interfaces.push(create_node!(ASTClass::Input(
-                    create_node!(ASTClass::Identifire("ggrks".to_string())),
-                    None,
-                    )));
+            create_node!(ASTClass::Identifire("ggrks".to_string())),
+            None,
+        )));
         interfaces.push(create_node!(ASTClass::Newline));
         interfaces.push(create_node!(ASTClass::Output(
-                    create_node!(ASTClass::Identifire("jk".to_string())),
-                    None,
-                    )));
+            create_node!(ASTClass::Identifire("jk".to_string())),
+            None,
+        )));
         interfaces.push(create_node!(ASTClass::Newline));
         interfaces.push(create_node!(ASTClass::Newline));
 
         let args1 = vec![create_node!(ASTClass::Identifire("ok".to_string()))];
         let func1 = create_node!(ASTClass::FuncIn(
-                create_node!(ASTClass::Identifire("sugoi".to_string())),
-                args1,
-                None,
-                ));
+            create_node!(ASTClass::Identifire("sugoi".to_string())),
+            args1,
+            None,
+        ));
 
         let args2 = vec![create_node!(ASTClass::Identifire("jk".to_string()))];
         let func2 = create_node!(ASTClass::FuncOut(
-                create_node!(ASTClass::Identifire("majika".to_string())),
-                args2,
-                Some(create_node!(ASTClass::Identifire("ggrks".to_string())))
-                ));
+            create_node!(ASTClass::Identifire("majika".to_string())),
+            args2,
+            Some(create_node!(ASTClass::Identifire("ggrks".to_string())))
+        ));
 
         interfaces.push(func1);
         interfaces.push(create_node!(ASTClass::Newline));
@@ -401,10 +383,10 @@ mod declare {
         assert_eq!(
             p.next_ast(),
             create_node!(ASTClass::Declare(
-                    create_node!(ASTClass::Identifire("hel".to_string())),
-                    create_node!(ASTClass::Block(interfaces))
-                    ))
-            );
+                create_node!(ASTClass::Identifire("hel".to_string())),
+                create_node!(ASTClass::Block(interfaces))
+            ))
+        );
     }
 
 }
@@ -434,9 +416,9 @@ mod macros {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let undef = create_node!(ASTClass::MacroUndef(create_node!(ASTClass::Identifire(
-            "hello".to_string()
-        ))));
+        let undef = create_node!(ASTClass::MacroUndef(create_node!(
+            ASTClass::Identifire("hello".to_string())
+        )));
         assert_eq!(p.next_ast(), undef);
     }
 
@@ -446,9 +428,9 @@ mod macros {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let ifdef = create_node!(ASTClass::MacroIfdef(create_node!(ASTClass::Identifire(
-            "hello".to_string()
-        ))));
+        let ifdef = create_node!(ASTClass::MacroIfdef(create_node!(
+            ASTClass::Identifire("hello".to_string())
+        )));
         assert_eq!(p.next_ast(), ifdef);
     }
 
@@ -458,9 +440,9 @@ mod macros {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let ifndef = create_node!(ASTClass::MacroIfndef(create_node!(ASTClass::Identifire(
-            "hello".to_string()
-        ))));
+        let ifndef = create_node!(ASTClass::MacroIfndef(create_node!(
+            ASTClass::Identifire("hello".to_string())
+        )));
         assert_eq!(p.next_ast(), ifndef);
     }
 
@@ -470,9 +452,9 @@ mod macros {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let ifndef = create_node!(ASTClass::MacroIfndef(create_node!(ASTClass::Identifire(
-            "hello".to_string()
-        ))));
+        let ifndef = create_node!(ASTClass::MacroIfndef(create_node!(
+            ASTClass::Identifire("hello".to_string())
+        )));
         let nl = create_node!(ASTClass::Newline);
         let endif = create_node!(ASTClass::MacroEndif);
         assert_eq!(p.next_ast(), ifndef);
@@ -486,9 +468,9 @@ mod macros {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let ifndef = create_node!(ASTClass::MacroIfndef(create_node!(ASTClass::Identifire(
-            "hello".to_string()
-        ))));
+        let ifndef = create_node!(ASTClass::MacroIfndef(create_node!(
+            ASTClass::Identifire("hello".to_string())
+        )));
         let endif = create_node!(ASTClass::MacroEndif);
         let melse = create_node!(ASTClass::MacroElse);
         let nl = create_node!(ASTClass::Newline);
@@ -862,13 +844,11 @@ mod module {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let reg_def = create_node!(ASTClass::Reg(vec![
-            (
-                create_node!(ASTClass::Identifire("a".to_string())),
-                None,
-                Some(create_node!(ASTClass::Number("1'b1".to_string()))),
-            ),
-        ]));
+        let reg_def = create_node!(ASTClass::Reg(vec![(
+            create_node!(ASTClass::Identifire("a".to_string())),
+            None,
+            Some(create_node!(ASTClass::Number("1'b1".to_string()))),
+        )]));
         let components = vec![reg_def];
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
@@ -1024,12 +1004,9 @@ mod module {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let components = vec![
-            create_node!(
-                ASTClass::StateName(
-                    vec![
-                    create_node!(ASTClass::Identifire("state1".to_string()))
-        ]))];
+        let components = vec![create_node!(ASTClass::StateName(vec![create_node!(
+            ASTClass::Identifire("state1".to_string())
+        )]))];
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
             create_node!(ASTClass::Block(components))
@@ -1043,16 +1020,10 @@ mod module {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let components = vec![
-            create_node!(
-                ASTClass::StateName(
-                    vec![
-                        create_node!(ASTClass::Identifire("state1".to_string())),
-                        create_node!(ASTClass::Identifire("state2".to_string())),
-                    ]
-                )
-            )
-        ];
+        let components = vec![create_node!(ASTClass::StateName(vec![
+            create_node!(ASTClass::Identifire("state1".to_string())),
+            create_node!(ASTClass::Identifire("state2".to_string())),
+        ]))];
 
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
@@ -1063,31 +1034,25 @@ mod module {
 
     #[test]
     fn state_procedure_00() {
-        let mut b = "module test { state_name state1, state2; state state1 {}}".as_bytes();
+        let mut b =
+            "module test { state_name state1, state2; state state1 {}}".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-
         let components = vec![
-            create_node!(
-                ASTClass::StateName(
-                    vec![
-                        create_node!(ASTClass::Identifire("state1".to_string())),
-                        create_node!(ASTClass::Identifire("state2".to_string())),
-                    ]
-                )
-            ),
-            create_node!(
-                ASTClass::State(
-                    create_node!(ASTClass::Identifire("state1".to_string())),
-                    create_node!(ASTClass::Block(vec![]))
-                )
-            ),
+            create_node!(ASTClass::StateName(vec![
+                create_node!(ASTClass::Identifire("state1".to_string())),
+                create_node!(ASTClass::Identifire("state2".to_string())),
+            ])),
+            create_node!(ASTClass::State(
+                create_node!(ASTClass::Identifire("state1".to_string())),
+                create_node!(ASTClass::Block(vec![]))
+            )),
         ];
         let module = create_node!(ASTClass::Module(
-                create_node!(ASTClass::Identifire("test".to_string())),
-                create_node!(ASTClass::Block(components))
-                ));
+            create_node!(ASTClass::Identifire("test".to_string())),
+            create_node!(ASTClass::Block(components))
+        ));
         assert_eq!(p.next_ast(), module);
     }
 
@@ -1097,25 +1062,19 @@ mod module {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let state_block = vec![
-            create_node!(ASTClass::Assign(
-                    create_node!(ASTClass::Identifire("a".to_string())),
-                    create_node!(ASTClass::Number("1'b1".to_string())),
-                    ))
-        ];
+        let state_block = vec![create_node!(ASTClass::Assign(
+            create_node!(ASTClass::Identifire("a".to_string())),
+            create_node!(ASTClass::Number("1'b1".to_string())),
+        ))];
 
-        let components = vec![
-            create_node!(
-                ASTClass::State(
-                    create_node!(ASTClass::Identifire("state1".to_string())),
-                    create_node!(ASTClass::Block(state_block))
-                )
-            ),
-        ];
+        let components = vec![create_node!(ASTClass::State(
+            create_node!(ASTClass::Identifire("state1".to_string())),
+            create_node!(ASTClass::Block(state_block))
+        ))];
         let module = create_node!(ASTClass::Module(
-                create_node!(ASTClass::Identifire("test".to_string())),
-                create_node!(ASTClass::Block(components))
-                ));
+            create_node!(ASTClass::Identifire("test".to_string())),
+            create_node!(ASTClass::Block(components))
+        ));
         assert_eq!(p.next_ast(), module);
     }
 
@@ -1125,25 +1084,19 @@ mod module {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let state_block = vec![
-            create_node!(ASTClass::FuncCall(
-                create_node!(ASTClass::Identifire("error".to_string())),
-                vec![create_node!(ASTClass::Identifire("a".to_string()))],
-                )),
-        ];
+        let state_block = vec![create_node!(ASTClass::FuncCall(
+            create_node!(ASTClass::Identifire("error".to_string())),
+            vec![create_node!(ASTClass::Identifire("a".to_string()))],
+        ))];
 
-        let components = vec![
-            create_node!(
-                ASTClass::State(
-                    create_node!(ASTClass::Identifire("state1".to_string())),
-                    create_node!(ASTClass::Block(state_block))
-                )
-            ),
-        ];
+        let components = vec![create_node!(ASTClass::State(
+            create_node!(ASTClass::Identifire("state1".to_string())),
+            create_node!(ASTClass::Block(state_block))
+        ))];
         let module = create_node!(ASTClass::Module(
-                create_node!(ASTClass::Identifire("test".to_string())),
-                create_node!(ASTClass::Block(components))
-                ));
+            create_node!(ASTClass::Identifire("test".to_string())),
+            create_node!(ASTClass::Block(components))
+        ));
         assert_eq!(p.next_ast(), module);
     }
 
@@ -1153,16 +1106,12 @@ mod module {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let mem = create_node!(
-            ASTClass::Mem(
-                vec![
-                    (
-                        create_node!(ASTClass::Identifire("aa".to_string())),
-                        create_node!(ASTClass::Number("12".to_string())),
-                        None,
-                        None,
-                    )
-                ]));
+        let mem = create_node!(ASTClass::Mem(vec![(
+            create_node!(ASTClass::Identifire("aa".to_string())),
+            create_node!(ASTClass::Number("12".to_string())),
+            None,
+            None,
+        )]));
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
             create_node!(ASTClass::Block(vec![mem]))
@@ -1176,16 +1125,12 @@ mod module {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let mem = create_node!(
-            ASTClass::Mem(
-                vec![
-                    (
-                        create_node!(ASTClass::Identifire("aa".to_string())),
-                        create_node!(ASTClass::Number("1".to_string())),
-                        None,
-                        Some(vec![create_node!(ASTClass::Number("1'b1".to_string()))]),
-                    )
-                ]));
+        let mem = create_node!(ASTClass::Mem(vec![(
+            create_node!(ASTClass::Identifire("aa".to_string())),
+            create_node!(ASTClass::Number("1".to_string())),
+            None,
+            Some(vec![create_node!(ASTClass::Number("1'b1".to_string()))]),
+        )]));
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
             create_node!(ASTClass::Block(vec![mem]))
@@ -1199,19 +1144,15 @@ mod module {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let mem = create_node!(
-            ASTClass::Mem(
-                vec![
-                    (
-                        create_node!(ASTClass::Identifire("aa".to_string())),
-                        create_node!(ASTClass::Number("4".to_string())),
-                        Some(create_node!(ASTClass::Number("2".to_string()))),
-                        Some(vec![
-                             create_node!(ASTClass::Number("4'b1010".to_string())),
-                             create_node!(ASTClass::Number("4'b0101".to_string())),
-                        ]),
-                    )
-                ]));
+        let mem = create_node!(ASTClass::Mem(vec![(
+            create_node!(ASTClass::Identifire("aa".to_string())),
+            create_node!(ASTClass::Number("4".to_string())),
+            Some(create_node!(ASTClass::Number("2".to_string()))),
+            Some(vec![
+                create_node!(ASTClass::Number("4'b1010".to_string())),
+                create_node!(ASTClass::Number("4'b0101".to_string())),
+            ]),
+        )]));
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
             create_node!(ASTClass::Block(vec![mem]))
@@ -1224,16 +1165,12 @@ mod module {
         let mut b = "module test {mem aa[4][2];}".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
-        let mem = create_node!(
-            ASTClass::Mem(
-                vec![
-                    (
-                        create_node!(ASTClass::Identifire("aa".to_string())),
-                        create_node!(ASTClass::Number("4".to_string())),
-                        Some(create_node!(ASTClass::Number("2".to_string()))),
-                        None,
-                    ),
-                ]));
+        let mem = create_node!(ASTClass::Mem(vec![(
+            create_node!(ASTClass::Identifire("aa".to_string())),
+            create_node!(ASTClass::Number("4".to_string())),
+            Some(create_node!(ASTClass::Number("2".to_string()))),
+            None,
+        )]));
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
             create_node!(ASTClass::Block(vec![mem]))
@@ -1243,32 +1180,29 @@ mod module {
 
     #[test]
     fn mem_04() {
-        let mut b = "mem a[12] = {1'b1, 1'b0, 1'b0, 1'b1}, b[3][4] = {4'b1110};".as_bytes();
+        let mut b =
+            "mem a[12] = {1'b1, 1'b0, 1'b0, 1'b1}, b[3][4] = {4'b1110};".as_bytes();
         let mut l = Lexer::new(&mut b);
         let p = Parser::new(&mut l);
-        let mem = create_node!(
-            ASTClass::Mem(
-                vec![
-                    (
-                        create_node!(ASTClass::Identifire("a".to_string())),
-                        create_node!(ASTClass::Number("12".to_string())),
-                        None,
-                        Some(vec![
-                            create_node!(ASTClass::Number("1'b1".to_string())),
-                            create_node!(ASTClass::Number("1'b0".to_string())),
-                            create_node!(ASTClass::Number("1'b0".to_string())),
-                            create_node!(ASTClass::Number("1'b1".to_string())),
-                        ]),
-                    ),
-                    (
-                        create_node!(ASTClass::Identifire("b".to_string())),
-                        create_node!(ASTClass::Number("3".to_string())),
-                        Some(create_node!(ASTClass::Number("4".to_string()))),
-                        Some(vec![
-                            create_node!(ASTClass::Number("4'b1110".to_string())),
-                        ]),
-                    ),
-                ]));
+        let mem = create_node!(ASTClass::Mem(vec![
+            (
+                create_node!(ASTClass::Identifire("a".to_string())),
+                create_node!(ASTClass::Number("12".to_string())),
+                None,
+                Some(vec![
+                    create_node!(ASTClass::Number("1'b1".to_string())),
+                    create_node!(ASTClass::Number("1'b0".to_string())),
+                    create_node!(ASTClass::Number("1'b0".to_string())),
+                    create_node!(ASTClass::Number("1'b1".to_string())),
+                ]),
+            ),
+            (
+                create_node!(ASTClass::Identifire("b".to_string())),
+                create_node!(ASTClass::Number("3".to_string())),
+                Some(create_node!(ASTClass::Number("4".to_string()))),
+                Some(vec![create_node!(ASTClass::Number("4'b1110".to_string()))]),
+            ),
+        ]));
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
             create_node!(ASTClass::Block(vec![mem]))
@@ -1516,8 +1450,9 @@ mod module {
 
     #[test]
     fn any_02() {
-        let mut b = "module test { reg a = 0; any {a : { a := 1; } a == 1'b1: { a := 0;}} }"
-            .as_bytes();
+        let mut b =
+            "module test { reg a = 0; any {a : { a := 1; } a == 1'b1: { a := 0;}} }"
+                .as_bytes();
 
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
@@ -1589,14 +1524,14 @@ mod module {
 
     #[test]
     fn function_call_00() {
-        let mut b ="module test {error();}".as_bytes();
+        let mut b = "module test {error();}".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
         let components = vec![create_node!(ASTClass::FuncCall(
-                create_node!(ASTClass::Identifire("error".to_string())),
-                vec![],
-                ))];
+            create_node!(ASTClass::Identifire("error".to_string())),
+            vec![],
+        ))];
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
             create_node!(ASTClass::Block(components))
@@ -1606,14 +1541,14 @@ mod module {
 
     #[test]
     fn function_call_01() {
-        let mut b ="module test {error(a);}".as_bytes();
+        let mut b = "module test {error(a);}".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
         let components = vec![create_node!(ASTClass::FuncCall(
-                create_node!(ASTClass::Identifire("error".to_string())),
-                vec![create_node!(ASTClass::Identifire("a".to_string()))],
-                ))];
+            create_node!(ASTClass::Identifire("error".to_string())),
+            vec![create_node!(ASTClass::Identifire("a".to_string()))],
+        ))];
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
             create_node!(ASTClass::Block(components))
@@ -1632,25 +1567,18 @@ mod module {
             create_node!(ASTClass::Identifire("a".to_string())),
             None,
         )]));
-        let func_block = create_node!(
-            ASTClass::Block(
-                vec![
-                    create_node!(ASTClass::Assign(
-                            create_node!(ASTClass::Identifire("a".to_string())),
-                            create_node!(ASTClass::Number("1'b0".to_string())))),
-                ]
-                )
-            );
+        let func_block =
+            create_node!(ASTClass::Block(vec![create_node!(ASTClass::Assign(
+                create_node!(ASTClass::Identifire("a".to_string())),
+                create_node!(ASTClass::Number("1'b0".to_string()))
+            ))]));
         let func_def = create_node!(ASTClass::Func(
-                create_node!(ASTClass::Identifire("ok".to_string())),
-                None,
-                func_block,
-                ));
+            create_node!(ASTClass::Identifire("ok".to_string())),
+            None,
+            func_block,
+        ));
 
-        let components = vec![
-            wire_def,
-            func_def,
-        ];
+        let components = vec![wire_def, func_def];
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("hello".to_string())),
             create_node!(ASTClass::Block(components))
@@ -1665,20 +1593,19 @@ mod module {
         let mut p = Parser::new(&mut l);
 
         let func_call = create_node!(ASTClass::FuncCall(
-                create_node!(ASTClass::Identifire("update".to_string())),
-                vec![
-                    create_node!(ASTClass::Identifire("funct".to_string())),
-                    create_node!(ASTClass::Identifire("mhartid".to_string())),
-                    create_node!(ASTClass::Identifire("source".to_string())),
-                ]));
+            create_node!(ASTClass::Identifire("update".to_string())),
+            vec![
+                create_node!(ASTClass::Identifire("funct".to_string())),
+                create_node!(ASTClass::Identifire("mhartid".to_string())),
+                create_node!(ASTClass::Identifire("source".to_string())),
+            ]
+        ));
         let assign = create_node!(ASTClass::RegAssign(
             create_node!(ASTClass::Identifire("mhartid".to_string())),
             func_call,
         ));
 
-        let components = vec![
-            assign,
-        ];
+        let components = vec![assign];
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
             create_node!(ASTClass::Block(components))
@@ -1688,19 +1615,15 @@ mod module {
 
     #[test]
     fn func_call_00() {
-
         let mut b = "module test {update(12'h123);}".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
         let func_call = create_node!(ASTClass::FuncCall(
-                create_node!(ASTClass::Identifire("update".to_string())),
-                vec![
-                    create_node!(ASTClass::Number("12'h123".to_string())),
-                ]));
-        let components = vec![
-            func_call,
-        ];
+            create_node!(ASTClass::Identifire("update".to_string())),
+            vec![create_node!(ASTClass::Number("12'h123".to_string()))]
+        ));
+        let components = vec![func_call];
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
             create_node!(ASTClass::Block(components))
@@ -1710,32 +1633,30 @@ mod module {
 
     #[test]
     fn reg_func_01() {
-        let mut b = "module test {mhartid := update(funct, mhartid, source) + 4'b1;}".as_bytes();
+        let mut b =
+            "module test {mhartid := update(funct, mhartid, source) + 4'b1;}".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
         let func_call = create_node!(ASTClass::FuncCall(
-                create_node!(ASTClass::Identifire("update".to_string())),
-                vec![
-                    create_node!(ASTClass::Identifire("funct".to_string())),
-                    create_node!(ASTClass::Identifire("mhartid".to_string())),
-                    create_node!(ASTClass::Identifire("source".to_string())),
-                ]));
-        let expressiton = create_node!(
-            ASTClass::Expression(
-                func_call,
-                create_node!(ASTClass::Operator(Operator::Plus)),
-                create_node!(ASTClass::Number("4'b1".to_string()))
-                )
-            );
+            create_node!(ASTClass::Identifire("update".to_string())),
+            vec![
+                create_node!(ASTClass::Identifire("funct".to_string())),
+                create_node!(ASTClass::Identifire("mhartid".to_string())),
+                create_node!(ASTClass::Identifire("source".to_string())),
+            ]
+        ));
+        let expressiton = create_node!(ASTClass::Expression(
+            func_call,
+            create_node!(ASTClass::Operator(Operator::Plus)),
+            create_node!(ASTClass::Number("4'b1".to_string()))
+        ));
         let assign = create_node!(ASTClass::RegAssign(
             create_node!(ASTClass::Identifire("mhartid".to_string())),
             expressiton,
         ));
 
-        let components = vec![
-            assign,
-        ];
+        let components = vec![assign];
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
             create_node!(ASTClass::Block(components))

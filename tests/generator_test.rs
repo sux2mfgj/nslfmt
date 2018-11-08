@@ -296,7 +296,8 @@ fn assign_wire_00() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans = "module hello\n{\n    wire a;\n    func ok\n{\n    a = 1'b0;\n}\n}\n".to_string();
+    let ans =
+        "module hello\n{\n    wire a;\n    func ok\n{\n    a = 1'b0;\n}\n}\n".to_string();
     assert_eq!(out, ans);
 }
 
@@ -311,7 +312,8 @@ fn any_00() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans = "module test\n{\n    reg a = 0;\n    any\n{\na:\n{\n    a := 1;\n}\n}\n}\n".to_string();
+    let ans = "module test\n{\n    reg a = 0;\n    any\n{\na:\n{\n    a := 1;\n}\n}\n}\n"
+        .to_string();
     assert_eq!(out, ans);
 }
 
@@ -329,4 +331,3 @@ fn comment_01() {
     let ans = "// hello\n".to_string();
     assert_eq!(out, ans);
 }
-

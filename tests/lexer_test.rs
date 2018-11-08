@@ -503,14 +503,8 @@ fn macro_ifndef() {
 fn macro_else() {
     let mut b = "#else".as_bytes();
     let mut l = Lexer::new(&mut b);
-    assert_eq!(
-        l.next_token(true),
-        Token::from((Symbol::Sharp, 1)),
-    );
-    assert_eq!(
-        l.next_token(true),
-        Token::from((Symbol::Else, 1)),
-    );
+    assert_eq!(l.next_token(true), Token::from((Symbol::Sharp, 1)),);
+    assert_eq!(l.next_token(true), Token::from((Symbol::Else, 1)),);
 }
 
 #[test]
@@ -651,7 +645,10 @@ fn comment_00() {
     assert_eq!(l.next_token(false), Token::new(TokenClass::Newline, 1));
     assert_eq!(
         l.next_token(true),
-        Token::new(TokenClass::CPPStyleComment(" this is inputs.".to_string()), 2)
+        Token::new(
+            TokenClass::CPPStyleComment(" this is inputs.".to_string()),
+            2
+        )
     );
     assert_eq!(l.next_token(false), Token::new(TokenClass::Newline, 2));
     assert_eq!(
@@ -1361,9 +1358,15 @@ fn or_00() {
     let mut l = Lexer::new(&mut b);
 
     assert_eq!(l.next_token(true), Token::from((Symbol::Return, 1)));
-    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("a".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("a".to_string()), 1))
+    );
     assert_eq!(l.next_token(true), Token::from((Operator::Pipe, 1)));
-    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("b".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("b".to_string()), 1))
+    );
 }
 
 #[test]
@@ -1373,7 +1376,10 @@ fn any_else_00() {
 
     assert_eq!(l.next_token(true), Token::from((Symbol::Any, 1)));
     assert_eq!(l.next_token(true), Token::from((Symbol::OpeningBrace, 1)));
-    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("a".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("a".to_string()), 1))
+    );
     assert_eq!(l.next_token(true), Token::from((Symbol::Colon, 1)));
     assert_eq!(l.next_token(true), Token::from((Symbol::OpeningBrace, 1)));
     assert_eq!(l.next_token(true), Token::from((Symbol::ClosingBrace, 1)));
@@ -1389,14 +1395,20 @@ fn gt_lt_00() {
     let mut b = "address >= 12'h3a0 && address <= 12'h3bf".as_bytes();
     let mut l = Lexer::new(&mut b);
 
-    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("address".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("address".to_string()), 1))
+    );
     assert_eq!(l.next_token(true), Token::from((Operator::GreaterEq, 1)));
     assert_eq!(
         l.next_token(true),
         Token::new(TokenClass::Number("12'h3a0".to_string()), 1)
     );
     assert_eq!(l.next_token(true), Token::from((Operator::LogicAnd, 1)));
-    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("address".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("address".to_string()), 1))
+    );
     assert_eq!(l.next_token(true), Token::from((Operator::LessEq, 1)));
     assert_eq!(
         l.next_token(true),
@@ -1410,7 +1422,10 @@ fn state_00() {
     let mut l = Lexer::new(&mut b);
 
     assert_eq!(l.next_token(true), Token::from((Symbol::State, 1)));
-    assert_eq!(l.next_token(true), Token::from((TokenClass::Identifire("idle".to_string()), 1)));
+    assert_eq!(
+        l.next_token(true),
+        Token::from((TokenClass::Identifire("idle".to_string()), 1))
+    );
     assert_eq!(l.next_token(true), Token::from((Symbol::OpeningBrace, 1)));
     assert_eq!(l.next_token(true), Token::from((Symbol::ClosingBrace, 1)));
 }

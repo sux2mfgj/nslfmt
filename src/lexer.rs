@@ -160,17 +160,11 @@ impl<'a> Lexer<'a> {
                     }
                     '*' => {
                         self.iter.next();
-                        return Token::from((
-                            Operator::Asterisk,
-                            self.line,
-                        ));
+                        return Token::from((Operator::Asterisk, self.line));
                     }
                     '+' => {
                         self.iter.next();
-                        return Token::from((
-                            Operator::Plus,
-                            self.line,
-                        ));
+                        return Token::from((Operator::Plus, self.line));
                     }
                     '|' => {
                         self.iter.next();
@@ -203,7 +197,10 @@ impl<'a> Lexer<'a> {
                                     return Token::from((Operator::GreaterEq, self.line));
                                 }
                                 _ => {
-                                    return Token::from((Operator::GreaterThan, self.line));
+                                    return Token::from((
+                                        Operator::GreaterThan,
+                                        self.line,
+                                    ));
                                 }
                             }
                         }
@@ -235,7 +232,6 @@ impl<'a> Lexer<'a> {
                                 }
                             }
                         }
-
                     }
                     '/' => {
                         self.iter.next();
@@ -323,7 +319,7 @@ impl<'a> Lexer<'a> {
             "undef" => TokenClass::Macro(Macro::Undef),
             "ifdef" => TokenClass::Macro(Macro::Ifdef),
             "ifndef" => TokenClass::Macro(Macro::Ifndef),
-//             "else" => TokenClass::Macro(Macro::Else),
+            //             "else" => TokenClass::Macro(Macro::Else),
             "endif" => TokenClass::Macro(Macro::Endif),
             "wire" => TokenClass::Symbol(Symbol::Wire),
             "reg" => TokenClass::Symbol(Symbol::Reg),

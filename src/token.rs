@@ -22,8 +22,8 @@ pub enum Symbol {
     FuncIn,             // func_in
     FuncOut,            // func_out
     FuncSelf,
-    Func,        // func
-    Sharp,       // #
+    Func,  // func
+    Sharp, // #
     //DoubleQuote, // "
     SingleQuote, // '
     Wire,        // wire
@@ -35,29 +35,29 @@ pub enum Symbol {
     Any,         // any
     Else,        // eles
     State,
-                 //TODO
-                 // lack some symbols
+    //TODO
+    // lack some symbols
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Operator {
-    Plus,       // +
+    Plus, // +
     //Minus,      // -
-    Asterisk,   // *
-    Slash,      // /
+    Asterisk, // *
+    Slash,    // /
     //ShiftLeft,  // <<
     //ShiftRight, // >>
-    And,        // &
-    Pipe,       // |
-    LogicAnd,   // &&
+    And,      // &
+    Pipe,     // |
+    LogicAnd, // &&
     //LogicOr,    // ||
     //Hat,        // ^
     //Tilde,      // ~
-    Equal,      // ==
-    GreaterEq,  // >=
-    LessEq,     // <=
-    GreaterThan,// >
-    LessThan,   // <
+    Equal,       // ==
+    GreaterEq,   // >=
+    LessEq,      // <=
+    GreaterThan, // >
+    LessThan,    // <
 }
 
 impl fmt::Display for Operator {
@@ -81,8 +81,8 @@ pub enum Macro {
     Ifdef,   // #ifdef
     Ifndef,  // #ifndef
     //TODO
-//     Else,    // #eles
-    Endif,   // #endif
+    //     Else,    // #eles
+    Endif, // #endif
 }
 
 #[derive(Debug, Clone, PartialEq)]
