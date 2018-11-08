@@ -210,6 +210,12 @@ impl<'a> Parser<'a> {
                     unexpected_token!(id_token);
                 }
             }
+            TokenClass::CStyleComment(list) => {
+                create_node!(ASTClass::CStyleComment(list))
+            }
+            TokenClass::CPPStyleComment(comment) => {
+                create_node!(ASTClass::CPPStyleComment(comment))
+            }
             _ => {
                 unexpected_token!(t);
             }
