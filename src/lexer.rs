@@ -246,7 +246,7 @@ impl<'a> Lexer<'a> {
                                     self.iter.next();
                                     let comment = self.get_string_until_newline();
                                     return Token::from((
-                                        TokenClass::CStyleComment(comment),
+                                        TokenClass::CPPStyleComment(comment),
                                         self.line,
                                     ));
                                 }
@@ -256,7 +256,7 @@ impl<'a> Lexer<'a> {
                                     let comment_list =
                                         self.get_string_for_multiline_comment();
                                     return Token::from((
-                                        TokenClass::CPPStyleComment(comment_list),
+                                        TokenClass::CStyleComment(comment_list),
                                         self.line,
                                     ));
                                 }

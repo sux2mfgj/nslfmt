@@ -563,7 +563,7 @@ mod comment {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let multi_line = create_node!(ASTClass::CPPStyleComment(vec![
+        let multi_line = create_node!(ASTClass::CStyleComment(vec![
             "".to_string(),
             "data lines".to_string(),
             "".to_string(),
@@ -1678,6 +1678,28 @@ mod module {
 
         let components = vec![
             assign,
+        ];
+        let module = create_node!(ASTClass::Module(
+            create_node!(ASTClass::Identifire("test".to_string())),
+            create_node!(ASTClass::Block(components))
+        ));
+        assert_eq!(p.next_ast(), module);
+    }
+
+    #[test]
+    fn func_call_00() {
+
+        let mut b = "module test {update(12'h123);}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let func_call = create_node!(ASTClass::FuncCall(
+                create_node!(ASTClass::Identifire("update".to_string())),
+                vec![
+                    create_node!(ASTClass::Number("12'h123".to_string())),
+                ]));
+        let components = vec![
+            func_call,
         ];
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),

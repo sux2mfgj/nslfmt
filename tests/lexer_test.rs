@@ -651,7 +651,7 @@ fn comment_00() {
     assert_eq!(l.next_token(false), Token::new(TokenClass::Newline, 1));
     assert_eq!(
         l.next_token(true),
-        Token::new(TokenClass::CStyleComment(" this is inputs.".to_string()), 2)
+        Token::new(TokenClass::CPPStyleComment(" this is inputs.".to_string()), 2)
     );
     assert_eq!(l.next_token(false), Token::new(TokenClass::Newline, 2));
     assert_eq!(
@@ -860,7 +860,7 @@ fn mutiline_comment_00() {
 
     assert_eq!(
         l.next_token(true),
-        Token::new(TokenClass::CPPStyleComment(result), 1)
+        Token::new(TokenClass::CStyleComment(result), 1)
     );
 }
 
@@ -873,7 +873,7 @@ fn mutiline_comment_01() {
 
     assert_eq!(
         l.next_token(true),
-        Token::new(TokenClass::CPPStyleComment(result), 1)
+        Token::new(TokenClass::CStyleComment(result), 1)
     );
 }
 
@@ -886,7 +886,7 @@ fn mutiline_comment_02() {
 
     assert_eq!(
         l.next_token(true),
-        Token::new(TokenClass::CPPStyleComment(result), 1)
+        Token::new(TokenClass::CStyleComment(result), 1)
     );
     assert_eq!(l.next_token(true), Token::new(TokenClass::EndOfProgram, 1));
 }
@@ -903,7 +903,7 @@ fn mutiline_comment_03() {
 
     assert_eq!(
         l.next_token(true),
-        Token::new(TokenClass::CPPStyleComment(result), 1)
+        Token::new(TokenClass::CStyleComment(result), 1)
     );
     assert_eq!(l.next_token(true), Token::new(TokenClass::EndOfProgram, 1));
 }

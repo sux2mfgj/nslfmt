@@ -96,8 +96,8 @@ pub enum ASTClass {
 
     //          operand     , operation   , operand
     Expression(Box<ASTNode>, Box<ASTNode>, Box<ASTNode>),
-    CStyleComment(String),
-    CPPStyleComment(Vec<String>),
+    CPPStyleComment(String),
+    CStyleComment(Vec<String>),
     Newline,
     EndOfProgram,
 }
@@ -316,10 +316,10 @@ impl fmt::Display for ASTNode {
             ASTClass::Newline => {
                 return write!(f, "");
             }
-            ASTClass::CStyleComment(ref line) => {
+            ASTClass::CPPStyleComment(ref line) => {
                 return write!(f, "//{}\n", line);
             }
-            ASTClass::CPPStyleComment(ref list) => {
+            ASTClass::CStyleComment(ref list) => {
                 return write!(f, "/*{}*/\n", list.join("\n"));
             }
             _ => {

@@ -42,7 +42,8 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::Module) => self.module_ast(),
             TokenClass::EndOfProgram => create_node!(ASTClass::EndOfProgram),
             TokenClass::Newline => create_node!(ASTClass::Newline),
-            TokenClass::CPPStyleComment(list) => create_node!(ASTClass::CPPStyleComment(list)),
+            TokenClass::CStyleComment(list) => create_node!(ASTClass::CStyleComment(list)),
+            TokenClass::CPPStyleComment(comment) => create_node!(ASTClass::CPPStyleComment(comment)),
             _ => {
                 unexpected_token!(token);
             }
@@ -761,6 +762,9 @@ impl<'a> Parser<'a> {
                 }
                 TokenClass::Identifire(id_str) => {
                     args.push(create_node!(ASTClass::Identifire(id_str)));
+                }
+                TokenClass::Number(num) => {
+                    args.push(create_node!(ASTClass::Number(num)));
                 }
                 _ => {
                     unexpected_token!(token);
