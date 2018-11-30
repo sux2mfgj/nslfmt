@@ -4,6 +4,7 @@ use std::fmt;
 pub enum Symbol {
     Module,             // module
     Declare,            // declare
+    Struct,             // struct
     OpeningBrace,       // {
     ClosingBrace,       // }
     LeftParen,          // (
@@ -33,9 +34,21 @@ pub enum Symbol {
     Mem,         // mem
     Return,      // return
     Any,         // any
+    Alt,         // alt
     Else,        // eles
-    State,
-    //TODO
+    State,       // state
+    Proc,        // proc
+    If,          // if
+    For,         // for
+    While,       // while
+    Seq,         // seq
+    Variable,    // variable
+    Integer,     // integer
+    Generate,    // generate
+    Invoke,      // invoke
+    Finish,      // finish
+    Goto,        // goto
+    // TODO
     // lack some symbols
 }
 

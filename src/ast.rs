@@ -66,6 +66,8 @@ pub enum ASTClass {
     FuncCall(Box<ASTNode>, Vec<Box<ASTNode>>),
     //  state name, block
     State(Box<ASTNode>, Box<ASTNode>),
+    // if (<expression>) <block>, <else_node>
+    If(Box<ASTNode>, Box<ASTNode>, Option<Box<ASTNode>>),
 
     // ----- Macros ------
     MacroInclude(Box<ASTNode>),

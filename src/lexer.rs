@@ -16,7 +16,7 @@ pub struct Lexer<'a> {
     reader: &'a mut BufRead,
     line_buffer: String,
     iter: Peekable<IntoIter<char>>,
-    buffer: Vec<Token>,
+    next_token: Option<Token>,
 }
 
 impl<'a> Lexer<'a> {
@@ -31,41 +31,47 @@ impl<'a> Lexer<'a> {
                 .collect::<Vec<_>>()
                 .into_iter()
                 .peekable(),
-            buffer: vec![],
+            next_token: None,
         }
+    }
+
+    pub fn peek(&mut self, is_pass_nl: bool) -> Option<&Token>
+    {
+        if self.next_token.is_none()
+        {
+            let t = self.generate_token(is_pass_nl);
+            self.next_token = Some(t);
+        }
+        else if self.next_token.as_ref().unwrap().class == TokenClass::Newline && is_pass_nl
+        {
+            let t = self.generate_token(is_pass_nl);
+            self.next_token = Some(t);
+        }
+
+        self.next_token.as_ref()
+    }
+
+    pub fn next(&mut self, is_pass_nl: bool) -> Token {
+        if let Some(token) = self.next_token.take()
+        {
+            return if token.class == TokenClass::Newline && is_pass_nl
+            {
+                self.generate_token(is_pass_nl)
+            }
+            else
+            {
+                token
+            };
+        }
+        self.generate_token(is_pass_nl)
     }
 
     /*
-    pub fn check_next_token(&mut self, is_pass_nl: bool) -> Token {
-        if let Some(t) = self.buffer.first() {
-            return t.clone();
-        }
-
-        let next_token = self.next_token(is_pass_nl);
-        self.buffer.push(next_token.clone());
-        return next_token;
-    }
-    */
-
-    pub fn next_token(&mut self, is_pass_nl: bool) -> Token {
-        if self.buffer.len() != 0 {
-            return self.buffer.pop().unwrap();
-        }
-
-        if let Some(t) = self.supply_buffer() {
-            return t;
-        }
-        let mut t = self.generate_token();
-        while is_pass_nl && t.class == TokenClass::Newline {
-            t = self.next_token(is_pass_nl);
-        }
-        t
-    }
-
+     * Some(EndOfProgram) or None
+     */
     fn supply_buffer(&mut self) -> Option<Token> {
         if self.iter.peek() == None {
             let mut buf = Vec::<u8>::new();
-            //             let size = self.reader.read_until(b'\n', &mut buf).expect(panic!("read_until"));
             match self.reader.read_until(b'\n', &mut buf) {
                 Ok(size) => {
                     if size == 0 {
@@ -73,7 +79,6 @@ impl<'a> Lexer<'a> {
                     }
                 }
                 Err(e) => {
-                    //                     return Some(Token::from((TokenClass::EndOfProgram, self.line)));
                     panic!("{}", e)
                 }
             }
@@ -84,17 +89,12 @@ impl<'a> Lexer<'a> {
                 .collect::<Vec<_>>()
                 .into_iter()
                 .peekable();
-
-            // TODO
-            //             if self.iter.peek() == None {
-            //                 return Some(Token::from((TokenClass::EndOfProgram, self.line)));
-            //             }
         }
 
         None
     }
 
-    fn generate_token(&mut self) -> Token {
+    fn generate_token(&mut self, is_pass_nl: bool) -> Token {
         loop {
             if let Some(t) = self.supply_buffer() {
                 return t;
@@ -282,6 +282,9 @@ impl<'a> Lexer<'a> {
                         let line: usize = self.line;
                         self.line += 1;
                         self.iter.next();
+                        if is_pass_nl {
+                            continue;
+                        }
                         return Token::from((TokenClass::Newline, line));
                     }
                     ' ' | '\t' => {
@@ -329,8 +332,21 @@ impl<'a> Lexer<'a> {
             "func" => TokenClass::Symbol(Symbol::Func),
             "return" => TokenClass::Symbol(Symbol::Return),
             "any" => TokenClass::Symbol(Symbol::Any),
+            "alt" => TokenClass::Symbol(Symbol::Alt),
+            "seq" => TokenClass::Symbol(Symbol::Seq),
             "else" => TokenClass::Symbol(Symbol::Else),
             "state" => TokenClass::Symbol(Symbol::State),
+            "proc" => TokenClass::Symbol(Symbol::Proc),
+            "if" => TokenClass::Symbol(Symbol::If),
+            "for" => TokenClass::Symbol(Symbol::For),
+            "while" => TokenClass::Symbol(Symbol::While),
+            "goto" => TokenClass::Symbol(Symbol::Goto),
+            "finish" => TokenClass::Symbol(Symbol::Finish),
+            "invoke" => TokenClass::Symbol(Symbol::Invoke),
+            "generate" => TokenClass::Symbol(Symbol::Generate),
+            "integer" => TokenClass::Symbol(Symbol::Integer),
+            "variable" => TokenClass::Symbol(Symbol::Variable),
+            "struct" => TokenClass::Symbol(Symbol::Struct),
             //TODO
             _ => TokenClass::Identifire(word),
         }

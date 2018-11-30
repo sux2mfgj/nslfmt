@@ -1663,4 +1663,92 @@ mod module {
         ));
         assert_eq!(p.next_ast(), module);
     }
+
+    #[test]
+    fn if_00() {
+        let mut b = "module test { if(a) {}}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let if_node = create_node!(ASTClass::If(
+                create_node!(ASTClass::Identifire("a".to_string())),
+                create_node!(ASTClass::Block(vec![])),
+                None,
+                )
+            );
+        let components = vec![
+            if_node,
+        ];
+
+        let module = create_node!(ASTClass::Module(
+                create_node!(ASTClass::Identifire("test".to_string())),
+                create_node!(ASTClass::Block(components)),
+                ));
+        assert_eq!(p.next_ast(), module);
+    }
+
+    #[test]
+    fn if_01() {
+        let mut b = "module test { if(a) {b = 12'h123;}}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let assign = create_node!(
+            ASTClass::Assign(
+                create_node!(ASTClass::Identifire("b".to_string())),
+                create_node!(ASTClass::Number("12'h123".to_string()))
+                )
+            );
+        let if_node = create_node!(ASTClass::If(
+                create_node!(ASTClass::Identifire("a".to_string())),
+                create_node!(ASTClass::Block(vec![assign])),
+                None,
+                )
+            );
+        let components = vec![
+            if_node,
+        ];
+
+        let module = create_node!(ASTClass::Module(
+                create_node!(ASTClass::Identifire("test".to_string())),
+                create_node!(ASTClass::Block(components)),
+                ));
+        assert_eq!(p.next_ast(), module);
+    }
+
+    #[test]
+    fn if_02() {
+        let mut b = "module test { if(a) b = 12'h123;}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let assign = create_node!(
+            ASTClass::Assign(
+                create_node!(ASTClass::Identifire("b".to_string())),
+                create_node!(ASTClass::Number("12'h123".to_string()))
+                )
+            );
+
+        let if_node = create_node!(ASTClass::If(
+                create_node!(ASTClass::Identifire("a".to_string())),
+                assign,
+                None));
+        let components = vec![
+            if_node,
+        ];
+
+        let module = create_node!(ASTClass::Module(
+                create_node!(ASTClass::Identifire("test".to_string())),
+                create_node!(ASTClass::Block(components)),
+                ));
+        assert_eq!(p.next_ast(), module);
+    }
+
+    #[test]
+    fn if_03() {
+        let mut b = "module test { if(a) {b = 12'h123;} else {}}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+        panic!();
+    }
 }
