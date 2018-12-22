@@ -119,11 +119,14 @@ impl<'a> Parser<'a> {
                 self.lexer.next(true);
                 return create_node!(ASTClass::Block(contents_in_block));
             }
-            contents_in_block.push(self.module_block_part_ast());
+            if let Some(block) = self.module_block_part_ast()
+            {
+                contents_in_block.push(block);
+            }
         }
     }
 
-    fn module_block_part_ast(&mut self) -> Box<ASTNode> {
+    fn module_block_part_ast(&mut self) -> Option<Box<ASTNode>> {
         let t = self.lexer.next(true);
         match t.class {
             TokenClass::Symbol(Symbol::Reg) => {
@@ -144,7 +147,7 @@ impl<'a> Parser<'a> {
                         }
                     }
                 }
-                create_node!(ASTClass::Reg(reg_list))
+                Some(create_node!(ASTClass::Reg(reg_list)))
             }
             TokenClass::Symbol(Symbol::Wire) => {
                 let mut wire_list = vec![];
@@ -152,7 +155,7 @@ impl<'a> Parser<'a> {
                     let next = self.lexer.next(true);
                     match next.class {
                         TokenClass::Symbol(Symbol::Semicolon) => {
-                            return create_node!(ASTClass::Wire(wire_list));
+                            return Some(create_node!(ASTClass::Wire(wire_list)));
                         }
                         TokenClass::Symbol(Symbol::Comma) => {
                             continue;
@@ -195,7 +198,7 @@ impl<'a> Parser<'a> {
                         }
                     }
                 }
-                create_node!(ASTClass::Mem(defines))
+                Some(create_node!(ASTClass::Mem(defines)))
             }
             // for behavior
             TokenClass::Identifire(id) => {
@@ -204,18 +207,29 @@ impl<'a> Parser<'a> {
                 match next_t.class {
                     TokenClass::Symbol(Symbol::Equal) => {
                         let expr = self.expression_ast();
+
+                        if let TokenClass::Symbol(Symbol::LeftSquareBracket) = self.lexer.peek(true).class
+                        {
+
+                        }
                         self.check_semicolon();
-                        create_node!(ASTClass::Assign(id_node, expr))
+                        Some(create_node!(ASTClass::Assign(id_node, expr)))
                     }
                     TokenClass::Symbol(Symbol::RegAssign) => {
                         let expr = self.expression_ast();
                         self.check_semicolon();
-                        create_node!(ASTClass::RegAssign(id_node, expr))
+                        Some(create_node!(ASTClass::RegAssign(id_node, expr)))
                     }
                     TokenClass::Symbol(Symbol::LeftParen) => {
                         let args = self.generate_args_vec();
                         self.check_semicolon();
-                        create_node!(ASTClass::FuncCall(id_node, args,))
+                        Some(create_node!(ASTClass::FuncCall(id_node, args,)))
+                    }
+                    TokenClass::UnaryOperator(op) => {
+                        self.check_semicolon();
+                        Some(create_node!(ASTClass::UnaryOperation(
+                                id_node,
+                                create_node!(ASTClass::UnaryOperator(op)))))
                     }
                     _ => {
                         unexpected_token!(next_t);
@@ -227,7 +241,7 @@ impl<'a> Parser<'a> {
                 self.check_left_paren();
                 let args_vec = self.generate_args_vec();
                 self.check_semicolon();
-                create_node!(ASTClass::ProcName(id_node, args_vec,))
+                Some(create_node!(ASTClass::ProcName(id_node, args_vec,)))
             }
             TokenClass::Symbol(Symbol::StateName) => {
                 let mut ids = vec![];
@@ -248,12 +262,12 @@ impl<'a> Parser<'a> {
                         }
                     }
                 }
-                create_node!(ASTClass::StateName(ids))
+                Some(create_node!(ASTClass::StateName(ids)))
             }
             TokenClass::Symbol(Symbol::State) => {
                 let id_node = self.generate_id_node();
                 let block = self.module_block_ast();
-                create_node!(ASTClass::State(id_node, block))
+                Some(create_node!(ASTClass::State(id_node, block)))
             }
             TokenClass::Symbol(Symbol::FuncSelf) => {
                 let id_node = self.generate_id_node();
@@ -266,7 +280,7 @@ impl<'a> Parser<'a> {
                     None
                 };
                 let return_port = self.generate_func_return();
-                create_node!(ASTClass::FuncSelf(id_node, args_vec, return_port,))
+                Some(create_node!(ASTClass::FuncSelf(id_node, args_vec, return_port,)))
             }
             TokenClass::Symbol(Symbol::Func) => {
                 let id_node = self.generate_id_node();
@@ -277,12 +291,12 @@ impl<'a> Parser<'a> {
                 }
 
                 let block = self.module_block_ast();
-                create_node!(ASTClass::Func(id_node, func_name_node, block))
+                Some(create_node!(ASTClass::Func(id_node, func_name_node, block)))
             }
             TokenClass::Symbol(Symbol::Return) => {
                 let expr = self.expression_ast();
                 self.check_semicolon();
-                create_node!(ASTClass::Return(expr))
+                Some(create_node!(ASTClass::Return(expr)))
             }
             TokenClass::Symbol(Symbol::If) => {
                 self.check_left_paren();
@@ -293,7 +307,13 @@ impl<'a> Parser<'a> {
                 {
                     self.module_block_ast()
                 } else {
-                    self.module_block_part_ast()
+                     let bb = if let Some(b) = self.module_block_part_ast() {
+                        b
+                     }
+                     else {
+                        create_node!(ASTClass::Block(vec![]))
+                     };
+                     bb
                 };
 
                 let else_block =
@@ -301,16 +321,16 @@ impl<'a> Parser<'a> {
                         self.lexer.next(true);
                         let block =
                             if let TokenClass::Symbol(Symbol::OpeningBrace) = n_t.class {
-                                self.module_block_ast()
+                                Some(self.module_block_ast())
                             } else {
                                 self.module_block_part_ast()
                             };
-                        Some(block)
+                        block
                     } else {
                         None
                     };
 
-                create_node!(ASTClass::If(expr_ast, if_block, else_block))
+                Some(create_node!(ASTClass::If(expr_ast, if_block, else_block)))
             }
             TokenClass::Symbol(Symbol::Any) => {
                 self.check_opening_brace();
@@ -339,7 +359,17 @@ impl<'a> Parser<'a> {
                         }
                     }
                 }
-                create_node!(ASTClass::Any(any_components))
+                Some(create_node!(ASTClass::Any(any_components)))
+            }
+            TokenClass::UnaryOperator(op) => {
+                let id = self.generate_id_node();
+                self.check_semicolon();
+                Some(create_node!(ASTClass::UnaryOperation(
+                        create_node!(ASTClass::UnaryOperator(op)),
+                        id)))
+            }
+            TokenClass::Symbol(Symbol::Semicolon) => {
+                None
             }
             _ => {
                 unexpected_token!(t);
@@ -527,15 +557,39 @@ impl<'a> Parser<'a> {
     }
 
     fn expression_ast(&mut self) -> (Box<ASTNode>) {
-        let left = self.lexer.next(true);
+        let t = self.lexer.next(true);
+        let left = match t.class
+        {
+            TokenClass::UnaryOperator(op) => {
+                let id = self.generate_id_node();
+                create_node!(ASTClass::UnaryOperation(
+                        create_node!(ASTClass::UnaryOperator(op)),
+                        id))
+            }
+            _ =>
+            {
+                self.to_node(t)
+            }
+        };
+
         let n_token = self.lexer.peek(true);
 
-        let left_node = if TokenClass::Symbol(Symbol::LeftParen) == n_token.class {
-            self.lexer.next(true);
-            let args = self.generate_args_vec();
-            create_node!(ASTClass::FuncCall(self.to_node(left), args))
-        } else {
-            self.to_node(left)
+        let left_node = match n_token.class
+        {
+            TokenClass::Symbol(Symbol::LeftParen) => {
+                self.lexer.next(true);
+                let args = self.generate_args_vec();
+                create_node!(ASTClass::FuncCall(left, args))
+            }
+            TokenClass::UnaryOperator(op) => {
+                self.lexer.next(true);
+                create_node!(ASTClass::UnaryOperation(
+                        left,
+                        create_node!(ASTClass::UnaryOperator(op))))
+            }
+            _ => {
+                left
+            }
         };
 
         let nn_token = self.lexer.peek(true);

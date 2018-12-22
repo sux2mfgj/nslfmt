@@ -16,6 +16,7 @@ pub enum ASTClass {
      */
     Block(Vec<Box<ASTNode>>),
     Operator(token::Operator),
+    UnaryOperator(token::UnaryOperator),
 
     // ----- Declare ------
     // identifire, block
@@ -90,6 +91,8 @@ pub enum ASTClass {
 
     //          operand     , operation   , operand
     Expression(Box<ASTNode>, Box<ASTNode>, Box<ASTNode>),
+    //          unary operator, expression
+    UnaryOperation(Box<ASTNode>, Box<ASTNode>),
     CPPStyleComment(String),
     CStyleComment(Vec<String>),
     Newline,
