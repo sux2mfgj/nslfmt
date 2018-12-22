@@ -26,7 +26,7 @@ pub enum ASTClass {
     // identifire, outputs, input
     FuncOut(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
     // identifire, inputs, output
-    FuncSelf(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
+    FuncSelf(Box<ASTNode>, Option<Vec<Box<ASTNode>>>, Option<Box<ASTNode>>),
 
     /*
      *  identifire, expression or Identifire
@@ -189,11 +189,16 @@ impl fmt::Display for ASTNode {
                 }
             }
             ASTClass::FuncSelf(ref id, ref input_ids, ref output) => {
-                let args = input_ids
+                let args = if let Some(inputs) = input_ids {
+                    inputs
                     .iter()
                     .map(|ident| format!("{}", ident))
                     .collect::<Vec<String>>()
-                    .join(", ");
+                    .join(", ")
+                }
+                else {
+                    return write!(f, "func_self {};\n", id);
+                };
                 match output {
                     Some(s) => {
                         return write!(f, "func_self {}({}) : {};\n", id, args, s);
