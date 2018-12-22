@@ -314,6 +314,35 @@ impl<'a> Parser<'a> {
 
                 create_node!(ASTClass::If(expr_ast, if_block, else_block))
             }
+            TokenClass::Symbol(Symbol::Any) => {
+                self.check_opening_brace();
+
+                let mut any_components = vec![];
+
+                loop {
+                    let next_t = self.lexer.peek();
+
+                    match next_t.class {
+                        TokenClass::Symbol(Symbol::ClosingBrace) => {
+                            self.lexer.next();
+                            break;
+                        }
+                        TokenClass::Symbol(Symbol::Else) => {
+                            self.lexer.next();
+                            self.check_colon();
+                            let block = self.module_block_ast();
+                            any_components.push((create_node!(ASTClass::Else), block));
+                        }
+                        _ => {
+                            let ast = self.expression_ast();
+                            self.check_colon();
+                            let block = self.module_block_ast();
+                            any_components.push((ast, block));
+                        }
+                    }
+                }
+                create_node!(ASTClass::Any(any_components))
+            }
             _ => {
                 unexpected_token!(t);
             }
@@ -660,6 +689,13 @@ impl<'a> Parser<'a> {
     fn check_right_paren(&mut self) {
         let token = self.lexer.next();
         if TokenClass::Symbol(Symbol::RightParen) != token.class {
+            unexpected_token!(token);
+        }
+    }
+
+    fn check_colon(&mut self) {
+        let token = self.lexer.next();
+        if TokenClass::Symbol(Symbol::Colon) != token.class {
             unexpected_token!(token);
         }
     }
