@@ -40,7 +40,7 @@ impl<'a> Parser<'a> {
         match token.class {
             TokenClass::Symbol(Symbol::Sharp) => self.macro_ast(),
             TokenClass::Symbol(Symbol::Declare) => self.declare_ast(),
-
+            TokenClass::Symbol(Symbol::Module) => self.module_ast(),
             TokenClass::EndOfProgram => create_node!(ASTClass::EndOfProgram),
             _ => {
                 unexpected_token!(token);
@@ -102,6 +102,102 @@ impl<'a> Parser<'a> {
             let declare_block = self.declare_block_part_ast();
             contents_in_block.push(declare_block);
         }
+    }
+
+    fn module_ast(&mut self) -> Box<ASTNode> {
+        let id_node = self.generate_id_node();
+        self.check_opening_brace();
+        let mut contents_in_block = vec![];
+        loop
+        {
+            {
+                let next = self.lexer.peek();
+                if let TokenClass::Symbol(Symbol::ClosingBrace) = next.class
+                {
+                    return create_node!(ASTClass::Module(
+                        id_node,
+                        create_node!(ASTClass::Block(contents_in_block))
+                    ));
+                }
+            }
+            contents_in_block.push(self.module_block_part_ast());
+        }
+    }
+
+    fn module_block_part_ast(&mut self) -> Box<ASTNode> {
+        let t = self.lexer.next();
+        match t.class {
+            TokenClass::Symbol(Symbol::Reg) => {
+                let mut reg_list = vec![];
+                loop {
+                    let reg_info = self.reg_definition();
+                    reg_list.push(reg_info);
+                    let token = self.lexer.next();
+                    match token.class {
+                        TokenClass::Symbol(Symbol::Semicolon) => {
+                            break;
+                        }
+                        TokenClass::Symbol(Symbol::Comma) => {
+                            continue;
+                        }
+                        _ => {
+                            unexpected_token!(token);
+                        }
+                    }
+                }
+                create_node!(ASTClass::Reg(reg_list))
+            }
+            _ => {
+                unexpected_token!(t);
+            }
+        }
+    }
+
+    fn reg_definition(
+        &mut self,
+    ) -> (Box<ASTNode>, Option<Box<ASTNode>>, Option<Box<ASTNode>>)
+     {
+        let id_node = self.generate_id_node();
+        let t = self.lexer.peek();
+        let width_ast = match t.class {
+            TokenClass::Symbol(Symbol::Semicolon) => {
+                return (id_node, None, None);
+            }
+            TokenClass::Symbol(Symbol::Comma) => {
+                return (id_node, None, None);
+            }
+            TokenClass::Symbol(Symbol::Equal) => {
+                None
+            }
+            TokenClass::Symbol(Symbol::LeftSquareBracket) => {
+                self.lexer.next();
+                let width_ast = self.expression_ast();
+                self.check_right_square_bracket();
+
+                let next_t = self.lexer.peek();
+                if TokenClass::Symbol(Symbol::Semicolon) == next_t.class
+                    || TokenClass::Symbol(Symbol::Comma) == next_t.class
+                {
+                    return (id_node, Some(width_ast), None);
+                }
+
+                if TokenClass::Symbol(Symbol::Equal) != next_t.class {
+                    unexpected_token!(next_t);
+                }
+                Some(width_ast)
+            }
+            _ => {
+                unexpected_token!(t);
+            }
+        };
+
+        let next_t = self.lexer.next();
+        if TokenClass::Symbol(Symbol::Equal) == next_t.class {
+            let expr_ast = self.expression_ast();
+            return (id_node, width_ast, Some(expr_ast));
+        }
+
+        unexpected_token!(next_t);
     }
 
     fn get_id_and_width(&mut self) -> (Box<ASTNode>, Option<Box<ASTNode>>)
