@@ -1,6 +1,5 @@
 use ast::*;
 use lexer::*;
-use std::panic;
 use token::*;
 
 pub struct Parser<'a> {
@@ -283,6 +282,37 @@ impl<'a> Parser<'a> {
                 let expr = self.expression_ast();
                 self.check_semicolon();
                 create_node!(ASTClass::Return(expr))
+            }
+            TokenClass::Symbol(Symbol::If) => {
+                self.check_left_paren();
+                let expr_ast = self.expression_ast();
+                self.check_right_paren();
+                let n_t = self.lexer.peek();
+                let if_block = if let TokenClass::Symbol(Symbol::OpeningBrace) = n_t.class
+                {
+                    self.module_block_ast()
+                }
+                else {
+                    self.module_block_part_ast()
+                };
+
+                let else_block = if TokenClass::Symbol(Symbol::Else) == self.lexer.peek().class
+                {
+                    self.lexer.next();
+                    let block = if let TokenClass::Symbol(Symbol::OpeningBrace) = n_t.class
+                    {
+                        self.module_block_ast()
+                    }
+                    else {
+                        self.module_block_part_ast()
+                    };
+                    Some(block)
+                }
+                else {
+                    None
+                };
+
+                create_node!(ASTClass::If(expr_ast, if_block, else_block))
             }
             _ => {
                 unexpected_token!(t);

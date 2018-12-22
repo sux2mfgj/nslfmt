@@ -1746,8 +1746,8 @@ mod module {
         ));
         let if_node = create_node!(ASTClass::If(
             create_node!(ASTClass::Identifire("a".to_string())),
-            assign,
-            None
+            create_node!(ASTClass::Block(vec![assign])),
+            Some(create_node!(ASTClass::Block(vec![])))
         ));
         let components = vec![if_node];
         let module = create_node!(ASTClass::Module(
