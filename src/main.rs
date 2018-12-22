@@ -1,9 +1,13 @@
+extern crate backtrace;
 extern crate getopts;
+
+use backtrace::Backtrace;
 use getopts::Options;
 
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
+use std::panic;
 use std::process;
 
 mod ast;
@@ -50,6 +54,11 @@ fn main() {
         print_version();
         process::exit(0);
     }
+
+    panic::set_hook(Box::new(|_| {
+        let bt = Backtrace::new();
+        eprintln!("{:?}", bt);
+    }));
 
     let input_file = if !matches.free.is_empty() {
         matches.free[0].clone()

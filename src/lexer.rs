@@ -37,8 +37,7 @@ impl<'a> Lexer<'a> {
         lex
     }
 
-    pub fn peek(&self) -> Token
-    {
+    pub fn peek(&self) -> Token {
         self.next_token.clone()
     }
 
@@ -60,9 +59,7 @@ impl<'a> Lexer<'a> {
                         return Some(Token::from((TokenClass::EndOfProgram, self.line)));
                     }
                 }
-                Err(e) => {
-                    panic!("{}", e)
-                }
+                Err(e) => panic!("{}", e),
             }
             self.line_buffer = String::from_utf8(buf).unwrap();
             self.iter = self

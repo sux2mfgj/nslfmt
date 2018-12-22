@@ -48,8 +48,8 @@ pub enum Symbol {
     Invoke,      // invoke
     Finish,      // finish
     Goto,        // goto
-    // TODO
-    // lack some symbols
+                 // TODO
+                 // lack some symbols
 }
 
 #[derive(Debug, Clone, PartialEq)]
