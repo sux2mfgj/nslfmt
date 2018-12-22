@@ -33,7 +33,7 @@ operator            ::= "/"
 function-args       ::= [ <identifire> { "," <identifire> }* ]
 function-return     ::= [ ":" <identifire> ]
 
-io-function-declarator  ::= <io-function> <identifire> "(" <function-args> ")" <function-return> ";"
+io-function-declarator  ::= <io-function> <identifire> [ "(" <function-args> ")" [ <function-return> ] ] ";"
 
 io-function ::= "func_in"
             |   "func_out"

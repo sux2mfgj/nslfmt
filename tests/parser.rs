@@ -1757,4 +1757,73 @@ mod module {
 
         assert_eq!(p.next_ast(), module);
     }
+
+    #[test]
+    fn macro_after_module() {
+        let mut b = "declare test {func_out enable();\n}\n#endif".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let module = create_node!(
+            ASTClass::Declare(
+                create_node!(ASTClass::Identifire("test".to_string())),
+                create_node!(ASTClass::Block(vec![
+                                             create_node!(ASTClass::FuncOut(
+                                                     create_node!(ASTClass::Identifire("enable".to_string())),
+                                                     vec![],
+                                                     None
+                                                     ))
+                ]))
+                )
+            );
+        let def = create_node!(ASTClass::MacroEndif);
+
+        assert_eq!(p.next_ast(), module);
+        assert_eq!(p.next_ast(), def);
+        assert_eq!(p.next_ast(), create_node!(ASTClass::EndOfProgram));
+    }
+
+    #[test]
+    fn func_in_without_paran() {
+        let mut b = "declare test {func_in spike_out;\n}\n#endif".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let declare = create_node!(ASTClass::Declare(
+                create_node!(ASTClass::Identifire("test".to_string())),
+                create_node!(ASTClass::Block(vec![
+                    create_node!(ASTClass::FuncIn(
+                            create_node!(ASTClass::Identifire("spike_out".to_string())),
+                            vec![],
+                            None,
+                            ))
+                ]))
+                ));
+
+        assert_eq!(p.next_ast(), declare);
+        assert_eq!(p.next_ast(), create_node!(ASTClass::MacroEndif));
+        assert_eq!(p.next_ast(), create_node!(ASTClass::EndOfProgram));
+    }
+
+    #[test]
+    fn func_out_without_paran() {
+        let mut b = "declare test {func_out spike_out;\n}\n#endif".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let declare = create_node!(ASTClass::Declare(
+                create_node!(ASTClass::Identifire("test".to_string())),
+                create_node!(ASTClass::Block(vec![
+                    create_node!(ASTClass::FuncOut(
+                            create_node!(ASTClass::Identifire("spike_out".to_string())),
+                            vec![],
+                            None,
+                            ))
+                ]))
+                ));
+
+        assert_eq!(p.next_ast(), declare);
+        assert_eq!(p.next_ast(), create_node!(ASTClass::MacroEndif));
+        assert_eq!(p.next_ast(), create_node!(ASTClass::EndOfProgram));
+    }
 }

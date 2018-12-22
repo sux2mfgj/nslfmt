@@ -39,7 +39,8 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let mut opts = Options::new();
     opts.optflag("h", "help", "print this help menu");
-    opts.optflag("V", "version", "print version");
+    opts.optflag("v", "version", "print version");
+    opts.optflag("d", "debug", "print debug info");
 
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
@@ -50,15 +51,17 @@ fn main() {
         print_usage(opts);
         process::exit(-1);
     }
-    if matches.opt_present("V") {
+    if matches.opt_present("v") {
         print_version();
         process::exit(0);
     }
 
-    panic::set_hook(Box::new(|_| {
-        let bt = Backtrace::new();
-        eprintln!("{:?}", bt);
-    }));
+    if matches.opt_present("d") {
+        panic::set_hook(Box::new(|_| {
+            let bt = Backtrace::new();
+            eprintln!("{:?}", bt);
+        }));
+    }
 
     let input_file = if !matches.free.is_empty() {
         matches.free[0].clone()

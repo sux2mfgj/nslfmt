@@ -49,19 +49,20 @@
             - [ ] blocks
                 - [ ] normal
                 - [ ] alt
-                - [ ] any
-                - [ ] if
-                - [ ] if-else
+                - [x] any
+                - [x] any-else
+                - [x] if
+                - [x] if-else
                 - [ ] seq
                 - [ ] while
                 - [ ] for
-                - [ ] func
-                - [ ] state
-                - [ ] proc
+                - [x] func
+                - [x] state
+                - [x] proc
             - [ ] label name
             - [ ] label definition
             - [ ] goto
-            - [ ] return
+            - [x] return
             - [ ] finish
             - [ ] invoke
             - [ ] generate
