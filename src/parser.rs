@@ -38,9 +38,47 @@ impl<'a> Parser<'a> {
     pub fn next_ast(&mut self) -> Box<ASTNode> {
         let token = self.lexer.next();
         match token.class {
+            TokenClass::Symbol(Symbol::Sharp) => self.macro_ast(),
             TokenClass::Symbol(Symbol::Declare) => self.declare_ast(),
+
+            TokenClass::EndOfProgram => create_node!(ASTClass::EndOfProgram),
             _ => {
                 unexpected_token!(token);
+            }
+        }
+    }
+
+    fn macro_ast(&mut self) -> Box<ASTNode> {
+        let macro_kind_token = self.lexer.next();
+        match macro_kind_token.class {
+            TokenClass::Macro(Macro::Include) => {
+                create_node!(ASTClass::MacroInclude(self.generate_path_node()))
+            }
+            TokenClass::Macro(Macro::Undef) => {
+                let id = self.generate_id_node();
+                create_node!(ASTClass::MacroUndef(id))
+            }
+            TokenClass::Macro(Macro::Ifdef) => {
+                let id = self.generate_id_node();
+                create_node!(ASTClass::MacroIfdef(id))
+            }
+            TokenClass::Macro(Macro::Ifndef) => {
+                let id = self.generate_id_node();
+                create_node!(ASTClass::MacroIfndef(id))
+            }
+            TokenClass::Macro(Macro::Endif) => {
+                create_node!(ASTClass::MacroEndif)
+            }
+            TokenClass::Symbol(Symbol::Else) => {
+                create_node!(ASTClass::MacroElse)
+            }
+            TokenClass::Macro(Macro::Define) => {
+                let id = self.generate_id_node();
+                let value = self.generate_string_until_nl();
+                create_node!(ASTClass::MacroDefine(id, value))
+            }
+            _ => {
+                unexpected_token!(macro_kind_token);
             }
         }
     }
@@ -222,6 +260,46 @@ impl<'a> Parser<'a> {
             self.check_semicolon();
             None
         }
+    }
+
+    fn generate_string_until_nl(&mut self) -> Option<String> {
+        let mut t_list: Vec<Token> = vec![];
+        loop {
+            let t = self.lexer.next();
+            match t.class {
+                TokenClass::Newline | TokenClass::EndOfProgram => {
+                    match t_list.last() {
+                        Some(ref t) => {
+                            let str_vec = t_list
+                                .iter()
+                                .map(|t| format!("{}", t))
+                                .collect::<Vec<String>>();
+                            let result = str_vec.join("");
+                            // セミコロンのトークンのfmt::Displayの実装は、"; "となっていて
+                            // 後ろに空白を入れているが、
+                            // 最後にセミコロンが来た場合のみ、
+                            // 後ろの空白を削除して、最後の余分な空白を消している
+                            if t.class == TokenClass::Symbol(Symbol::Semicolon) {
+                                return Some(result.trim_right().to_string());
+                            }
+                            return Some(result);
+                        }
+                        None => return None,
+                    }
+                }
+                _ => {
+                    t_list.push(t);
+                }
+            }
+        }
+    }
+
+    fn generate_path_node(&mut self) -> Box<ASTNode> {
+        let path_token = self.lexer.next();
+        if let TokenClass::String(id_str) = path_token.class {
+            return create_node!(ASTClass::String(id_str));
+        }
+        unexpected_token!(path_token);
     }
 
     fn check_opening_brace(&mut self) {
