@@ -156,11 +156,35 @@ impl<'a> Lexer<'a> {
                     }
                     '+' => {
                         self.iter.next();
+                        if let Some(&c_next) = self.iter.peek()
+                        {
+                            if c_next == '+'
+                            {
+                                self.iter.next();
+                                return Token::from((UnaryOperator::Increment, self.line));
+                            }
+                        }
                         return Token::from((Operator::Plus, self.line));
+                    }
+                    '-' => {
+                        self.iter.next();
+                        if let Some(&c_next) = self.iter.peek()
+                        {
+                            if c_next == '-'
+                            {
+                                self.iter.next();
+                                return Token::from((UnaryOperator::Decrement, self.line));
+                            }
+                        }
+                        return Token::from((Operator::Minus, self.line));
                     }
                     '|' => {
                         self.iter.next();
                         return Token::from((Operator::Pipe, self.line));
+                    }
+                    '!' => {
+                        self.iter.next();
+                        return Token::from((UnaryOperator::Not, self.line));
                     }
                     '\'' => {
                         self.iter.next();

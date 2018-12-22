@@ -55,7 +55,7 @@ pub enum Symbol {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Operator {
     Plus, // +
-    //Minus,      // -
+    Minus,      // -
     Asterisk, // *
     Slash,    // /
     //ShiftLeft,  // <<
@@ -71,6 +71,13 @@ pub enum Operator {
     LessEq,      // <=
     GreaterThan, // >
     LessThan,    // <
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum  UnaryOperator {
+    Increment,  // ++
+    Decrement,  // --
+    Not,        // !
 }
 
 impl fmt::Display for Operator {
@@ -110,6 +117,7 @@ pub enum TokenClass {
     // "hello.h" 等
     Symbol(Symbol),
     Operator(Operator),
+    UnaryOperator(UnaryOperator),
     Macro(Macro),
     CPPStyleComment(String),
     CStyleComment(Vec<String>),
@@ -138,6 +146,12 @@ impl From<(Symbol, usize)> for Token {
 impl From<(Operator, usize)> for Token {
     fn from(s: (Operator, usize)) -> Token {
         Token::new(TokenClass::Operator(s.0), s.1)
+    }
+}
+
+impl From<(UnaryOperator, usize)> for Token {
+    fn from(s: (UnaryOperator, usize)) -> Token {
+        Token::new(TokenClass::UnaryOperator(s.0), s.1)
     }
 }
 

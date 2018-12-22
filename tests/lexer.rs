@@ -1414,3 +1414,63 @@ fn state_00() {
     assert_eq!(l.next(true), Token::from((Symbol::OpeningBrace, 1)));
     assert_eq!(l.next(true), Token::from((Symbol::ClosingBrace, 1)));
 }
+
+#[test]
+fn logical_invert_00() {
+    let mut b = "!ok".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(l.next(true), Token::from((UnaryOperator::Not, 1)));
+    assert_eq!(
+        l.next(true),
+        Token::from((TokenClass::Identifire("ok".to_string()), 1))
+    );
+}
+
+#[test]
+fn pre_increment_00() {
+    let mut b = "++ok".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(l.next(true), Token::from((UnaryOperator::Increment, 1)));
+    assert_eq!(
+        l.next(true),
+        Token::from((TokenClass::Identifire("ok".to_string()), 1))
+    );
+}
+
+#[test]
+fn post_increment_00() {
+    let mut b = "ok++".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(
+        l.next(true),
+        Token::from((TokenClass::Identifire("ok".to_string()), 1))
+    );
+    assert_eq!(l.next(true), Token::from((UnaryOperator::Increment, 1)));
+}
+
+#[test]
+fn pre_decrement_00() {
+    let mut b = "--ok".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(l.next(true), Token::from((UnaryOperator::Decrement, 1)));
+    assert_eq!(
+        l.next(true),
+        Token::from((TokenClass::Identifire("ok".to_string()), 1))
+    );
+}
+
+#[test]
+fn post_decrement_00() {
+    let mut b = "ok--".as_bytes();
+    let mut l = Lexer::new(&mut b);
+
+    assert_eq!(
+        l.next(true),
+        Token::from((TokenClass::Identifire("ok".to_string()), 1))
+    );
+    assert_eq!(l.next(true), Token::from((UnaryOperator::Decrement, 1)));
+}
