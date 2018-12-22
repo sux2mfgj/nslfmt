@@ -5,3 +5,4 @@ authors = ["Shunsuke Mie <sux2mfgj@gmail.com>"]
 
 [dependencies]
 getopts = "0.2"
+backtrace = "0.3"

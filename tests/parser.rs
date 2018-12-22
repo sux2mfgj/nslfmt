@@ -1,13 +1,18 @@
 #[macro_use]
 extern crate nslfmt;
 
+extern crate backtrace;
+
 use nslfmt::ast::*;
 use nslfmt::lexer::*;
 use nslfmt::parser::*;
 use nslfmt::token::*;
 
+use backtrace::Backtrace;
+
 use std::fs::File;
 use std::io::BufReader;
+use std::panic;
 
 #[cfg(test)]
 mod simple_tests {
@@ -21,6 +26,13 @@ mod simple_tests {
 
         assert_eq!(p.next_ast(), create_node!(ASTClass::EndOfProgram));
     }
+}
+
+fn initialize() {
+    panic::set_hook(Box::new(|_| {
+        let bt = Backtrace::new();
+        eprintln!("{:?}", bt);
+    }));
 }
 
 #[cfg(test)]
@@ -53,8 +65,6 @@ mod declare {
             create_node!(ASTClass::Declare(
                 create_node!(ASTClass::Identifire("ok".to_string())),
                 create_node!(ASTClass::Block(vec![
-                    create_node!(ASTClass::Newline),
-                    create_node!(ASTClass::Newline),
                 ]))
             ))
         );
@@ -115,6 +125,8 @@ mod declare {
         assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block)));
     }
 
+    /*
+    // マクロは後で対応する
     #[test]
     fn macro_in_declare_00() {
         let mut b = "declare ok{ input a[2]; \nTEST_INTERFACES\n}".as_bytes();
@@ -166,6 +178,7 @@ mod declare {
 
         assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block)));
     }
+    */
 
     #[test]
     fn expression_in_width_block_01() {
@@ -245,6 +258,7 @@ mod declare {
 
     #[test]
     fn func_in() {
+        //initialize();
         let mut b = "declare ok{ input a; func_in ok(a);}".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
@@ -343,23 +357,18 @@ mod declare {
         let mut p = Parser::new(&mut l);
 
         let mut interfaces = Vec::new();
-        interfaces.push(create_node!(ASTClass::Newline));
         interfaces.push(create_node!(ASTClass::Input(
             create_node!(ASTClass::Identifire("ok".to_string())),
             None,
         )));
-        interfaces.push(create_node!(ASTClass::Newline));
         interfaces.push(create_node!(ASTClass::Input(
             create_node!(ASTClass::Identifire("ggrks".to_string())),
             None,
         )));
-        interfaces.push(create_node!(ASTClass::Newline));
         interfaces.push(create_node!(ASTClass::Output(
             create_node!(ASTClass::Identifire("jk".to_string())),
             None,
         )));
-        interfaces.push(create_node!(ASTClass::Newline));
-        interfaces.push(create_node!(ASTClass::Newline));
 
         let args1 = vec![create_node!(ASTClass::Identifire("ok".to_string()))];
         let func1 = create_node!(ASTClass::FuncIn(
@@ -376,9 +385,7 @@ mod declare {
         ));
 
         interfaces.push(func1);
-        interfaces.push(create_node!(ASTClass::Newline));
         interfaces.push(func2);
-        interfaces.push(create_node!(ASTClass::Newline));
 
         assert_eq!(
             p.next_ast(),
@@ -455,10 +462,8 @@ mod macros {
         let ifndef = create_node!(ASTClass::MacroIfndef(create_node!(
             ASTClass::Identifire("hello".to_string())
         )));
-        let nl = create_node!(ASTClass::Newline);
         let endif = create_node!(ASTClass::MacroEndif);
         assert_eq!(p.next_ast(), ifndef);
-        assert_eq!(p.next_ast(), nl);
         assert_eq!(p.next_ast(), endif);
     }
 
@@ -473,11 +478,8 @@ mod macros {
         )));
         let endif = create_node!(ASTClass::MacroEndif);
         let melse = create_node!(ASTClass::MacroElse);
-        let nl = create_node!(ASTClass::Newline);
         assert_eq!(p.next_ast(), ifndef);
-        assert_eq!(p.next_ast(), nl);
         assert_eq!(p.next_ast(), melse);
-        assert_eq!(p.next_ast(), nl);
         assert_eq!(p.next_ast(), endif);
     }
 

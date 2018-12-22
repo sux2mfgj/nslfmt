@@ -1,4 +1,4 @@
-TEST_TARGET			:= parser_test
+TEST_TARGET			:= parser
 LOCAL_TEST_TARGET	:= module::wire_0
 INOTIFY				:= inotifywait -e close_write `find ./{src,tests}`
 

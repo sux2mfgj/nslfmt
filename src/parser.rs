@@ -66,33 +66,39 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn get_id_and_width(&mut self) -> (Box<ASTNode>, Option<Box<ASTNode>>)
+    {
+        let id_node = self.generate_id_node();
+        match self.lexer.next().class {
+            TokenClass::Symbol(Symbol::Semicolon) => {
+                (id_node, None)
+            }
+            TokenClass::Symbol(Symbol::LeftSquareBracket) => {
+                let expr = self.expression_ast();
+                self.check_right_square_bracket();
+                self.check_semicolon();
+                (id_node, Some(expr))
+            }
+            _ => {
+                not_implemented!();
+            }
+        }
+    }
+
     fn declare_block_part_ast(&mut self) -> Box<ASTNode> {
         let t = self.lexer.next();
-        match t.class {
-            TokenClass::Newline => {
-                return create_node!(ASTClass::Newline);
-            }
+        return match t.class {
             TokenClass::Symbol(Symbol::Input) => {
-                let id_node = self.generate_id_node();
-                return match self.lexer.next().class {
-                    TokenClass::Symbol(Symbol::Semicolon) => {
-                        create_node!(ASTClass::Input(
-                                id_node,
-                                None
-                                ))
-                    }
-                    TokenClass::Symbol(Symbol::LeftSquareBracket) => {
-                        let expr = self.expression_ast();
-                        self.check_right_square_bracket();
-                        self.check_semicolon();
-                        create_node!(ASTClass::Input(
-                                id_node,
-                                Some(expr)))
-                    }
-                    _ => {
-                        not_implemented!();
-                    }
-                }
+                let (id_node, width) = self.get_id_and_width();
+                create_node!(ASTClass::Input(id_node, width))
+            }
+            TokenClass::Symbol(Symbol::Output) => {
+                let (id_node, width) = self.get_id_and_width();
+                create_node!(ASTClass::Output(id_node, width))
+            }
+            TokenClass::Symbol(Symbol::InOut) => {
+                let (id_node, width) = self.get_id_and_width();
+                create_node!(ASTClass::InOut(id_node, width))
             }
             TokenClass::Symbol(Symbol::FuncIn) => {
                 let id_token = self.lexer.next();
@@ -100,21 +106,34 @@ impl<'a> Parser<'a> {
                     self.check_left_paren();
                     let args_vec = self.generate_args_vec();
                     let return_port = self.generate_func_return();
-                    /*
-                    return create_node!(ASTClass::FuncIn(
+                    create_node!(ASTClass::FuncIn(
                         create_node!(ASTClass::Identifire(id_str.to_string())),
                         args_vec,
                         return_port,
-                    ));
-                    */
-                    not_implemented!();
+                    ))
                 } else {
                     unexpected_token!(id_token);
                 }
-
+            }
+            TokenClass::Symbol(Symbol::FuncOut) => {
+                let t = self.lexer.next();
+                if let TokenClass::Identifire(id) = t.class {
+                    self.check_left_paren();
+                    let args_vec = self.generate_args_vec();
+                    let return_port = self.generate_func_return();
+                    create_node!(ASTClass::FuncOut(
+                        create_node!(ASTClass::Identifire(id.to_string())),
+                        args_vec,
+                        return_port,
+                    ))
+                }
+                else
+                {
+                    unexpected_token!(t);
+                }
             }
             _ => {
-                not_implemented!();
+                unexpected_token!(t);
             }
         }
     }
@@ -187,9 +206,10 @@ impl<'a> Parser<'a> {
     }
 
     fn generate_func_return(&mut self) -> Option<Box<ASTNode>> {
-        let colon_token = self.lexer.next();
+        let colon_token = self.lexer.peek();
 
         return if TokenClass::Symbol(Symbol::Colon) == colon_token.class {
+            self.lexer.next();
             let port_id = self.lexer.next();
 
             if let TokenClass::Identifire(id_str) = port_id.class {

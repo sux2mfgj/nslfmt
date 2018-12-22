@@ -6,10 +6,10 @@ top-declarator  ::= <declare-definition>
 
 declare-definition ::= "declare" <identifire> "{" { <interfaces-definition> }* "}"
 
-interfaces-definition::=    <io-width-definition>
+interfaces-definition   ::=    <io-width-definition>
                         |   <io-function-declarator>
 
-io-wire-declarator  ::= <io-wire> <identifire> <width-defitinion> ";"
+io-width-definition ::= <io-wire> <identifire> <width-defitinion> ";"
 
 io-wire     ::= "input"
             |   "inout"
