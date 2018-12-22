@@ -1,7 +1,7 @@
 use ast::*;
 use lexer::*;
-use token::*;
 use std::panic;
+use token::*;
 
 pub struct Parser<'a> {
     lexer: &'a mut Lexer<'a>,
@@ -66,12 +66,8 @@ impl<'a> Parser<'a> {
                 let id = self.generate_id_node();
                 create_node!(ASTClass::MacroIfndef(id))
             }
-            TokenClass::Macro(Macro::Endif) => {
-                create_node!(ASTClass::MacroEndif)
-            }
-            TokenClass::Symbol(Symbol::Else) => {
-                create_node!(ASTClass::MacroElse)
-            }
+            TokenClass::Macro(Macro::Endif) => create_node!(ASTClass::MacroEndif),
+            TokenClass::Symbol(Symbol::Else) => create_node!(ASTClass::MacroElse),
             TokenClass::Macro(Macro::Define) => {
                 let id = self.generate_id_node();
                 let value = self.generate_string_until_nl();
@@ -91,12 +87,11 @@ impl<'a> Parser<'a> {
         loop {
             {
                 let next = &self.lexer.peek();
-                if let TokenClass::Symbol(Symbol::ClosingBrace) = next.class
-                {
+                if let TokenClass::Symbol(Symbol::ClosingBrace) = next.class {
                     return create_node!(ASTClass::Declare(
-                            id_node,
-                            create_node!(ASTClass::Block(contents_in_block))
-                            ));
+                        id_node,
+                        create_node!(ASTClass::Block(contents_in_block))
+                    ));
                 }
             }
             let declare_block = self.declare_block_part_ast();
@@ -108,12 +103,10 @@ impl<'a> Parser<'a> {
         let id_node = self.generate_id_node();
         self.check_opening_brace();
         let mut contents_in_block = vec![];
-        loop
-        {
+        loop {
             {
                 let next = self.lexer.peek();
-                if let TokenClass::Symbol(Symbol::ClosingBrace) = next.class
-                {
+                if let TokenClass::Symbol(Symbol::ClosingBrace) = next.class {
                     return create_node!(ASTClass::Module(
                         id_node,
                         create_node!(ASTClass::Block(contents_in_block))
@@ -147,16 +140,158 @@ impl<'a> Parser<'a> {
                 }
                 create_node!(ASTClass::Reg(reg_list))
             }
+            TokenClass::Symbol(Symbol::Wire) => {
+                let mut wire_list = vec![];
+                loop {
+                    let next = self.lexer.next();
+                    match next.class {
+                        TokenClass::Symbol(Symbol::Semicolon) => {
+                            return create_node!(ASTClass::Wire(wire_list));
+                        }
+                        TokenClass::Symbol(Symbol::Comma) => {
+                            continue;
+                        }
+                        TokenClass::Identifire(id) => {
+                            let id_node = create_node!(ASTClass::Identifire(id));
+                            if TokenClass::Symbol(Symbol::LeftSquareBracket)
+                                == self.lexer.peek().class
+                            {
+                                self.lexer.next();
+                                let width_ast = self.expression_ast();
+                                self.check_right_square_bracket();
+
+                                wire_list.push((id_node, Some(width_ast)));
+                            } else {
+                                wire_list.push((id_node, None));
+                            }
+                        }
+                        _ => {
+                            unexpected_token!(next);
+                        }
+                    }
+                }
+            }
+            TokenClass::Symbol(Symbol::Mem) => {
+                let mut defines = vec![];
+                loop {
+                    let mem_info = self.mem_definition();
+                    defines.push(mem_info);
+                    let next = self.lexer.next();
+                    match next.class {
+                        TokenClass::Symbol(Symbol::Semicolon) => {
+                            break;
+                        }
+                        TokenClass::Symbol(Symbol::Comma) => {
+                            continue;
+                        }
+                        _ => {
+                            unexpected_token!(next);
+                        }
+                    }
+                }
+                create_node!(ASTClass::Mem(defines))
+            }
+            // for behavior
+            TokenClass::Identifire(id) => {
+                let id_node = create_node!(ASTClass::Identifire(id));
+                let next_t = self.lexer.next();
+                match next_t.class {
+                    TokenClass::Symbol(Symbol::Equal) => {
+                        let expr = self.expression_ast();
+                        self.check_semicolon();
+                        create_node!(ASTClass::Assign(id_node, expr))
+                    }
+                    TokenClass::Symbol(Symbol::RegAssign) => {
+                        let expr = self.expression_ast();
+                        self.check_semicolon();
+                        create_node!(ASTClass::RegAssign(id_node, expr))
+                    }
+                    TokenClass::Symbol(Symbol::LeftParen) => {
+                        let args = self.generate_args_vec();
+                        self.check_semicolon();
+                        create_node!(ASTClass::FuncCall(id_node, args,))
+                    }
+                    _ => {
+                        unexpected_token!(next_t);
+                    }
+                }
+            }
+            TokenClass::Symbol(Symbol::ProcName) => {
+                let id_node = self.generate_id_node();
+                self.check_left_paren();
+                let args_vec = self.generate_args_vec();
+                self.check_semicolon();
+                create_node!(ASTClass::ProcName(id_node, args_vec,))
+            }
             _ => {
                 unexpected_token!(t);
             }
         }
     }
 
+    fn mem_definition(
+        &mut self,
+    ) -> (Box<ASTNode>,
+            Box<ASTNode>,
+            Option<Box<ASTNode>>,
+            Option<Vec<Box<ASTNode>>>) {
+        let id_node = self.generate_id_node();
+        self.check_left_square_bracket();
+        let width_ast = self.expression_ast();
+        self.check_right_square_bracket();
+
+        let mut width_ast2: Option<Box<ASTNode>> = None;
+
+        let t = self.lexer.peek();
+        if TokenClass::Symbol(Symbol::Semicolon) == t.class {
+            return (id_node, width_ast, None, None);
+        }
+
+        if TokenClass::Symbol(Symbol::LeftSquareBracket) == t.class {
+            self.lexer.next();
+            let w_ast = self.expression_ast();
+            width_ast2 = Some(w_ast);
+            self.check_right_square_bracket();
+        }
+
+        let next = self.lexer.peek();
+        if TokenClass::Symbol(Symbol::Equal) == next.class {
+            self.lexer.next();
+            let initial_values = self.mem_initialize_block();
+            return (id_node, width_ast, width_ast2, Some(initial_values));
+        }
+        else {
+            return (id_node, width_ast, width_ast2, None);
+        }
+    }
+
+    fn mem_initialize_block(&mut self) -> Vec<Box<ASTNode>> {
+        self.check_opening_brace();
+        let mut contents_in_block = vec![];
+        loop {
+            let next = self.lexer.next();
+            match next.class {
+                TokenClass::Symbol(Symbol::ClosingBrace) => {
+                    break;
+                }
+                TokenClass::Number(num) => {
+                    contents_in_block.push(create_node!(ASTClass::Number(num)));
+                }
+                TokenClass::Symbol(Symbol::Comma) => {
+                    continue;
+                }
+                _ => {
+                    unexpected_token!(next);
+                }
+            }
+        }
+        contents_in_block
+    }
+
+
     fn reg_definition(
         &mut self,
-    ) -> (Box<ASTNode>, Option<Box<ASTNode>>, Option<Box<ASTNode>>)
-     {
+    ) -> (Box<ASTNode>, Option<Box<ASTNode>>, Option<Box<ASTNode>>) {
         let id_node = self.generate_id_node();
         let t = self.lexer.peek();
         let width_ast = match t.class {
@@ -166,9 +301,7 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::Comma) => {
                 return (id_node, None, None);
             }
-            TokenClass::Symbol(Symbol::Equal) => {
-                None
-            }
+            TokenClass::Symbol(Symbol::Equal) => None,
             TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                 self.lexer.next();
                 let width_ast = self.expression_ast();
@@ -200,13 +333,10 @@ impl<'a> Parser<'a> {
         unexpected_token!(next_t);
     }
 
-    fn get_id_and_width(&mut self) -> (Box<ASTNode>, Option<Box<ASTNode>>)
-    {
+    fn get_id_and_width(&mut self) -> (Box<ASTNode>, Option<Box<ASTNode>>) {
         let id_node = self.generate_id_node();
         match self.lexer.next().class {
-            TokenClass::Symbol(Symbol::Semicolon) => {
-                (id_node, None)
-            }
+            TokenClass::Symbol(Symbol::Semicolon) => (id_node, None),
             TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                 let expr = self.expression_ast();
                 self.check_right_square_bracket();
@@ -260,48 +390,51 @@ impl<'a> Parser<'a> {
                         args_vec,
                         return_port,
                     ))
-                }
-                else
-                {
+                } else {
                     unexpected_token!(t);
                 }
             }
             _ => {
                 unexpected_token!(t);
             }
-        }
+        };
     }
 
-    fn to_node(& self, t: Token) -> Box<ASTNode>
-    {
-        return match t.class
-        {
-            TokenClass::Number(num) => {
-                create_node!(ASTClass::Number(num))
-            }
-            TokenClass::Identifire(id) => {
-                create_node!(ASTClass::Identifire(id))
-            }
+    fn to_node(&self, t: Token) -> Box<ASTNode> {
+        return match t.class {
+            TokenClass::Number(num) => create_node!(ASTClass::Number(num)),
+            TokenClass::Identifire(id) => create_node!(ASTClass::Identifire(id)),
             _ => {
                 unexpected_token!(t);
             }
-        }
-
+        };
     }
 
     fn expression_ast(&mut self) -> (Box<ASTNode>) {
         let left = self.lexer.next();
-        if let TokenClass::Operator(op) = self.lexer.peek().class
+        let n_token = self.lexer.peek();
+
+        let left_node = if TokenClass::Symbol(Symbol::LeftParen) == n_token.class
         {
             self.lexer.next();
+            let args = self.generate_args_vec();
+            create_node!(ASTClass::FuncCall(self.to_node(left), args))
+        }
+        else
+        {
+            self.to_node(left)
+        };
+
+        let nn_token = self.lexer.peek();
+        if let TokenClass::Operator(op) = nn_token.class {
+            self.lexer.next();
             return create_node!(ASTClass::Expression(
-                    self.to_node(left),
+                    left_node,
                     create_node!(ASTClass::Operator(op)),
                     self.expression_ast()
                     ));
-
         }
-        self.to_node(left)
+        left_node
     }
 
     fn generate_id_node(&mut self) -> Box<ASTNode> {
@@ -355,7 +488,7 @@ impl<'a> Parser<'a> {
         } else {
             self.check_semicolon();
             None
-        }
+        };
     }
 
     fn generate_string_until_nl(&mut self) -> Option<String> {
@@ -412,6 +545,13 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn check_left_square_bracket(&mut self) {
+        let token = self.lexer.next();
+        if TokenClass::Symbol(Symbol::LeftSquareBracket) != token.class {
+            unexpected_token!(token);
+        }
+    }
+
     fn check_semicolon(&mut self) {
         let token = self.lexer.next();
         if TokenClass::Symbol(Symbol::Semicolon) != token.class {
@@ -422,6 +562,13 @@ impl<'a> Parser<'a> {
     fn check_left_paren(&mut self) {
         let token = self.lexer.next();
         if TokenClass::Symbol(Symbol::LeftParen) != token.class {
+            unexpected_token!(token);
+        }
+    }
+
+    fn check_right_paren(&mut self) {
+        let token = self.lexer.next();
+        if TokenClass::Symbol(Symbol::RightParen) != token.class {
             unexpected_token!(token);
         }
     }
