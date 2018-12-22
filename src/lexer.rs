@@ -38,16 +38,14 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn peek(&mut self, skip_nl: bool) -> Token {
-        if skip_nl
-        {
+        if skip_nl {
             self.skip_nl();
         }
         self.next_token.clone()
     }
 
     pub fn next(&mut self, skip_nl: bool) -> Token {
-        if skip_nl
-        {
+        if skip_nl {
             self.skip_nl();
         }
 
@@ -56,10 +54,8 @@ impl<'a> Lexer<'a> {
         t
     }
 
-    fn skip_nl(&mut self)
-    {
-        while self.next_token.class == TokenClass::Newline
-        {
+    fn skip_nl(&mut self) {
+        while self.next_token.class == TokenClass::Newline {
             self.next_token = self.generate_token();
         }
     }
@@ -278,7 +274,7 @@ impl<'a> Lexer<'a> {
                         let before_line = self.line;
                         self.line += 1;
                         self.iter.next();
-                        return Token::from((TokenClass::Newline, before_line))
+                        return Token::from((TokenClass::Newline, before_line));
                     }
                     ' ' | '\t' => {
                         self.iter.next();
