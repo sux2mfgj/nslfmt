@@ -15,7 +15,7 @@ io-wire     ::= "input"
             |   "inout"
             |   "output"
 
-width-definition ::= [ "[" <width-expression> "]" ]
+width-definition ::= {[ "[" <width-expression> "]" ]}*
 
 width-expression    ::= <number>
                     |   <identifire>

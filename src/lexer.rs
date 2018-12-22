@@ -16,12 +16,12 @@ pub struct Lexer<'a> {
     reader: &'a mut BufRead,
     line_buffer: String,
     iter: Peekable<IntoIter<char>>,
-    next_token: Option<Token>,
+    next_token: Token,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new<T: BufRead>(reader: &'a mut T) -> Lexer<'a> {
-        Lexer {
+        let mut lex = Lexer {
             line: 1,
             reader: reader,
             line_buffer: "".to_string(),
@@ -31,39 +31,21 @@ impl<'a> Lexer<'a> {
                 .collect::<Vec<_>>()
                 .into_iter()
                 .peekable(),
-            next_token: None,
-        }
+            next_token: Token::from((TokenClass::Newline, 1)),
+        };
+        lex.next();
+        lex
     }
 
-    pub fn peek(&mut self, is_pass_nl: bool) -> Option<&Token>
+    pub fn peek(&self) -> Token
     {
-        if self.next_token.is_none()
-        {
-            let t = self.generate_token(is_pass_nl);
-            self.next_token = Some(t);
-        }
-        else if self.next_token.as_ref().unwrap().class == TokenClass::Newline && is_pass_nl
-        {
-            let t = self.generate_token(is_pass_nl);
-            self.next_token = Some(t);
-        }
-
-        self.next_token.as_ref()
+        self.next_token.clone()
     }
 
-    pub fn next(&mut self, is_pass_nl: bool) -> Token {
-        if let Some(token) = self.next_token.take()
-        {
-            return if token.class == TokenClass::Newline && is_pass_nl
-            {
-                self.generate_token(is_pass_nl)
-            }
-            else
-            {
-                token
-            };
-        }
-        self.generate_token(is_pass_nl)
+    pub fn next(&mut self) -> Token {
+        let ret_token = self.next_token.clone();
+        self.next_token = self.generate_token();
+        ret_token
     }
 
     /*
@@ -94,7 +76,7 @@ impl<'a> Lexer<'a> {
         None
     }
 
-    fn generate_token(&mut self, is_pass_nl: bool) -> Token {
+    fn generate_token(&mut self) -> Token {
         loop {
             if let Some(t) = self.supply_buffer() {
                 return t;
@@ -279,13 +261,8 @@ impl<'a> Lexer<'a> {
                         return Token::from((TokenClass::String(name), self.line));
                     }
                     '\n' => {
-                        let line: usize = self.line;
                         self.line += 1;
                         self.iter.next();
-                        if is_pass_nl {
-                            continue;
-                        }
-                        return Token::from((TokenClass::Newline, line));
                     }
                     ' ' | '\t' => {
                         self.iter.next();
@@ -420,7 +397,6 @@ impl<'a> Lexer<'a> {
             self.iter.next();
             match c_next {
                 '\n' => {
-                    astarisc_flag = false;
                     //word.push_str(&c_next.to_string());
                     return Some(CommentResult(word, CommentState::Continue));
                 }
@@ -434,7 +410,6 @@ impl<'a> Lexer<'a> {
                         return Some(CommentResult(word, CommentState::Finished));
                     }
                     word.push_str(&c_next.to_string());
-                    astarisc_flag = false;
                 }
                 _ => {
                     astarisc_flag = false;
