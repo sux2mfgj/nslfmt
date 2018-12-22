@@ -40,6 +40,12 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::Sharp) => self.macro_ast(),
             TokenClass::Symbol(Symbol::Declare) => self.declare_ast(),
             TokenClass::Symbol(Symbol::Module) => self.module_ast(),
+            TokenClass::CPPStyleComment(comment) => {
+                create_node!(ASTClass::CPPStyleComment(comment))
+            }
+            TokenClass::CStyleComment(list) => {
+                create_node!(ASTClass::CStyleComment(list))
+            }
             TokenClass::EndOfProgram => create_node!(ASTClass::EndOfProgram),
             _ => {
                 unexpected_token!(token);
