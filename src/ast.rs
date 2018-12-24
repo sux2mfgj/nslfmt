@@ -132,7 +132,7 @@ impl fmt::Display for ASTNode {
                 return write!(f, "{}", op);
             }
             ASTClass::Expression(ref operand1, ref operator, ref operand2) => {
-                return write!(f, "{} {} {}", operand1, operator, operand2)
+                write!(f, "{} {} {}", operand1, operator, operand2)
             }
             ASTClass::Wire(ref list) => {
                 let id_list: Vec<String> = list

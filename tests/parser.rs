@@ -1494,6 +1494,35 @@ mod module {
     }
 
     #[test]
+    fn any_03() {
+        let mut b =
+            "module test { any{ a == b: {} } }"
+                .as_bytes();
+
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let any_comps = vec![
+            (
+                create_node!(ASTClass::Expression(
+                        create_node!(ASTClass::Identifire("a".to_string())),
+                        create_node!(ASTClass::Operator(Operator::Equal)),
+                        create_node!(ASTClass::Identifire("b".to_string())),
+                        )),
+                create_node!(ASTClass::Block(vec![]))
+            ),
+        ];
+        let components = vec![create_node!(ASTClass::Any(any_comps))];
+
+        let module = create_node!(ASTClass::Module(
+                create_node!(ASTClass::Identifire("test".to_string())),
+                create_node!(ASTClass::Block(components))
+                ));
+
+        assert_eq!(p.next_ast(), module);
+    }
+
+    #[test]
     fn any_else_00() {
         let mut b = "module test { reg a = 0; any {a : {} else: {}} }".as_bytes();
         let mut l = Lexer::new(&mut b);

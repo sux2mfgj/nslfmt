@@ -1,16 +1,16 @@
 TEST_TARGET			:= parser
 LOCAL_TEST_TARGET	:= # module::wire_0
-INOTIFY				:= inotifywait -e close_write `find ./{src,tests}`
-
+SRC_TESTS			:= $(shell find ./src) $(shell find ./tests)
+INOTIFY				:= inotifywait -e close_write $(SRC_TESTS)
 
 build:
 	cargo build
 
 autobuild:
-	while inotifywait -e close_write `find ./{src,tests}`; do make build && make test; done
+	while $(INOTIFY); do make build && make test; done
 
 auto_unittest:
-	while inotifywait -e close_write `find ./{src,tests}`; do make build && make test_module TEST_TARGET=$(TEST_TARGET); done
+	while $(INOTIFY); do make build && make test_module TEST_TARGET=$(TEST_TARGET); done
 
 test_local_auto:
 	while $(INOTIFY); do make build && make test_local TEST_TARGET=$(TEST_TARGET) LOCAL_TEST_TARGET=$(LOCAL_TEST_TARGET); done

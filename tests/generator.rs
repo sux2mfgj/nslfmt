@@ -318,6 +318,32 @@ fn any_00() {
 }
 
 #[test]
+fn any_01() {
+    let mut b =
+        "module test {
+            any
+            {
+                a == b:
+                {
+                    d = d + e;
+                }
+            }
+        }"
+        .as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let p = Parser::new(&mut l);
+
+    let mut io = Cursor::new(Vec::new());
+    {
+        let mut g = Generator::new(p, &mut io);
+        g.output_node().unwrap();
+    }
+    let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+    let ans ="module test\n{\n    any\n{\na == b:\n{\n    d = d + e;\n}\n}\n}\n".to_string();
+    assert_eq!(out, ans);
+}
+
+#[test]
 fn comment_01() {
     let mut b = "// hello".as_bytes();
     let mut l = Lexer::new(&mut b);

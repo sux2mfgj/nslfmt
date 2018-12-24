@@ -83,11 +83,41 @@ pub enum  UnaryOperator {
 impl fmt::Display for Operator {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Operator::Slash => {
-                return write!(f, "/");
+            Operator::Plus => {
+                write!(f, "+")
             }
-            _ => {
-                panic!("the operator ({}) is not implemented yet", self);
+            Operator::Minus => {
+                write!(f, "-")
+            }
+            Operator::Asterisk => {
+                write!(f, "*")
+            }
+            Operator::Slash => {
+                write!(f, "/")
+            }
+            Operator::And => {
+                write!(f, "&")
+            }
+            Operator::Pipe => {
+                write!(f, "|")
+            }
+            Operator::LogicAnd=> {
+                write!(f, "&")
+            }
+            Operator::Equal => {
+                write!(f, "==")
+            }
+            Operator::LessEq => {
+                write!(f, "<=")
+            }
+            Operator::GreaterEq => {
+                write!(f, ">=")
+            }
+            Operator::LessThan => {
+                write!(f, "<")
+            }
+            Operator::GreaterThan => {
+                write!(f, ">")
             }
         }
     }
@@ -205,9 +235,6 @@ impl fmt::Display for Token {
             }
             TokenClass::Symbol(Symbol::Semicolon) => {
                 return write!(f, "; ");
-            }
-            TokenClass::Operator(Operator::Slash) => {
-                return write!(f, " / ");
             }
             //TODO
             _ => {
