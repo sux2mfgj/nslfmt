@@ -149,6 +149,9 @@ impl fmt::Display for ASTNode {
                 let def_str = id_list.join(", ");
                 return write!(f, "wire {};\n", def_str);
             }
+            ASTClass::Else => {
+                write!(f, "else")
+            }
             ASTClass::Input(ref id, ref expr) => match expr {
                 Some(width) => {
                     return write!(f, "input {}[{}];\n", id, width);

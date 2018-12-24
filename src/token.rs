@@ -236,6 +236,9 @@ impl fmt::Display for Token {
             TokenClass::Symbol(Symbol::Semicolon) => {
                 return write!(f, "; ");
             }
+            TokenClass::Operator(ref op) => {
+                write!(f, " {} ", op)
+            }
             //TODO
             _ => {
                 panic!(
