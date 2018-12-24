@@ -129,7 +129,13 @@ impl fmt::Display for ASTNode {
                 return write!(f, "\"{}\"", path);
             }
             ASTClass::Operator(ref op) => {
-                return write!(f, "{}", op);
+                write!(f, "{}", op)
+            }
+            ASTClass::UnaryOperator(ref uop) => {
+                write!(f, "{}", uop)
+            }
+            ASTClass::UnaryOperation(ref a, ref b) => {
+                write!(f, "{}{}", a, b)
             }
             ASTClass::Expression(ref operand1, ref operator, ref operand2) => {
                 write!(f, "{} {} {}", operand1, operator, operand2)
@@ -251,6 +257,9 @@ impl fmt::Display for ASTNode {
                         ASTClass::Identifire(ref id) => {
                             double_newline_flag = false;
                             list_str.push_str(&format!("{}{}\n", nest_tabs, id));
+                        }
+                        ASTClass::UnaryOperation(ref a, ref b) => {
+                            list_str.push_str(&format!("{}{}{};\n", nest_tabs, a, b));
                         }
                         _ => {
                             double_newline_flag = false;

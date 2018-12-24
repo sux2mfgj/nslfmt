@@ -123,6 +123,25 @@ impl fmt::Display for Operator {
     }
 }
 
+impl fmt::Display for UnaryOperator {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            UnaryOperator::Not => {
+                write!(f, "!")
+            }
+            UnaryOperator::Increment => {
+                write!(f, "++")
+            }
+            UnaryOperator::Decrement => {
+                write!(f, "--")
+            }
+            _ => {
+                panic!("not yet implemented");
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Macro {
     Include, // #include
