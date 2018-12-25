@@ -8,11 +8,18 @@ macro_rules! not_implemented {
     };
 }
 
+macro_rules! get_top {
+    ($t:ident) => {
+        $t.generate().pop_front().unwrap()
+    };
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum ASTClass {
     Identifire(String),
     Number(String),
     String(String),
+    BitSlice(Box<ASTNode>, Option<Box<ASTNode>>),
     /*
      *  block
      *  e.g.
@@ -99,6 +106,8 @@ pub enum ASTClass {
 
     //          operand     , operation   , operand
     Expression(Box<ASTNode>, Box<ASTNode>, Box<ASTNode>),
+    //              expr        , bitslice
+    BitslicedExpr(Box<ASTNode>, Box<ASTNode>),
     //          unary operator, expression
     UnaryOperation(Box<ASTNode>, Box<ASTNode>),
     CPPStyleComment(String),
@@ -137,7 +146,8 @@ impl ASTNode {
                         }
                         //TODO
                         _ => {
-                            list.push_back(format!("{};", c.generate().pop_front().unwrap()));
+//                             list.push_back(format!("{};", c.generate().pop_front().unwrap()));
+                            list.push_back(format!("{};", get_top!(c)));
                         }
                     }
                 }
@@ -187,10 +197,16 @@ impl ASTNode {
                 list.push_back(format!("{}({})", id, arg_str));
             }
             ASTClass::Number(ref num) => {
-                not_implemented!();
+                list.push_back(format!("{}", num));
             }
             ASTClass::String(ref id) => {
                 not_implemented!();
+            }
+            ASTClass::BitSlice(ref msb, ref some_lsb) => {
+                not_implemented!();
+            }
+            ASTClass::BitslicedExpr(ref expr, ref bitslice) => {
+                list.push_back(format!("{}[{}]", get_top!(expr), get_top!(bitslice)));
             }
             ASTClass::FuncIn(ref id, ref args, ref result) => {
                 not_implemented!();
@@ -211,7 +227,17 @@ impl ASTNode {
                 not_implemented!();
             }
             ASTClass::Wire(ref contents) => {
-                not_implemented!();
+                let l: Vec<String> = contents
+                    .iter()
+                    .map(|ref r| {
+                        let mut def = format!("{}", r.0);
+                        if let Some(ref width) = r.1 {
+                            def.push_str(&format!("[{}]", get_top!(width)));
+                        }
+                        return def;
+                    })
+                .collect();
+                list.push_back(format!("wire {}", l.join(", ")));
             }
             ASTClass::Reg(ref contents) => {
                 let l: Vec<String> = contents
@@ -219,7 +245,7 @@ impl ASTNode {
                     .map(|ref r| {
                         let mut define = format!("{}", r.0);
                         if let Some(ref width) = r.1 {
-                            define.push_str(&format!("[{}]", width))
+                            define.push_str(&format!("[{}]", get_top!(width)))
                         }
                         if let Some(ref init) = r.2 {
                             define.push_str(&format!(" = {}", init));
@@ -240,8 +266,12 @@ impl ASTNode {
             }
             ASTClass::ProcName(ref id, ref args) => {not_implemented!();}
             ASTClass::StateName(ref id) => {not_implemented!();}
-            ASTClass::Assign(ref id, ref expr) => {not_implemented!();}
-            ASTClass::RegAssign(ref id, ref expr) => {not_implemented!();}
+            ASTClass::Assign(ref id, ref expr) => {
+                list.push_back(format!("{} = {}", id, get_top!(expr)));
+            }
+            ASTClass::RegAssign(ref id, ref expr) => {
+                list.push_back(format!("{} := {}", id, expr));
+            }
             ASTClass::Func(ref id, ref func, ref block) => {not_implemented!();}
             ASTClass::Return(ref value) => {not_implemented!();}
             ASTClass::State(ref id, ref block) => {not_implemented!();}
@@ -256,7 +286,7 @@ impl ASTNode {
                 not_implemented!();
             }
             ASTClass::UnaryOperation(ref a, ref b) => {
-                not_implemented!();
+                list.push_back(format!("{}{}", a, b));
             }
             ASTClass::MacroDefine(ref id, ref value) => {not_implemented!();}
             ASTClass::MacroInclude(ref path) => {

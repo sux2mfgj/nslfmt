@@ -207,11 +207,6 @@ impl<'a> Parser<'a> {
                 match next_t.class {
                     TokenClass::Symbol(Symbol::Equal) => {
                         let expr = self.expression_ast();
-
-                        if let TokenClass::Symbol(Symbol::LeftSquareBracket) = self.lexer.peek(true).class
-                        {
-
-                        }
                         self.check_semicolon();
                         Some(create_node!(ASTClass::Assign(id_node, expr)))
                     }
@@ -556,7 +551,22 @@ impl<'a> Parser<'a> {
         };
     }
 
+    fn bit_slice(&mut self) -> Box<ASTNode> {
+        let msb = self.expression_ast();
+        if let TokenClass::Symbol(Symbol::Colon) = self.lexer.peek(true).class
+        {
+            self.lexer.next(true);
+            let lsb = self.expression_ast();
+            create_node!(ASTClass::BitSlice(msb, Some(lsb)))
+        }
+        else
+        {
+            msb
+        }
+    }
+
     fn expression_ast(&mut self) -> (Box<ASTNode>) {
+        //xxx have to rafactor
         let t = self.lexer.next(true);
         let left = match t.class
         {
@@ -580,6 +590,12 @@ impl<'a> Parser<'a> {
                 self.lexer.next(true);
                 let args = self.generate_args_vec();
                 create_node!(ASTClass::FuncCall(left, args))
+            }
+            TokenClass::Symbol(Symbol::LeftSquareBracket) => {
+                self.lexer.next(true);
+                let width_expr = self.bit_slice();
+                self.check_right_square_bracket();
+                create_node!(ASTClass::BitslicedExpr(left, width_expr))
             }
             TokenClass::UnaryOperator(op) => {
                 self.lexer.next(true);

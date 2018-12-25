@@ -82,6 +82,7 @@ expression              ::= <number>
                         |   <identifire>
                         |   <func-expression>
                         |   <expression> <operator> <expression>
+                        |   <expression> [ "[" <expression> [ ":" <expression> ] "]" ]
 
 func-expression     ::= <identifire> "(" <function-args> ")"
 
