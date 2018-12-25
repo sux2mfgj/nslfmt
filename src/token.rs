@@ -71,6 +71,7 @@ pub enum Operator {
     LessEq,      // <=
     GreaterThan, // >
     LessThan,    // <
+    NotEqual,   // !=
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -118,6 +119,9 @@ impl fmt::Display for Operator {
             }
             Operator::GreaterThan => {
                 write!(f, ">")
+            }
+            Operator::NotEqual => {
+                write!(f, "!=")
             }
         }
     }

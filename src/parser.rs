@@ -274,13 +274,14 @@ impl<'a> Parser<'a> {
                             TokenClass::Symbol(Symbol::LeftParen) => {
                                 self.check_left_paren();
                                 let args = self.generate_args_vec();
-                                self.check_right_paren();
+                                self.check_semicolon();
                                 Some(create_node!(ASTClass::FuncCall(
                                             id_node, args, Some(next_id))))
                             }
                             TokenClass::Symbol(Symbol::Equal) => {
                                 self.lexer.next(true);
                                 let right = self.expression_ast();
+                                self.check_semicolon();
                                 Some(create_node!(ASTClass::Assign(
                                             create_node!(
                                                 ASTClass::ModulePort(id_node, next_id)),
@@ -438,6 +439,12 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::Goto) => {
                 let id = self.generate_id_node();
                 Some(create_node!(ASTClass::Goto(id)))
+            }
+            TokenClass::CPPStyleComment(comment) => {
+                Some(create_node!(ASTClass::CPPStyleComment(comment)))
+            }
+            TokenClass::CStyleComment(list) => {
+                Some(create_node!(ASTClass::CStyleComment(list)))
             }
             _ => {
                 unexpected_token!(t);
@@ -644,10 +651,16 @@ impl<'a> Parser<'a> {
         let left = match t.class
         {
             TokenClass::UnaryOperator(op) => {
-                let id = self.generate_id_node();
+//                 let id = self.generate_id_node();
+                let id = self.expression_ast();
                 create_node!(ASTClass::UnaryOperation(
                         create_node!(ASTClass::UnaryOperator(op)),
                         id))
+            }
+            TokenClass::Symbol(Symbol::LeftParen) => {
+                let inner_expr = self.expression_ast();
+                self.check_right_paren();
+                inner_expr
             }
             _ =>
             {

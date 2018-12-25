@@ -111,7 +111,7 @@ pub enum ASTClass {
     //          id       , width       , initial_value
     Reg(Vec<(Box<ASTNode>, Option<Box<ASTNode>>, Option<Box<ASTNode>>)>),
 
-    //          operand     , operation   , operand
+    //          operand     , operation   , operand,   is required parances
     Expression(Box<ASTNode>, Box<ASTNode>, Box<ASTNode>),
     //              expr        , bitslice
     BitslicedExpr(Box<ASTNode>, Box<ASTNode>),
@@ -160,6 +160,9 @@ impl ASTNode {
                         ASTClass::State(_, _) => {
                             list.append(&mut c.generate());
                         }
+                        ASTClass::CPPStyleComment(_) => {
+                            list.append(&mut c.generate());
+                        }
                         //TODO
                         _ => {
                             list.push_back(format!("{};", get_top!(c)));
@@ -191,7 +194,7 @@ impl ASTNode {
                 list.push_back("else".to_string());
             }
             ASTClass::Expression(ref operand1, ref operator, ref operand2) => {
-                list.push_back(format!("{} {} {}",
+                list.push_back(format!("({} {} {})",
                                        get_top!(operand1),
                                        operator,
                                        get_top!(operand2)));
@@ -299,10 +302,12 @@ impl ASTNode {
                 not_implemented!()
             }
             ASTClass::CPPStyleComment(ref comment) => {
-                not_implemented!();
+                list.push_back(format!("//{}", comment));
             }
             ASTClass::CStyleComment(ref comments) => {
-                not_implemented!();
+                list.push_back("/*".to_string());
+                list.push_back(comments.join("\n"));
+                list.push_back("*/".to_string());
             }
             ASTClass::ProcName(ref id, ref args) => {not_implemented!();}
             ASTClass::StateName(ref ids) => {
@@ -335,7 +340,7 @@ impl ASTNode {
                 list.append(&mut block.generate());
             }
             ASTClass::If(ref expr, ref if_block, ref else_block) => {
-                list.push_back(format!("if ({})", get_top!(expr)));
+                list.push_back(format!("if {}", get_top!(expr)));
                 list.append(&mut if_block.generate());
                 if let Some(block) = else_block {
                     list.push_back(format!("else"));
@@ -349,10 +354,10 @@ impl ASTNode {
                 not_implemented!();
             }
             ASTClass::UnaryOperator(ref op) => {
-                not_implemented!();
+                list.push_back(format!("{}", op));
             }
             ASTClass::UnaryOperation(ref a, ref b) => {
-                list.push_back(format!("{}{}", a, b));
+                list.push_back(format!("{}{}", get_top!(a), get_top!(b)));
             }
             ASTClass::MacroDefine(ref id, ref value) => {not_implemented!();}
             ASTClass::MacroInclude(ref path) => {

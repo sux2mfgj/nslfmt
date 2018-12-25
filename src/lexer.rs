@@ -184,7 +184,17 @@ impl<'a> Lexer<'a> {
                     }
                     '!' => {
                         self.iter.next();
-                        return Token::from((UnaryOperator::Not, self.line));
+                        if let Some(&cc) = self.iter.peek() {
+                            match cc {
+                                '=' => {
+                                    self.iter.next();
+                                    return Token::from((Operator::NotEqual, self.line))
+                                }
+                                _ => {
+                                    return Token::from((UnaryOperator::Not, self.line))
+                                }
+                            }
+                        }
                     }
                     '\'' => {
                         self.iter.next();
