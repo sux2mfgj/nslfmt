@@ -147,9 +147,11 @@ impl ASTNode {
                         ASTClass::Func(_, _, _) => {
                             list.append(&mut c.generate());
                         }
+                        ASTClass::If(_, _, _) => {
+                            list.append(& mut c.generate());
+                        }
                         //TODO
                         _ => {
-//                             list.push_back(format!("{};", c.generate().pop_front().unwrap()));
                             list.push_back(format!("{};", get_top!(c)));
                         }
                     }
@@ -179,13 +181,11 @@ impl ASTNode {
                 list.push_back("else".to_string());
             }
             ASTClass::Expression(ref operand1, ref operator, ref operand2) => {
-                let right = if let Some(top) = operand2.generate().pop_front() {
-                    top
-                } else {
-                    panic!()
-                };
 
-                list.push_back(format!("{} {} {}", operand1, operator, right));
+                list.push_back(format!("{} {} {}",
+                                       get_top!(operand1),
+                                       operator,
+                                       get_top!(operand2)));
             }
             ASTClass::Identifire(ref id) => {
                 list.push_back(format!("{}", id));
@@ -206,7 +206,13 @@ impl ASTNode {
                 not_implemented!();
             }
             ASTClass::BitSlice(ref msb, ref some_lsb) => {
-                not_implemented!();
+                let m = get_top!(msb);
+                if let Some(lsb) = some_lsb {
+                    list.push_back(format!("{}:{}", m, get_top!(lsb)));
+                }
+                else {
+                    list.push_back(format!("{}", m));
+                }
             }
             ASTClass::BitslicedExpr(ref expr, ref bitslice) => {
                 list.push_back(format!("{}[{}]", get_top!(expr), get_top!(bitslice)));
@@ -286,7 +292,14 @@ impl ASTNode {
             }
             ASTClass::Return(ref value) => {not_implemented!();}
             ASTClass::State(ref id, ref block) => {not_implemented!();}
-            ASTClass::If(ref expr, ref if_block, ref else_block) => {not_implemented!();}
+            ASTClass::If(ref expr, ref if_block, ref else_block) => {
+                list.push_back(format!("if ({})", get_top!(expr)));
+                list.append(&mut if_block.generate());
+                if let Some(block) = else_block {
+                    list.push_back(format!("else"));
+                    list.append(&mut block.generate());
+                }
+            }
             ASTClass::InOut(ref id, ref expr) => {
                 not_implemented!();
             }
