@@ -207,14 +207,27 @@ impl ASTNode {
             ASTClass::Output(ref id, ref expr) => {
                 not_implemented!();
             }
-            ASTClass::Mem(ref list) => {
+            ASTClass::Mem(ref contents) => {
                 not_implemented!();
             }
-            ASTClass::Wire(ref list) => {
+            ASTClass::Wire(ref contents) => {
                 not_implemented!();
             }
-            ASTClass::Reg(ref list) => {
-                not_implemented!();
+            ASTClass::Reg(ref contents) => {
+                let l: Vec<String> = contents
+                    .iter()
+                    .map(|ref r| {
+                        let mut define = format!("{}", r.0);
+                        if let Some(ref width) = r.1 {
+                            define.push_str(&format!("[{}]", width))
+                        }
+                        if let Some(ref init) = r.2 {
+                            define.push_str(&format!(" = {}", init));
+                        }
+                        return define;
+                    })
+                    .collect();
+                list.push_back(format!("reg {}", l.join(", ")));
             }
             ASTClass::Newline => {
                 not_implemented!()
