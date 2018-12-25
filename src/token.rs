@@ -102,7 +102,7 @@ impl fmt::Display for Operator {
                 write!(f, "|")
             }
             Operator::LogicAnd=> {
-                write!(f, "&")
+                write!(f, "&&")
             }
             Operator::Equal => {
                 write!(f, "==")

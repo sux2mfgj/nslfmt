@@ -357,3 +357,44 @@ fn comment_01() {
     let ans = "// hello\n".to_string();
     assert_eq!(out, ans);
 }
+
+#[test]
+fn module_00() {
+    let mut b = "module hello{}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let p = Parser::new(&mut l);
+    let mut io = Cursor::new(Vec::new());
+    {
+        let mut g = Generator::new(p, &mut io);
+        g.output_node().unwrap();
+    }
+    let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+    let ans = "\nmodule hello\n{\n}\n".to_string();
+    assert_eq!(out, ans);
+}
+
+#[test]
+fn module_01() {
+    let mut b = "module hello{any{a:{}}}".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let p = Parser::new(&mut l);
+    let mut io = Cursor::new(Vec::new());
+    {
+        let mut g = Generator::new(p, &mut io);
+        g.output_node().unwrap();
+    }
+    let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+    let ans =
+"
+module hello
+{
+    any
+    {
+        a:
+        {
+        }
+    }
+}
+".to_string();
+    assert_eq!(out, ans);
+}

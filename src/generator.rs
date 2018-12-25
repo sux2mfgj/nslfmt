@@ -17,25 +17,18 @@ impl<'a, 'b> Generator<'a, 'b> {
     }
 
     pub fn output_node(&mut self) -> Result<(), io::Error> {
-        let mut double_newline_flag = false;
         loop {
             let ast = self.parser.next_ast();
             match ast.class {
-                ASTClass::Newline => {
-                    if double_newline_flag {
-                        try!(self.writer.write(format!("\n").as_bytes()));
-                        double_newline_flag = false;
-                    } else {
-                        double_newline_flag = true;
-                        continue;
-                    }
-                }
                 ASTClass::EndOfProgram => {
                     return Ok(());
                 }
                 _ => {
-                    double_newline_flag = false;
-                    try!(self.writer.write(format!("{}", ast).as_bytes()));
+                    let result = ast.generate().iter().fold(
+                        "".to_string(),
+                        |prev, s| format!("{}\n{}", prev, s));
+                    try!(self.writer.write(format!("{}\n", result).as_bytes()));
+//                     try!(self.writer.write(format!("{}", ast).as_bytes()));
                 }
             }
         }
