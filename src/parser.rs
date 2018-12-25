@@ -267,12 +267,29 @@ impl<'a> Parser<'a> {
                     }
                     TokenClass::Symbol(Symbol::Dot) => {
                         self.lexer.next(true);
-                        let func_name = self.generate_id_node();
-                        self.check_left_paren();
-                        let args = self.generate_args_vec();
-                        self.check_right_paren();
-                        Some(create_node!(ASTClass::FuncCall(
-                                    id_node, args, Some(func_name))))
+                        let next_id = self.generate_id_node();
+                        let n_token = self.lexer.peek(true);
+                        match n_token.class
+                        {
+                            TokenClass::Symbol(Symbol::LeftParen) => {
+                                self.check_left_paren();
+                                let args = self.generate_args_vec();
+                                self.check_right_paren();
+                                Some(create_node!(ASTClass::FuncCall(
+                                            id_node, args, Some(next_id))))
+                            }
+                            TokenClass::Symbol(Symbol::Equal) => {
+                                self.lexer.next(true);
+                                let right = self.expression_ast();
+                                Some(create_node!(ASTClass::Assign(
+                                            create_node!(
+                                                ASTClass::ModulePort(id_node, next_id)),
+                                            right)))
+                            }
+                            _ => {
+                                unexpected_token!(n_token);
+                            }
+                        }
                     }
                     TokenClass::Identifire(id) => {
                         let l = self.wire_module_list();
@@ -658,6 +675,11 @@ impl<'a> Parser<'a> {
                 create_node!(ASTClass::UnaryOperation(
                         left,
                         create_node!(ASTClass::UnaryOperator(op))))
+            }
+            TokenClass::Symbol(Symbol::Dot) => {
+                self.lexer.next(true);
+                let port_id = self.generate_id_node();
+                create_node!(ASTClass::ModulePort(left, port_id))
             }
             _ => {
                 left

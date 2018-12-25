@@ -88,6 +88,8 @@ pub enum ASTClass {
     Return(Box<ASTNode>),
     Goto(Box<ASTNode>),
     Else,
+    //          <id(submodule)>, <id(port)>
+    ModulePort(Box<ASTNode>, Box<ASTNode>),
     FuncCall(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
     //  state name, block
     State(Box<ASTNode>, Box<ASTNode>),
@@ -196,6 +198,9 @@ impl ASTNode {
             }
             ASTClass::Identifire(ref id) => {
                 list.push_back(format!("{}", id));
+            }
+            ASTClass::ModulePort(ref id, ref port) => {
+                list.push_back(format!("{}.{}", id, port));
             }
             ASTClass::FuncCall(ref id, ref args, ref second_some) => {
                 let arg_str = args
@@ -307,7 +312,7 @@ impl ASTNode {
                 list.push_back(format!("state_name {}", ids_str));
             }
             ASTClass::Assign(ref id, ref expr) => {
-                list.push_back(format!("{} = {}", id, get_top!(expr)));
+                list.push_back(format!("{} = {}", get_top!(id), get_top!(expr)));
             }
             ASTClass::RegAssign(ref id, ref expr) => {
                 list.push_back(format!("{} := {}", id, expr));
