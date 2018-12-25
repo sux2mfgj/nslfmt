@@ -61,6 +61,10 @@ pub enum ASTClass {
     // ----- Module ------
     // identifire, block
     Module(Box<ASTNode>, Box<ASTNode>),
+    //      <id(submodule name)>,  { <id> [<expr>] }* ;
+    //      e.g.
+    //          test in1, in2[2], in3;
+    Submodule(Box<ASTNode>, Vec<(Box<ASTNode>, Option<Box<ASTNode>>)>),
     //MacroSubModule(Vec<token::Token>),
     //      id,         , args
     ProcName(Box<ASTNode>, Vec<Box<ASTNode>>),
@@ -82,8 +86,9 @@ pub enum ASTClass {
     //  expression       , block
     Any(Vec<(Box<ASTNode>, Box<ASTNode>)>),
     Return(Box<ASTNode>),
+    Goto(Box<ASTNode>),
     Else,
-    FuncCall(Box<ASTNode>, Vec<Box<ASTNode>>),
+    FuncCall(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
     //  state name, block
     State(Box<ASTNode>, Box<ASTNode>),
     // if (<expression>) <block>, <else_node>
@@ -142,13 +147,16 @@ impl ASTNode {
                     match c.class
                     {
                         ASTClass::Any(_) => {
-                            list.append(& mut c.generate());
+                            list.append(&mut c.generate());
                         }
                         ASTClass::Func(_, _, _) => {
                             list.append(&mut c.generate());
                         }
                         ASTClass::If(_, _, _) => {
-                            list.append(& mut c.generate());
+                            list.append(&mut c.generate());
+                        }
+                        ASTClass::State(_, _) => {
+                            list.append(&mut c.generate());
                         }
                         //TODO
                         _ => {
@@ -181,7 +189,6 @@ impl ASTNode {
                 list.push_back("else".to_string());
             }
             ASTClass::Expression(ref operand1, ref operator, ref operand2) => {
-
                 list.push_back(format!("{} {} {}",
                                        get_top!(operand1),
                                        operator,
@@ -190,20 +197,39 @@ impl ASTNode {
             ASTClass::Identifire(ref id) => {
                 list.push_back(format!("{}", id));
             }
-            ASTClass::FuncCall(ref id, ref args) => {
+            ASTClass::FuncCall(ref id, ref args, ref second_some) => {
                 let arg_str = args
                     .iter()
                     .map(|id| format!("{}", id))
                     .collect::<Vec<String>>()
                     .join(", ");
 
-                list.push_back(format!("{}({})", id, arg_str));
+                if let Some(second) = second_some {
+                    list.push_back(format!("{}.{}({})", id, second, arg_str));
+                }
+                else
+                {
+                    list.push_back(format!("{}({})", id, arg_str));
+                }
             }
             ASTClass::Number(ref num) => {
                 list.push_back(format!("{}", num));
             }
             ASTClass::String(ref id) => {
                 not_implemented!();
+            }
+            ASTClass::Submodule(ref submodule, ref contents) => {
+                let l: Vec<String> = contents
+                    .iter()
+                    .map(|ref r| {
+                        let mut def = format!("{}", r.0);
+                        if let Some(ref width) = r.1 {
+                            def.push_str(&format!("[{}]", get_top!(width)));
+                        }
+                        return def;
+                    })
+                .collect();
+                list.push_back(format!("{} {}", submodule, l.join(", ")));
             }
             ASTClass::BitSlice(ref msb, ref some_lsb) => {
                 let m = get_top!(msb);
@@ -274,7 +300,12 @@ impl ASTNode {
                 not_implemented!();
             }
             ASTClass::ProcName(ref id, ref args) => {not_implemented!();}
-            ASTClass::StateName(ref id) => {not_implemented!();}
+            ASTClass::StateName(ref ids) => {
+                let ids_str = ids.iter()
+                   .map(|id_node| format!("{}", id_node))
+                   .collect::<Vec<String>>().join(", ");
+                list.push_back(format!("state_name {}", ids_str));
+            }
             ASTClass::Assign(ref id, ref expr) => {
                 list.push_back(format!("{} = {}", id, get_top!(expr)));
             }
@@ -291,7 +322,13 @@ impl ASTNode {
                 list.append(&mut block.generate());
             }
             ASTClass::Return(ref value) => {not_implemented!();}
-            ASTClass::State(ref id, ref block) => {not_implemented!();}
+            ASTClass::Goto(ref id) => {
+                list.push_back(format!("goto {}", id));
+            }
+            ASTClass::State(ref id, ref block) => {
+                list.push_back(format!("state {}", id));
+                list.append(&mut block.generate());
+            }
             ASTClass::If(ref expr, ref if_block, ref else_block) => {
                 list.push_back(format!("if ({})", get_top!(expr)));
                 list.append(&mut if_block.generate());

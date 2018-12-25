@@ -126,6 +126,37 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn wire_module_list(&mut self) -> Vec<(Box<ASTNode>, Option<Box<ASTNode>>)> {
+        let mut def_list = vec![];
+        loop {
+            let next = self.lexer.next(true);
+            match next.class {
+                TokenClass::Symbol(Symbol::Semicolon) => {
+                    return def_list;
+                }
+                TokenClass::Symbol(Symbol::Comma) => {
+                    continue;
+                }
+                TokenClass::Identifire(id) => {
+                    let id_node = create_node!(ASTClass::Identifire(id));
+                    if TokenClass::Symbol(Symbol::LeftSquareBracket)
+                        == self.lexer.peek(true).class
+                        {
+                            self.lexer.next(true);
+                            let width_ast = self.expression_ast();
+                            self.check_right_square_bracket();
+                            def_list.push((id_node, Some(width_ast)));
+                        } else {
+                            def_list.push((id_node, None));
+                        }
+                }
+                _ => {
+                    unexpected_token!(next);
+                }
+            }
+        }
+    }
+
     fn module_block_part_ast(&mut self) -> Option<Box<ASTNode>> {
         let t = self.lexer.next(true);
         match t.class {
@@ -150,6 +181,9 @@ impl<'a> Parser<'a> {
                 Some(create_node!(ASTClass::Reg(reg_list)))
             }
             TokenClass::Symbol(Symbol::Wire) => {
+                let l = self.wire_module_list();
+                Some(create_node!(ASTClass::Wire(l)))
+                /*
                 let mut wire_list = vec![];
                 loop {
                     let next = self.lexer.next(true);
@@ -179,6 +213,7 @@ impl<'a> Parser<'a> {
                         }
                     }
                 }
+                */
             }
             TokenClass::Symbol(Symbol::Mem) => {
                 let mut defines = vec![];
@@ -203,28 +238,45 @@ impl<'a> Parser<'a> {
             // for behavior
             TokenClass::Identifire(id) => {
                 let id_node = create_node!(ASTClass::Identifire(id));
-                let next_t = self.lexer.next(true);
+                let next_t = self.lexer.peek(true);
                 match next_t.class {
                     TokenClass::Symbol(Symbol::Equal) => {
+                        self.lexer.next(true);
                         let expr = self.expression_ast();
                         self.check_semicolon();
                         Some(create_node!(ASTClass::Assign(id_node, expr)))
                     }
                     TokenClass::Symbol(Symbol::RegAssign) => {
+                        self.lexer.next(true);
                         let expr = self.expression_ast();
                         self.check_semicolon();
                         Some(create_node!(ASTClass::RegAssign(id_node, expr)))
                     }
                     TokenClass::Symbol(Symbol::LeftParen) => {
+                        self.lexer.next(true);
                         let args = self.generate_args_vec();
                         self.check_semicolon();
-                        Some(create_node!(ASTClass::FuncCall(id_node, args,)))
+                        Some(create_node!(ASTClass::FuncCall(id_node, args, None)))
                     }
                     TokenClass::UnaryOperator(op) => {
+                        self.lexer.next(true);
                         self.check_semicolon();
                         Some(create_node!(ASTClass::UnaryOperation(
                                 id_node,
                                 create_node!(ASTClass::UnaryOperator(op)))))
+                    }
+                    TokenClass::Symbol(Symbol::Dot) => {
+                        self.lexer.next(true);
+                        let func_name = self.generate_id_node();
+                        self.check_left_paren();
+                        let args = self.generate_args_vec();
+                        self.check_right_paren();
+                        Some(create_node!(ASTClass::FuncCall(
+                                    id_node, args, Some(func_name))))
+                    }
+                    TokenClass::Identifire(id) => {
+                        let l = self.wire_module_list();
+                        Some(create_node!(ASTClass::Submodule(id_node, l)))
                     }
                     _ => {
                         unexpected_token!(next_t);
@@ -365,6 +417,10 @@ impl<'a> Parser<'a> {
             }
             TokenClass::Symbol(Symbol::Semicolon) => {
                 None
+            }
+            TokenClass::Symbol(Symbol::Goto) => {
+                let id = self.generate_id_node();
+                Some(create_node!(ASTClass::Goto(id)))
             }
             _ => {
                 unexpected_token!(t);
@@ -589,7 +645,7 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::LeftParen) => {
                 self.lexer.next(true);
                 let args = self.generate_args_vec();
-                create_node!(ASTClass::FuncCall(left, args))
+                create_node!(ASTClass::FuncCall(left, args, None))
             }
             TokenClass::Symbol(Symbol::LeftSquareBracket) => {
                 self.lexer.next(true);

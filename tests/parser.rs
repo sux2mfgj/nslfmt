@@ -1088,6 +1088,7 @@ mod module {
         let state_block = vec![create_node!(ASTClass::FuncCall(
             create_node!(ASTClass::Identifire("error".to_string())),
             vec![create_node!(ASTClass::Identifire("a".to_string()))],
+            None,
         ))];
 
         let components = vec![create_node!(ASTClass::State(
@@ -1561,6 +1562,7 @@ mod module {
         let components = vec![create_node!(ASTClass::FuncCall(
             create_node!(ASTClass::Identifire("error".to_string())),
             vec![],
+            None,
         ))];
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
@@ -1578,6 +1580,7 @@ mod module {
         let components = vec![create_node!(ASTClass::FuncCall(
             create_node!(ASTClass::Identifire("error".to_string())),
             vec![create_node!(ASTClass::Identifire("a".to_string()))],
+            None,
         ))];
         let module = create_node!(ASTClass::Module(
             create_node!(ASTClass::Identifire("test".to_string())),
@@ -1628,7 +1631,8 @@ mod module {
                 create_node!(ASTClass::Identifire("funct".to_string())),
                 create_node!(ASTClass::Identifire("mhartid".to_string())),
                 create_node!(ASTClass::Identifire("source".to_string())),
-            ]
+            ],
+            None
         ));
         let assign = create_node!(ASTClass::RegAssign(
             create_node!(ASTClass::Identifire("mhartid".to_string())),
@@ -1651,7 +1655,8 @@ mod module {
 
         let func_call = create_node!(ASTClass::FuncCall(
             create_node!(ASTClass::Identifire("update".to_string())),
-            vec![create_node!(ASTClass::Number("12'h123".to_string()))]
+            vec![create_node!(ASTClass::Number("12'h123".to_string()))],
+            None
         ));
         let components = vec![func_call];
         let module = create_node!(ASTClass::Module(
@@ -1674,7 +1679,8 @@ mod module {
                 create_node!(ASTClass::Identifire("funct".to_string())),
                 create_node!(ASTClass::Identifire("mhartid".to_string())),
                 create_node!(ASTClass::Identifire("source".to_string())),
-            ]
+            ],
+            None
         ));
         let expressiton = create_node!(ASTClass::Expression(
             func_call,
