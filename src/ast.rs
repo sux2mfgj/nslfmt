@@ -144,6 +144,9 @@ impl ASTNode {
                         ASTClass::Any(_) => {
                             list.append(& mut c.generate());
                         }
+                        ASTClass::Func(_, _, _) => {
+                            list.append(&mut c.generate());
+                        }
                         //TODO
                         _ => {
 //                             list.push_back(format!("{};", c.generate().pop_front().unwrap()));
@@ -272,7 +275,15 @@ impl ASTNode {
             ASTClass::RegAssign(ref id, ref expr) => {
                 list.push_back(format!("{} := {}", id, expr));
             }
-            ASTClass::Func(ref id, ref func, ref block) => {not_implemented!();}
+            ASTClass::Func(ref id, ref func, ref block) => {
+                if let Some(fname) = func {
+                    list.push_back(format!("func {}.{}", id, fname));
+                }
+                else {
+                    list.push_back(format!("func {}", id));
+                }
+                list.append(&mut block.generate());
+            }
             ASTClass::Return(ref value) => {not_implemented!();}
             ASTClass::State(ref id, ref block) => {not_implemented!();}
             ASTClass::If(ref expr, ref if_block, ref else_block) => {not_implemented!();}
