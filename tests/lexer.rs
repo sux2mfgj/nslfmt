@@ -627,7 +627,7 @@ fn comment_00() {
             // this is inputs.
             input ok[12];
         }"
-        .as_bytes();
+    .as_bytes();
     let mut l = Lexer::new(&mut b);
 
     assert_eq!(

@@ -8,9 +8,9 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter, Cursor};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-static call_count: AtomicUsize = AtomicUsize::new(0);
+static CALL_COUNT: AtomicUsize = AtomicUsize::new(0);
 fn get_value_with_lock() -> usize {
-    return call_count.fetch_add(1, Ordering::Relaxed);
+    return CALL_COUNT.fetch_add(1, Ordering::Relaxed);
 }
 
 #[test]
@@ -319,8 +319,7 @@ fn any_00() {
 
 #[test]
 fn any_01() {
-    let mut b =
-        "module test {
+    let mut b = "module test {
             any
             {
                 a == b:
@@ -329,7 +328,7 @@ fn any_01() {
                 }
             }
         }"
-        .as_bytes();
+    .as_bytes();
     let mut l = Lexer::new(&mut b);
     let p = Parser::new(&mut l);
 
@@ -339,7 +338,8 @@ fn any_01() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans ="module test\n{\n    any\n{\na == b:\n{\n    d = d + e;\n}\n}\n}\n".to_string();
+    let ans =
+        "module test\n{\n    any\n{\na == b:\n{\n    d = d + e;\n}\n}\n}\n".to_string();
     assert_eq!(out, ans);
 }
 
@@ -384,8 +384,7 @@ fn module_01() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans =
-"
+    let ans = "
 module hello
 {
     any
@@ -395,6 +394,7 @@ module hello
         }
     }
 }
-".to_string();
+"
+    .to_string();
     assert_eq!(out, ans);
 }

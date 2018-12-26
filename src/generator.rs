@@ -24,11 +24,12 @@ impl<'a, 'b> Generator<'a, 'b> {
                     return Ok(());
                 }
                 _ => {
-                    let result = ast.generate().iter().fold(
-                        "".to_string(),
-                        |prev, s| format!("{}\n{}", prev, s));
+                    let result = ast
+                        .generate()
+                        .iter()
+                        .fold("".to_string(), |prev, s| format!("{}\n{}", prev, s));
                     try!(self.writer.write(format!("{}\n", result).as_bytes()));
-//                     try!(self.writer.write(format!("{}", ast).as_bytes()));
+                    //                     try!(self.writer.write(format!("{}", ast).as_bytes()));
                 }
             }
         }

@@ -39,5 +39,8 @@ debug:
 debug_test:
 	rust-gdb -tui $(shell ls -t target/debug/nslfmt-* |head -n 1)
 
+release:
+	cargo build --release
+
 fmt:
 	cargo-fmt --all

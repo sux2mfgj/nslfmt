@@ -1,6 +1,6 @@
+use std::collections::LinkedList;
 use std::fmt;
 use token;
-use std::collections::LinkedList;
 
 macro_rules! not_implemented {
     () => {
@@ -119,7 +119,7 @@ pub enum ASTClass {
     UnaryOperation(Box<ASTNode>, Box<ASTNode>),
     CPPStyleComment(String),
     CStyleComment(Vec<String>),
-    Newline,
+    //     Newline,
     EndOfProgram,
 }
 
@@ -135,9 +135,8 @@ impl ASTNode {
 
     pub fn generate(&self) -> LinkedList<String> {
         let mut list = LinkedList::new();
-        match self.class
-        {
-            ASTClass::Declare(ref id, ref block) => {
+        match self.class {
+            ASTClass::Declare(ref _id, ref _block) => {
                 not_implemented!();
             }
             ASTClass::Module(ref id, ref block) => {
@@ -146,8 +145,7 @@ impl ASTNode {
             }
             ASTClass::Block(ref contents) => {
                 for c in contents {
-                    match c.class
-                    {
+                    match c.class {
                         ASTClass::Any(_) => {
                             list.append(&mut c.generate());
                         }
@@ -169,7 +167,8 @@ impl ASTNode {
                         }
                     }
                 }
-                let mut nm: LinkedList<String> = list.iter().map(|c| format!("    {}", c)).collect();
+                let mut nm: LinkedList<String> =
+                    list.iter().map(|c| format!("    {}", c)).collect();
                 nm.push_front("{".to_string());
                 nm.push_back("}".to_string());
                 return nm;
@@ -178,13 +177,14 @@ impl ASTNode {
                 for (expr, block) in contents {
                     let expr_str = if let Some(top) = expr.generate().pop_front() {
                         top
-                    } else{
+                    } else {
                         panic!();
                     };
                     list.push_back(format!("{}:", expr_str));
                     list.append(&mut block.generate());
                 }
-                let mut nm: LinkedList<String> = list.iter().map(|c| "    ".to_string() + c).collect();
+                let mut nm: LinkedList<String> =
+                    list.iter().map(|c| "    ".to_string() + c).collect();
                 nm.push_front("{".to_string());
                 nm.push_back("}".to_string());
                 nm.push_front("any".to_string());
@@ -194,10 +194,12 @@ impl ASTNode {
                 list.push_back("else".to_string());
             }
             ASTClass::Expression(ref operand1, ref operator, ref operand2) => {
-                list.push_back(format!("({} {} {})",
-                                       get_top!(operand1),
-                                       operator,
-                                       get_top!(operand2)));
+                list.push_back(format!(
+                    "({} {} {})",
+                    get_top!(operand1),
+                    operator,
+                    get_top!(operand2)
+                ));
             }
             ASTClass::Identifire(ref id) => {
                 list.push_back(format!("{}", id));
@@ -214,16 +216,14 @@ impl ASTNode {
 
                 if let Some(second) = second_some {
                     list.push_back(format!("{}.{}({})", id, second, arg_str));
-                }
-                else
-                {
+                } else {
                     list.push_back(format!("{}({})", id, arg_str));
                 }
             }
             ASTClass::Number(ref num) => {
                 list.push_back(format!("{}", num));
             }
-            ASTClass::String(ref id) => {
+            ASTClass::String(ref _id) => {
                 not_implemented!();
             }
             ASTClass::Submodule(ref submodule, ref contents) => {
@@ -236,37 +236,36 @@ impl ASTNode {
                         }
                         return def;
                     })
-                .collect();
+                    .collect();
                 list.push_back(format!("{} {}", submodule, l.join(", ")));
             }
             ASTClass::BitSlice(ref msb, ref some_lsb) => {
                 let m = get_top!(msb);
                 if let Some(lsb) = some_lsb {
                     list.push_back(format!("{}:{}", m, get_top!(lsb)));
-                }
-                else {
+                } else {
                     list.push_back(format!("{}", m));
                 }
             }
             ASTClass::BitslicedExpr(ref expr, ref bitslice) => {
                 list.push_back(format!("{}[{}]", get_top!(expr), get_top!(bitslice)));
             }
-            ASTClass::FuncIn(ref id, ref args, ref result) => {
+            ASTClass::FuncIn(ref _id, ref _args, ref _result) => {
                 not_implemented!();
             }
-            ASTClass::FuncOut(ref id, ref args, ref result) => {
+            ASTClass::FuncOut(ref _id, ref _args, ref _result) => {
                 not_implemented!();
             }
-            ASTClass::FuncSelf(ref id, ref args, ref result) => {
+            ASTClass::FuncSelf(ref _id, ref _args, ref _result) => {
                 not_implemented!();
             }
-            ASTClass::Input(ref id, ref expr) => {
+            ASTClass::Input(ref _id, ref _expr) => {
                 not_implemented!();
             }
-            ASTClass::Output(ref id, ref expr) => {
+            ASTClass::Output(ref _id, ref _expr) => {
                 not_implemented!();
             }
-            ASTClass::Mem(ref contents) => {
+            ASTClass::Mem(ref _contents) => {
                 not_implemented!();
             }
             ASTClass::Wire(ref contents) => {
@@ -279,7 +278,7 @@ impl ASTNode {
                         }
                         return def;
                     })
-                .collect();
+                    .collect();
                 list.push_back(format!("wire {}", l.join(", ")));
             }
             ASTClass::Reg(ref contents) => {
@@ -298,9 +297,9 @@ impl ASTNode {
                     .collect();
                 list.push_back(format!("reg {}", l.join(", ")));
             }
-            ASTClass::Newline => {
-                not_implemented!()
-            }
+            //             ASTClass::Newline => {
+            //                 not_implemented!()
+            //             }
             ASTClass::CPPStyleComment(ref comment) => {
                 list.push_back(format!("//{}", comment));
             }
@@ -309,11 +308,15 @@ impl ASTNode {
                 list.push_back(comments.join("\n"));
                 list.push_back("*/".to_string());
             }
-            ASTClass::ProcName(ref id, ref args) => {not_implemented!();}
+            ASTClass::ProcName(ref _id, ref _args) => {
+                not_implemented!();
+            }
             ASTClass::StateName(ref ids) => {
-                let ids_str = ids.iter()
-                   .map(|id_node| format!("{}", id_node))
-                   .collect::<Vec<String>>().join(", ");
+                let ids_str = ids
+                    .iter()
+                    .map(|id_node| format!("{}", id_node))
+                    .collect::<Vec<String>>()
+                    .join(", ");
                 list.push_back(format!("state_name {}", ids_str));
             }
             ASTClass::Assign(ref id, ref expr) => {
@@ -325,13 +328,14 @@ impl ASTNode {
             ASTClass::Func(ref id, ref func, ref block) => {
                 if let Some(fname) = func {
                     list.push_back(format!("func {}.{}", id, fname));
-                }
-                else {
+                } else {
                     list.push_back(format!("func {}", id));
                 }
                 list.append(&mut block.generate());
             }
-            ASTClass::Return(ref value) => {not_implemented!();}
+            ASTClass::Return(ref _value) => {
+                not_implemented!();
+            }
             ASTClass::Goto(ref id) => {
                 list.push_back(format!("goto {}", id));
             }
@@ -347,10 +351,10 @@ impl ASTNode {
                     list.append(&mut block.generate());
                 }
             }
-            ASTClass::InOut(ref id, ref expr) => {
+            ASTClass::InOut(ref _id, ref _expr) => {
                 not_implemented!();
             }
-            ASTClass::Operator(ref op) => {
+            ASTClass::Operator(ref _op) => {
                 not_implemented!();
             }
             ASTClass::UnaryOperator(ref op) => {
@@ -359,16 +363,30 @@ impl ASTNode {
             ASTClass::UnaryOperation(ref a, ref b) => {
                 list.push_back(format!("{}{}", get_top!(a), get_top!(b)));
             }
-            ASTClass::MacroDefine(ref id, ref value) => {not_implemented!();}
+            ASTClass::MacroDefine(ref _id, ref _value) => {
+                not_implemented!();
+            }
             ASTClass::MacroInclude(ref path) => {
                 list.push_back(format!("#include {}", path));
             }
-            ASTClass::MacroIfdef(ref id) => {not_implemented!();}
-            ASTClass::MacroIfndef(ref id) => {not_implemented!();}
-            ASTClass::MacroElse => {not_implemented!();}
-            ASTClass::MacroEndif => {not_implemented!();}
-            ASTClass::MacroUndef(ref id) => {not_implemented!();}
-            ASTClass::EndOfProgram => {not_implemented!();}
+            ASTClass::MacroIfdef(ref _id) => {
+                not_implemented!();
+            }
+            ASTClass::MacroIfndef(ref _id) => {
+                not_implemented!();
+            }
+            ASTClass::MacroElse => {
+                not_implemented!();
+            }
+            ASTClass::MacroEndif => {
+                not_implemented!();
+            }
+            ASTClass::MacroUndef(ref _id) => {
+                not_implemented!();
+            }
+            ASTClass::EndOfProgram => {
+                not_implemented!();
+            }
         }
         list
     }
@@ -386,15 +404,9 @@ impl fmt::Display for ASTNode {
             ASTClass::String(ref path) => {
                 return write!(f, "\"{}\"", path);
             }
-            ASTClass::Operator(ref op) => {
-                write!(f, "{}", op)
-            }
-            ASTClass::UnaryOperator(ref uop) => {
-                write!(f, "{}", uop)
-            }
-            ASTClass::UnaryOperation(ref a, ref b) => {
-                write!(f, "{}{}", a, b)
-            }
+            ASTClass::Operator(ref op) => write!(f, "{}", op),
+            ASTClass::UnaryOperator(ref uop) => write!(f, "{}", uop),
+            ASTClass::UnaryOperation(ref a, ref b) => write!(f, "{}{}", a, b),
             /*
             ASTClass::Expression(ref operand1, ref operator, ref operand2) => {
                 write!(f, "{} {} {}", operand1, operator, operand2)
@@ -515,75 +527,75 @@ impl fmt::Display for ASTNode {
                             }
                         }
                         */
-                        ASTClass::Identifire(ref id) => {
-                            double_newline_flag = false;
-                            list_str.push_str(&format!("{}\n", id));
-                        }
-                        ASTClass::UnaryOperation(ref a, ref b) => {
-                            list_str.push_str(&format!("{}{};\n", a, b));
-                        }
-                        _ => {
-                            double_newline_flag = false;
-                            list_str.push_str(&format!("{}", node));
-                        }
-                    }
-                }
+            ASTClass::Identifire(ref id) => {
+            double_newline_flag = false;
+            list_str.push_str(&format!("{}\n", id));
+            }
+            ASTClass::UnaryOperation(ref a, ref b) => {
+            list_str.push_str(&format!("{}{};\n", a, b));
+            }
+            _ => {
+            double_newline_flag = false;
+            list_str.push_str(&format!("{}", node));
+            }
+            }
+            }
 
-                return write!(f, "\n{{\n{}}}\n", list_str);
+            return write!(f, "\n{{\n{}}}\n", list_str);
             }
             //          id       , width       , initial_value
             ASTClass::Reg(ref list) => {
-                let l: Vec<String> = list
-                    .iter()
-                    .map(|ref r| {
-                        let mut define = format!("{}", r.0);
-                        if let Some(ref width) = r.1 {
-                            define.push_str(&format!("[{}]", width))
-                        }
-                        if let Some(ref init) = r.2 {
-                            define.push_str(&format!(" = {}", init));
-                        }
-                        return define;
-                    })
-                    .collect();
-                write!(f, "reg {};\n", l.join(", "))
+            let l: Vec<String> = list
+            .iter()
+            .map(|ref r| {
+            let mut define = format!("{}", r.0);
+            if let Some(ref width) = r.1 {
+            define.push_str(&format!("[{}]", width))
+            }
+            if let Some(ref init) = r.2 {
+            define.push_str(&format!(" = {}", init));
+            }
+            return define;
+            })
+            .collect();
+            write!(f, "reg {};\n", l.join(", "))
             }
             ASTClass::Assign(ref id, ref expr) => write!(f, "{} = {};\n", id, expr),
             ASTClass::RegAssign(ref id, ref expr) => write!(f, "{} := {};\n", id, expr),
             ASTClass::Return(ref expr) => write!(f, "return {};\n", expr),
             ASTClass::Any(ref list) => {
-                write!(f, "any\n    {{\n")?;
-                for (expr, block) in list {
-                    write!(f, "    {}:{}", expr, block)?;
-                }
-                write!(f, "}}\n")
+            write!(f, "any\n    {{\n")?;
+            for (expr, block) in list {
+            write!(f, "    {}:{}", expr, block)?;
+            }
+            write!(f, "}}\n")
             }
             ASTClass::MacroInclude(ref path) => write!(f, "#include {}\n", path),
             ASTClass::MacroIfndef(ref id) => write!(f, "#ifndef {}\n", id),
             ASTClass::MacroDefine(ref id, ref string) => match string {
-                Some(s) => {
-                    return write!(f, "#define {} {}\n", id, s);
-                }
-                None => {
-                    return write!(f, "#define {}\n", id);
-                }
+            Some(s) => {
+            return write!(f, "#define {} {}\n", id, s);
+            }
+            None => {
+            return write!(f, "#define {}\n", id);
+            }
             },
             ASTClass::MacroEndif => {
-                return write!(f, "#endif\n");
+            return write!(f, "#endif\n");
             }
             ASTClass::EndOfProgram => {
-                return write!(f, "");
+            return write!(f, "");
             }
             ASTClass::Newline => {
-                return write!(f, "");
+            return write!(f, "");
             }
             ASTClass::CPPStyleComment(ref line) => {
-                return write!(f, "//{}\n", line);
+            return write!(f, "//{}\n", line);
             }
             ASTClass::CStyleComment(ref list) => {
-                return write!(f, "/*{}*/\n", list.join("\n"));
+            return write!(f, "/*{}*/\n", list.join("\n"));
             }
-            */
+             */
             _ => {
                 panic!(
                     "For the node {:?}, fmt::Display does not implemented yet.",

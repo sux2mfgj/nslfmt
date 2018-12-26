@@ -8,8 +8,6 @@ use nslfmt::lexer::*;
 use nslfmt::parser::*;
 use nslfmt::token::*;
 
-use backtrace::Backtrace;
-
 use std::fs::File;
 use std::io::BufReader;
 use std::panic;
@@ -26,13 +24,6 @@ mod simple_tests {
 
         assert_eq!(p.next_ast(), create_node!(ASTClass::EndOfProgram));
     }
-}
-
-fn initialize() {
-    panic::set_hook(Box::new(|_| {
-        let bt = Backtrace::new();
-        eprintln!("{:?}", bt);
-    }));
 }
 
 #[cfg(test)]
@@ -1185,7 +1176,7 @@ mod module {
         let mut b =
             "mem a[12] = {1'b1, 1'b0, 1'b0, 1'b1}, b[3][4] = {4'b1110};".as_bytes();
         let mut l = Lexer::new(&mut b);
-        let p = Parser::new(&mut l);
+        let mut p = Parser::new(&mut l);
         let mem = create_node!(ASTClass::Mem(vec![
             (
                 create_node!(ASTClass::Identifire("a".to_string())),
@@ -1209,6 +1200,7 @@ mod module {
             create_node!(ASTClass::Identifire("test".to_string())),
             create_node!(ASTClass::Block(vec![mem]))
         ));
+        assert_eq!(p.next_ast(), module);
     }
 
     #[test]
@@ -1496,29 +1488,25 @@ mod module {
 
     #[test]
     fn any_03() {
-        let mut b =
-            "module test { any{ a == b: {} } }"
-                .as_bytes();
+        let mut b = "module test { any{ a == b: {} } }".as_bytes();
 
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let any_comps = vec![
-            (
-                create_node!(ASTClass::Expression(
-                        create_node!(ASTClass::Identifire("a".to_string())),
-                        create_node!(ASTClass::Operator(Operator::Equal)),
-                        create_node!(ASTClass::Identifire("b".to_string())),
-                        )),
-                create_node!(ASTClass::Block(vec![]))
-            ),
-        ];
+        let any_comps = vec![(
+            create_node!(ASTClass::Expression(
+                create_node!(ASTClass::Identifire("a".to_string())),
+                create_node!(ASTClass::Operator(Operator::Equal)),
+                create_node!(ASTClass::Identifire("b".to_string())),
+            )),
+            create_node!(ASTClass::Block(vec![])),
+        )];
         let components = vec![create_node!(ASTClass::Any(any_comps))];
 
         let module = create_node!(ASTClass::Module(
-                create_node!(ASTClass::Identifire("test".to_string())),
-                create_node!(ASTClass::Block(components))
-                ));
+            create_node!(ASTClass::Identifire("test".to_string())),
+            create_node!(ASTClass::Block(components))
+        ));
 
         assert_eq!(p.next_ast(), module);
     }
@@ -1861,24 +1849,23 @@ mod module {
         let mut p = Parser::new(&mut l);
 
         let module = create_node!(ASTClass::Module(
-                create_node!(ASTClass::Identifire("hello".to_string())),
-                create_node!(ASTClass::Block(
-                        vec![
-                            create_node!(ASTClass::Wire(vec![(create_node!(ASTClass::Identifire("a".to_string())), None)])),
-                            create_node!(ASTClass::Assign(
-                                    create_node!(ASTClass::Identifire("a".to_string())),
-                                    create_node!(ASTClass::UnaryOperation(
-                                            create_node!(ASTClass::UnaryOperator(UnaryOperator::Not)),
-                                            create_node!(ASTClass::Identifire("a".to_string()))
-                                            ))
-                                    ))
-                        ]
-                        ))
-                )
-            );
+            create_node!(ASTClass::Identifire("hello".to_string())),
+            create_node!(ASTClass::Block(vec![
+                create_node!(ASTClass::Wire(vec![(
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    None
+                )])),
+                create_node!(ASTClass::Assign(
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    create_node!(ASTClass::UnaryOperation(
+                        create_node!(ASTClass::UnaryOperator(UnaryOperator::Not)),
+                        create_node!(ASTClass::Identifire("a".to_string()))
+                    ))
+                ))
+            ]))
+        ));
 
         assert_eq!(p.next_ast(), module);
-
     }
 
     #[test]
@@ -1888,21 +1875,21 @@ mod module {
         let mut p = Parser::new(&mut l);
 
         let module = create_node!(ASTClass::Module(
-                create_node!(ASTClass::Identifire("hello".to_string())),
-                create_node!(ASTClass::Block(
-                        vec![
-                            create_node!(ASTClass::Wire(vec![(create_node!(ASTClass::Identifire("a".to_string())), None)])),
-                            create_node!(ASTClass::Assign(
-                                    create_node!(ASTClass::Identifire("a".to_string())),
-                                    create_node!(ASTClass::UnaryOperation(
-                                            create_node!(ASTClass::UnaryOperator(UnaryOperator::Increment)),
-                                            create_node!(ASTClass::Identifire("a".to_string()))
-                                            ))
-                                    ))
-                        ]
-                        ))
-                )
-            );
+            create_node!(ASTClass::Identifire("hello".to_string())),
+            create_node!(ASTClass::Block(vec![
+                create_node!(ASTClass::Wire(vec![(
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    None
+                )])),
+                create_node!(ASTClass::Assign(
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    create_node!(ASTClass::UnaryOperation(
+                        create_node!(ASTClass::UnaryOperator(UnaryOperator::Increment)),
+                        create_node!(ASTClass::Identifire("a".to_string()))
+                    ))
+                ))
+            ]))
+        ));
         assert_eq!(p.next_ast(), module);
     }
 
@@ -1913,21 +1900,21 @@ mod module {
         let mut p = Parser::new(&mut l);
 
         let module = create_node!(ASTClass::Module(
-                create_node!(ASTClass::Identifire("hello".to_string())),
-                create_node!(ASTClass::Block(
-                        vec![
-                            create_node!(ASTClass::Wire(vec![(create_node!(ASTClass::Identifire("a".to_string())), None)])),
-                            create_node!(ASTClass::Assign(
-                                    create_node!(ASTClass::Identifire("a".to_string())),
-                                    create_node!(ASTClass::UnaryOperation(
-                                            create_node!(ASTClass::Identifire("a".to_string())),
-                                            create_node!(ASTClass::UnaryOperator(UnaryOperator::Increment))
-                                            ))
-                                    ))
-                        ]
-                        ))
-                )
-            );
+            create_node!(ASTClass::Identifire("hello".to_string())),
+            create_node!(ASTClass::Block(vec![
+                create_node!(ASTClass::Wire(vec![(
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    None
+                )])),
+                create_node!(ASTClass::Assign(
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    create_node!(ASTClass::UnaryOperation(
+                        create_node!(ASTClass::Identifire("a".to_string())),
+                        create_node!(ASTClass::UnaryOperator(UnaryOperator::Increment))
+                    ))
+                ))
+            ]))
+        ));
         assert_eq!(p.next_ast(), module);
     }
 
@@ -1938,18 +1925,18 @@ mod module {
         let mut p = Parser::new(&mut l);
 
         let module = create_node!(ASTClass::Module(
-                create_node!(ASTClass::Identifire("hello".to_string())),
-                create_node!(ASTClass::Block(
-                        vec![
-                            create_node!(ASTClass::Wire(vec![(create_node!(ASTClass::Identifire("a".to_string())), None)])),
-                            create_node!(ASTClass::UnaryOperation(
-                                    create_node!(ASTClass::Identifire("a".to_string())),
-                                    create_node!(ASTClass::UnaryOperator(UnaryOperator::Increment))
-                                    ))
-                        ]
-                        ))
-                )
-            );
+            create_node!(ASTClass::Identifire("hello".to_string())),
+            create_node!(ASTClass::Block(vec![
+                create_node!(ASTClass::Wire(vec![(
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    None
+                )])),
+                create_node!(ASTClass::UnaryOperation(
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    create_node!(ASTClass::UnaryOperator(UnaryOperator::Increment))
+                ))
+            ]))
+        ));
         assert_eq!(p.next_ast(), module);
     }
 
@@ -1960,18 +1947,18 @@ mod module {
         let mut p = Parser::new(&mut l);
 
         let module = create_node!(ASTClass::Module(
-                create_node!(ASTClass::Identifire("hello".to_string())),
-                create_node!(ASTClass::Block(
-                        vec![
-                            create_node!(ASTClass::Wire(vec![(create_node!(ASTClass::Identifire("a".to_string())), None)])),
-                            create_node!(ASTClass::UnaryOperation(
-                                    create_node!(ASTClass::UnaryOperator(UnaryOperator::Increment)),
-                                    create_node!(ASTClass::Identifire("a".to_string()))
-                                    ))
-                        ]
-                        ))
-                )
-            );
+            create_node!(ASTClass::Identifire("hello".to_string())),
+            create_node!(ASTClass::Block(vec![
+                create_node!(ASTClass::Wire(vec![(
+                    create_node!(ASTClass::Identifire("a".to_string())),
+                    None
+                )])),
+                create_node!(ASTClass::UnaryOperation(
+                    create_node!(ASTClass::UnaryOperator(UnaryOperator::Increment)),
+                    create_node!(ASTClass::Identifire("a".to_string()))
+                ))
+            ]))
+        ));
         assert_eq!(p.next_ast(), module);
     }
 
@@ -1981,34 +1968,28 @@ mod module {
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
-        let any  = create_node!(ASTClass::Any(
-                vec![(
-                    create_node!(ASTClass::Expression(
-                                    create_node!(ASTClass::Identifire("b".to_string())),
-                                    create_node!(ASTClass::Operator(Operator::LogicAnd)),
-                                    create_node!(ASTClass::UnaryOperation(
-                                            create_node!(ASTClass::UnaryOperator(UnaryOperator::Not)),
-                                            create_node!(ASTClass::Identifire("a".to_string()))
-                                        ))
-                            )),
-                    create_node!(ASTClass::Block(vec![]))
-                    ),
-                ]
-                ));
+        let any = create_node!(ASTClass::Any(vec![(
+            create_node!(ASTClass::Expression(
+                create_node!(ASTClass::Identifire("b".to_string())),
+                create_node!(ASTClass::Operator(Operator::LogicAnd)),
+                create_node!(ASTClass::UnaryOperation(
+                    create_node!(ASTClass::UnaryOperator(UnaryOperator::Not)),
+                    create_node!(ASTClass::Identifire("a".to_string()))
+                ))
+            )),
+            create_node!(ASTClass::Block(vec![]))
+        ),]));
 
         let module = create_node!(ASTClass::Module(
-                create_node!(ASTClass::Identifire("hello".to_string())),
-                create_node!(ASTClass::Block(
-                        vec![
-                            create_node!(ASTClass::Wire(vec![
-                                                        (create_node!(ASTClass::Identifire("a".to_string())), None),
-                                                        (create_node!(ASTClass::Identifire("b".to_string())), None)
-                            ])),
-                            any
-                        ]
-                        ))
-                )
-            );
+            create_node!(ASTClass::Identifire("hello".to_string())),
+            create_node!(ASTClass::Block(vec![
+                create_node!(ASTClass::Wire(vec![
+                    (create_node!(ASTClass::Identifire("a".to_string())), None),
+                    (create_node!(ASTClass::Identifire("b".to_string())), None)
+                ])),
+                any
+            ]))
+        ));
         assert_eq!(p.next_ast(), module);
     }
 }

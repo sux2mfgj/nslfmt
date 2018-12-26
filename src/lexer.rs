@@ -156,10 +156,8 @@ impl<'a> Lexer<'a> {
                     }
                     '+' => {
                         self.iter.next();
-                        if let Some(&c_next) = self.iter.peek()
-                        {
-                            if c_next == '+'
-                            {
+                        if let Some(&c_next) = self.iter.peek() {
+                            if c_next == '+' {
                                 self.iter.next();
                                 return Token::from((UnaryOperator::Increment, self.line));
                             }
@@ -168,10 +166,8 @@ impl<'a> Lexer<'a> {
                     }
                     '-' => {
                         self.iter.next();
-                        if let Some(&c_next) = self.iter.peek()
-                        {
-                            if c_next == '-'
-                            {
+                        if let Some(&c_next) = self.iter.peek() {
+                            if c_next == '-' {
                                 self.iter.next();
                                 return Token::from((UnaryOperator::Decrement, self.line));
                             }
@@ -188,11 +184,9 @@ impl<'a> Lexer<'a> {
                             match cc {
                                 '=' => {
                                     self.iter.next();
-                                    return Token::from((Operator::NotEqual, self.line))
+                                    return Token::from((Operator::NotEqual, self.line));
                                 }
-                                _ => {
-                                    return Token::from((UnaryOperator::Not, self.line))
-                                }
+                                _ => return Token::from((UnaryOperator::Not, self.line)),
                             }
                         }
                     }
