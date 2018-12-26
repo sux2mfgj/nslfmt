@@ -43,7 +43,12 @@ fn aware_indent_01() {
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-    let ans = "declare hello\n{\n    input ok;\n}\n".to_string();
+    let ans =
+"declare hello
+{
+    input ok;
+}
+".to_string();
     assert_eq!(out, ans);
 }
 
@@ -266,7 +271,15 @@ fn func_00() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans = "module hello\n{\n    func ok\n{\n    error();\n}\n}\n".to_string();
+    let ans =
+"module hello
+{
+    func ok
+    {
+        error();
+    }
+}
+".to_string();
     assert_eq!(out, ans);
 }
 
@@ -297,7 +310,15 @@ fn assign_wire_00() {
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
     let ans =
-        "module hello\n{\n    wire a;\n    func ok\n{\n    a = 1'b0;\n}\n}\n".to_string();
+"module hello
+{
+    wire a;
+    func ok
+    {
+        a = 1'b0;
+    }
+}
+".to_string();
     assert_eq!(out, ans);
 }
 
@@ -312,8 +333,18 @@ fn any_00() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans = "module test\n{\n    reg a = 0;\n    any\n{\na:\n{\n    a := 1;\n}\n}\n}\n"
-        .to_string();
+    let ans =
+"module test
+{
+    reg a = 0;
+    any
+    {
+        a:
+        {
+            a := 1;
+        }
+    }
+}\n".to_string();
     assert_eq!(out, ans);
 }
 
@@ -339,7 +370,17 @@ fn any_01() {
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
     let ans =
-        "module test\n{\n    any\n{\na == b:\n{\n    d = d + e;\n}\n}\n}\n".to_string();
+"module test
+{
+    any
+    {
+        (a == b):
+        {
+            d = (d + e);
+        }
+    }
+}
+".to_string();
     assert_eq!(out, ans);
 }
 
@@ -369,7 +410,7 @@ fn module_00() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans = "\nmodule hello\n{\n}\n".to_string();
+    let ans = "module hello\n{\n}\n".to_string();
     assert_eq!(out, ans);
 }
 
@@ -384,8 +425,8 @@ fn module_01() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans = "
-module hello
+    let ans =
+"module hello
 {
     any
     {

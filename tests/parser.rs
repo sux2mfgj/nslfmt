@@ -1174,7 +1174,7 @@ mod module {
     #[test]
     fn mem_04() {
         let mut b =
-            "mem a[12] = {1'b1, 1'b0, 1'b0, 1'b1}, b[3][4] = {4'b1110};".as_bytes();
+            "module test {mem a[12] = {1'b1, 1'b0, 1'b0, 1'b1}, b[3][4] = {4'b1110};}".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
         let mem = create_node!(ASTClass::Mem(vec![
