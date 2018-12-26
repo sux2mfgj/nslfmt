@@ -82,7 +82,12 @@ fn aware_indent_03() {
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-    let ans = "declare hello\n{\n    input ok[OK / 2];\n}\n".to_string();
+    let ans =
+"declare hello
+{
+    input ok[(OK / 2)];
+}
+".to_string();
     assert_eq!(out, ans);
 }
 
@@ -241,7 +246,13 @@ fn func_self_00() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans = "module hello\n{\n    wire update_funct[2], update_result[32];\n    func_self update(update_funct) : update_result;\n}\n".to_string();
+    let ans =
+"module hello
+{
+    wire update_funct[2], update_result[32];
+    func_self update(update_funct) : update_result;
+}
+".to_string();
     assert_eq!(out, ans);
 }
 
@@ -294,7 +305,15 @@ fn return_00() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans = "module hello\n{\n    func ok\n{\n    return a;\n}\n}\n".to_string();
+    let ans =
+"module hello
+{
+    func ok
+    {
+        return a;
+    }
+}
+".to_string();
     assert_eq!(out, ans);
 }
 

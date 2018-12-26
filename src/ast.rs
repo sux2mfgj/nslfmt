@@ -43,7 +43,7 @@ pub enum ASTClass {
     // identifire, inputs, output
     FuncSelf(
         Box<ASTNode>,
-        Option<Vec<Box<ASTNode>>>,
+        Vec<Box<ASTNode>>,
         Option<Box<ASTNode>>,
     ),
 
@@ -136,8 +136,9 @@ impl ASTNode {
     pub fn generate(&self) -> LinkedList<String> {
         let mut list = LinkedList::new();
         match self.class {
-            ASTClass::Declare(ref _id, ref _block) => {
-                not_implemented!();
+            ASTClass::Declare(ref id, ref block) => {
+                list.push_back(format!("declare {}", id));
+                list.append(&mut block.generate());
             }
             ASTClass::Module(ref id, ref block) => {
                 list.push_back(format!("module {}", id));
@@ -250,17 +251,48 @@ impl ASTNode {
             ASTClass::BitslicedExpr(ref expr, ref bitslice) => {
                 list.push_back(format!("{}[{}]", get_top!(expr), get_top!(bitslice)));
             }
-            ASTClass::FuncIn(ref _id, ref _args, ref _result) => {
-                not_implemented!();
+            ASTClass::FuncIn(ref id, ref args, ref result) => {
+                let arg_str = args
+                    .iter()
+                    .map(|id| format!("{}", id))
+                    .collect::<Vec<String>>()
+                    .join(", ");
+                if let Some(return_port) = result
+                {
+                    list.push_back(
+                        format!("func_in {}({}) : {}", id, arg_str, return_port));
+                }
+                else
+                {
+                    list.push_back(format!("func_in {}({})", id, arg_str));
+                }
             }
             ASTClass::FuncOut(ref _id, ref _args, ref _result) => {
                 not_implemented!();
             }
-            ASTClass::FuncSelf(ref _id, ref _args, ref _result) => {
-                not_implemented!();
+            ASTClass::FuncSelf(ref id, ref args, ref result) => {
+                let arg_str = args
+                    .iter()
+                    .map(|id| format!("{}", id))
+                    .collect::<Vec<String>>()
+                    .join(", ");
+                if let Some(return_port) = result
+                {
+                    list.push_back(
+                        format!("func_self {}({}) : {}", id, arg_str, return_port));
+                }
+                else
+                {
+                    list.push_back(format!("func_self {}({})", id, arg_str));
+                }
             }
-            ASTClass::Input(ref _id, ref _expr) => {
-                not_implemented!();
+            ASTClass::Input(ref id, ref some_expr) => {
+                if let Some(expr) = some_expr {
+                    list.push_back(format!("input {}[{}]", id, get_top!(expr)));
+                }
+                else {
+                    list.push_back(format!("input {}", id));
+                }
             }
             ASTClass::Output(ref _id, ref _expr) => {
                 not_implemented!();
@@ -304,9 +336,7 @@ impl ASTNode {
                 list.push_back(format!("//{}", comment));
             }
             ASTClass::CStyleComment(ref comments) => {
-                list.push_back("/*".to_string());
-                list.push_back(comments.join("\n"));
-                list.push_back("*/".to_string());
+                list.push_back(format!("/*{}*/", comments.join("\n")));
             }
             ASTClass::ProcName(ref _id, ref _args) => {
                 not_implemented!();
@@ -333,8 +363,8 @@ impl ASTNode {
                 }
                 list.append(&mut block.generate());
             }
-            ASTClass::Return(ref _value) => {
-                not_implemented!();
+            ASTClass::Return(ref value) => {
+                list.push_back(format!("return {}", value));
             }
             ASTClass::Goto(ref id) => {
                 list.push_back(format!("goto {}", id));
@@ -363,8 +393,14 @@ impl ASTNode {
             ASTClass::UnaryOperation(ref a, ref b) => {
                 list.push_back(format!("{}{}", get_top!(a), get_top!(b)));
             }
-            ASTClass::MacroDefine(ref _id, ref _value) => {
-                not_implemented!();
+            ASTClass::MacroDefine(ref id, ref value) => {
+                if let Some(v) = value {
+                    list.push_back(format!("#define {} {}", id, v));
+                }
+                else
+                {
+                    list.push_back(format!("#define {}", id));
+                }
             }
             ASTClass::MacroInclude(ref path) => {
                 list.push_back(format!("#include {}", path));

@@ -338,9 +338,9 @@ impl<'a> Parser<'a> {
                     == self.lexer.peek(true).class
                 {
                     self.lexer.next(true);
-                    Some(self.generate_args_vec())
+                    self.generate_args_vec()
                 } else {
-                    None
+                    vec![]
                 };
                 let return_port = self.generate_func_return();
                 Some(create_node!(ASTClass::FuncSelf(
