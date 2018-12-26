@@ -857,7 +857,7 @@ mod module {
 
         let func_self = create_node!(ASTClass::FuncSelf(
             create_node!(ASTClass::Identifire("aa".to_string())),
-            None,
+            vec![],
             None,
         ));
 
@@ -882,10 +882,10 @@ mod module {
 
         let func_self = create_node!(ASTClass::FuncSelf(
             create_node!(ASTClass::Identifire("aa".to_string())),
-            Some(vec![
+            vec![
                 create_node!(ASTClass::Identifire("a".to_string())),
                 create_node!(ASTClass::Identifire("b".to_string())),
-            ]),
+            ],
             None,
         ));
 
@@ -910,7 +910,7 @@ mod module {
 
         let func_self = create_node!(ASTClass::FuncSelf(
             create_node!(ASTClass::Identifire("aa".to_string())),
-            None,
+            vec![],
             Some(create_node!(ASTClass::Identifire("a".to_string()))),
         ));
 
@@ -935,7 +935,7 @@ mod module {
 
         let func_self = create_node!(ASTClass::FuncSelf(
             create_node!(ASTClass::Identifire("aa".to_string())),
-            Some(vec![create_node!(ASTClass::Identifire("a".to_string()))]),
+            vec![create_node!(ASTClass::Identifire("a".to_string()))],
             Some(create_node!(ASTClass::Identifire("b".to_string()))),
         ));
 
