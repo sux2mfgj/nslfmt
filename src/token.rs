@@ -55,15 +55,15 @@ pub enum Symbol {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Operator {
-    Plus,     // +
-    Minus,    // -
-    Asterisk, // *
-    Slash,    // /
+    Plus,       // +
+    Minus,      // -
+    Asterisk,   // *
+    Slash,      // /
     ShiftLeft,  // <<
     ShiftRight, // >>
-    And,      // &
-    Pipe,     // |
-    LogicAnd, // &&
+    And,        // &
+    Pipe,       // |
+    LogicAnd,   // &&
     LogicOr,    // ||
     Hat,        // ^
     //Tilde,      // ~
@@ -190,7 +190,7 @@ impl Token {
         Token {
             class: class,
             line: line,
-            position: position
+            position: position,
         }
     }
 }

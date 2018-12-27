@@ -465,7 +465,10 @@ fn macro_undef() {
         l.next(true),
         Token::new(TokenClass::Symbol(Symbol::Sharp), 1, 1)
     );
-    assert_eq!(l.next(true), Token::new(TokenClass::Macro(Macro::Undef), 1, 2));
+    assert_eq!(
+        l.next(true),
+        Token::new(TokenClass::Macro(Macro::Undef), 1, 2)
+    );
     assert_eq!(
         l.next(true),
         Token::new(TokenClass::Identifire("aaaa".to_string()), 1, 3)
@@ -480,7 +483,10 @@ fn macro_ifdef() {
         l.next(true),
         Token::new(TokenClass::Symbol(Symbol::Sharp), 1, 1)
     );
-    assert_eq!(l.next(true), Token::new(TokenClass::Macro(Macro::Ifdef), 1, 2));
+    assert_eq!(
+        l.next(true),
+        Token::new(TokenClass::Macro(Macro::Ifdef), 1, 2)
+    );
     assert_eq!(
         l.next(true),
         Token::new(TokenClass::Identifire("aaaa".to_string()), 1, 3)
@@ -521,7 +527,10 @@ fn macro_endif() {
         l.next(true),
         Token::new(TokenClass::Symbol(Symbol::Sharp), 1, 1)
     );
-    assert_eq!(l.next(true), Token::new(TokenClass::Macro(Macro::Endif), 1, 2));
+    assert_eq!(
+        l.next(true),
+        Token::new(TokenClass::Macro(Macro::Endif), 1, 2)
+    );
     assert_eq!(l.next(true), Token::new(TokenClass::EndOfProgram, 1, 3));
 }
 
@@ -647,7 +656,8 @@ fn comment_00() {
         Token::new(
             TokenClass::CPPStyleComment(" this is inputs.".to_string()),
             2,
-            4)
+            4
+        )
     );
     assert_eq!(
         l.next(true),
@@ -698,7 +708,8 @@ fn number_00() {
         Token::new(
             TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()),
             1,
-            3)
+            3
+        )
     );
     assert_eq!(
         l.next(true),
@@ -733,7 +744,8 @@ fn number_01() {
         Token::new(
             TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()),
             1,
-            3)
+            3
+        )
     );
     assert_eq!(
         l.next(true),
@@ -768,7 +780,8 @@ fn number_02() {
         Token::new(
             TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()),
             1,
-            3)
+            3
+        )
     );
     assert_eq!(
         l.next(true),
@@ -803,7 +816,8 @@ fn number_03() {
         Token::new(
             TokenClass::Identifire("SYSTEM_FUNCT_CONTROL".to_string()),
             1,
-            3)
+            3
+        )
     );
     assert_eq!(
         l.next(true),
@@ -841,7 +855,8 @@ fn define_path() {
         Token::new(
             TokenClass::String("../hexs/rv32ui-p-xori.hex".to_string()),
             1,
-            4)
+            4
+        )
     );
 }
 
@@ -968,7 +983,10 @@ fn module_wire_01() {
         l.next(true),
         Token::from((TokenClass::Number("12".to_string()), 1, 7))
     );
-    assert_eq!(l.next(true), Token::from((Symbol::RightSquareBracket, 1, 8)));
+    assert_eq!(
+        l.next(true),
+        Token::from((Symbol::RightSquareBracket, 1, 8))
+    );
     assert_eq!(l.next(true), Token::from((Symbol::Semicolon, 1, 9)));
     assert_eq!(l.next(true), Token::from((Symbol::ClosingBrace, 1, 10)));
     assert_eq!(l.next(true), Token::new(TokenClass::EndOfProgram, 1, 11));
@@ -1172,7 +1190,10 @@ fn mem_00() {
         Token::from((TokenClass::Number("12".to_string()), 1, 7))
     );
 
-    assert_eq!(l.next(true), Token::from((Symbol::RightSquareBracket, 1, 8)));
+    assert_eq!(
+        l.next(true),
+        Token::from((Symbol::RightSquareBracket, 1, 8))
+    );
 
     assert_eq!(
         l.next(true),

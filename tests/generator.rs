@@ -43,12 +43,12 @@ fn aware_indent_01() {
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-    let ans =
-"declare hello
+    let ans = "declare hello
 {
     input ok;
 }
-".to_string();
+"
+    .to_string();
     assert_eq!(out, ans);
 }
 
@@ -82,12 +82,12 @@ fn aware_indent_03() {
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
 
-    let ans =
-"declare hello
+    let ans = "declare hello
 {
     input ok[OK / 2];
 }
-".to_string();
+"
+    .to_string();
     assert_eq!(out, ans);
 }
 
@@ -246,13 +246,13 @@ fn func_self_00() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans =
-"module hello
+    let ans = "module hello
 {
     wire update_funct[2], update_result[32];
     func_self update(update_funct) : update_result;
 }
-".to_string();
+"
+    .to_string();
     assert_eq!(out, ans);
 }
 
@@ -282,15 +282,15 @@ fn func_00() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans =
-"module hello
+    let ans = "module hello
 {
     func ok
     {
         error();
     }
 }
-".to_string();
+"
+    .to_string();
     assert_eq!(out, ans);
 }
 
@@ -305,15 +305,15 @@ fn return_00() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans =
-"module hello
+    let ans = "module hello
 {
     func ok
     {
         return a;
     }
 }
-".to_string();
+"
+    .to_string();
     assert_eq!(out, ans);
 }
 
@@ -328,8 +328,7 @@ fn assign_wire_00() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans =
-"module hello
+    let ans = "module hello
 {
     wire a;
     func ok
@@ -337,7 +336,8 @@ fn assign_wire_00() {
         a = 1'b0;
     }
 }
-".to_string();
+"
+    .to_string();
     assert_eq!(out, ans);
 }
 
@@ -352,8 +352,7 @@ fn any_00() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans =
-"module test
+    let ans = "module test
 {
     reg a = 0;
     any
@@ -363,7 +362,8 @@ fn any_00() {
             a := 1;
         }
     }
-}\n".to_string();
+}\n"
+    .to_string();
     assert_eq!(out, ans);
 }
 
@@ -388,8 +388,7 @@ fn any_01() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans =
-"module test
+    let ans = "module test
 {
     any
     {
@@ -399,7 +398,8 @@ fn any_01() {
         }
     }
 }
-".to_string();
+"
+    .to_string();
     assert_eq!(out, ans);
 }
 
@@ -444,8 +444,7 @@ fn module_01() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans =
-"module hello
+    let ans = "module hello
 {
     any
     {
@@ -466,7 +465,8 @@ fn expression_00() {
 
             }
 
-        }".as_bytes();
+        }"
+    .as_bytes();
     let mut l = Lexer::new(&mut b);
     let p = Parser::new(&mut l);
     let mut io = Cursor::new(Vec::new());
@@ -475,8 +475,7 @@ fn expression_00() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans =
-"module hello
+    let ans = "module hello
 {
     if (a == b)
     {
@@ -494,7 +493,8 @@ fn expression_01() {
 
             }
 
-        }".as_bytes();
+        }"
+    .as_bytes();
     let mut l = Lexer::new(&mut b);
     let p = Parser::new(&mut l);
     let mut io = Cursor::new(Vec::new());
@@ -503,14 +503,14 @@ fn expression_01() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans =
-"module hello
+    let ans = "module hello
 {
     if (x > 0 || x <= 10)
     {
     }
 }
-".to_string();
+"
+    .to_string();
     assert_eq!(out, ans);
 }
 
@@ -521,7 +521,8 @@ fn expression_02() {
 
             }
 
-        }".as_bytes();
+        }"
+    .as_bytes();
     let mut l = Lexer::new(&mut b);
     let p = Parser::new(&mut l);
     let mut io = Cursor::new(Vec::new());
@@ -530,13 +531,13 @@ fn expression_02() {
         g.output_node().unwrap();
     }
     let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
-    let ans =
-"module hello
+    let ans = "module hello
 {
     if (a + b - c)
     {
     }
 }
-".to_string();
+"
+    .to_string();
     assert_eq!(out, ans);
 }

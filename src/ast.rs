@@ -42,11 +42,7 @@ pub enum ASTClass {
     // identifire, outputs, input
     FuncOut(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
     // identifire, inputs, output
-    FuncSelf(
-        Box<ASTNode>,
-        Vec<Box<ASTNode>>,
-        Option<Box<ASTNode>>,
-    ),
+    FuncSelf(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
 
     /*
      *  identifire, expression or Identifire
@@ -132,19 +128,19 @@ pub struct ASTNode {
 
 impl ASTNode {
     pub fn new(class: ASTClass, position: usize) -> ASTNode {
-        ASTNode { class: class, position: position }
+        ASTNode {
+            class: class,
+            position: position,
+        }
     }
 
     pub fn generate(&self) -> LinkedList<String> {
         let mut list = LinkedList::new();
         match self.class {
             ASTClass::Declare(ref id, ref block, ref is_sim) => {
-                if *is_sim
-                {
+                if *is_sim {
                     list.push_back(format!("declare {} simulation", id));
-                }
-                else
-                {
+                } else {
                     list.push_back(format!("declare {}", id));
                 }
                 list.append(&mut block.generate());
@@ -156,20 +152,21 @@ impl ASTNode {
             ASTClass::Struct(ref id, ref member_info) => {
                 list.push_back(format!("struct {}", id));
                 let mut struct_members = LinkedList::new();
-                for c in member_info
-                {
-                    if let Some(ref width) = c.1
-                    {
+                for c in member_info {
+                    if let Some(ref width) = c.1 {
                         struct_members.push_back(format!("{}[{}]", c.0, width));
-                    }
-                    else {
+                    } else {
                         struct_members.push_back(format!("{}", c.0));
                     }
                 }
                 list.push_back("{".to_string());
-                list.append(&mut struct_members.iter().map(|c| format!("    {}", c)).collect());
+                list.append(
+                    &mut struct_members
+                        .iter()
+                        .map(|c| format!("    {}", c))
+                        .collect(),
+                );
                 list.push_back("}".to_string());
-
             }
             ASTClass::Block(ref contents) => {
                 for c in contents {
@@ -223,7 +220,7 @@ impl ASTNode {
             }
             ASTClass::Expression(ref operand1, ref operator, ref operand2) => {
                 list.push_back(format!(
-//                     "({} {} {})",
+                    //                     "({} {} {})",
                     "{} {} {}",
                     get_top!(operand1),
                     operator,
@@ -285,13 +282,12 @@ impl ASTNode {
                     .map(|id| format!("{}", id))
                     .collect::<Vec<String>>()
                     .join(", ");
-                if let Some(return_port) = result
-                {
-                    list.push_back(
-                        format!("func_in {}({}) : {}", id, arg_str, return_port));
-                }
-                else
-                {
+                if let Some(return_port) = result {
+                    list.push_back(format!(
+                        "func_in {}({}) : {}",
+                        id, arg_str, return_port
+                    ));
+                } else {
                     list.push_back(format!("func_in {}({})", id, arg_str));
                 }
             }
@@ -304,37 +300,33 @@ impl ASTNode {
                     .map(|id| format!("{}", id))
                     .collect::<Vec<String>>()
                     .join(", ");
-                if let Some(return_port) = result
-                {
-                    list.push_back(
-                        format!("func_self {}({}) : {}", id, arg_str, return_port));
-                }
-                else
-                {
+                if let Some(return_port) = result {
+                    list.push_back(format!(
+                        "func_self {}({}) : {}",
+                        id, arg_str, return_port
+                    ));
+                } else {
                     list.push_back(format!("func_self {}({})", id, arg_str));
                 }
             }
             ASTClass::Input(ref id, ref some_expr) => {
                 if let Some(expr) = some_expr {
                     list.push_back(format!("input {}[{}]", id, get_top!(expr)));
-                }
-                else {
+                } else {
                     list.push_back(format!("input {}", id));
                 }
             }
             ASTClass::Output(ref id, ref some_expr) => {
                 if let Some(expr) = some_expr {
                     list.push_back(format!("output {}[{}]", id, get_top!(expr)));
-                }
-                else {
+                } else {
                     list.push_back(format!("output {}", id));
                 }
             }
             ASTClass::InOut(ref id, ref some_expr) => {
                 if let Some(expr) = some_expr {
                     list.push_back(format!("inout {}[{}]", id, get_top!(expr)));
-                }
-                else {
+                } else {
                     list.push_back(format!("inout {}", id));
                 }
             }
@@ -437,9 +429,7 @@ impl ASTNode {
             ASTClass::MacroDefine(ref id, ref value) => {
                 if let Some(v) = value {
                     list.push_back(format!("#define {} {}", id, v));
-                }
-                else
-                {
+                } else {
                     list.push_back(format!("#define {}", id));
                 }
             }

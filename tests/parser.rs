@@ -76,7 +76,10 @@ mod declare {
 
         let block = create_node!(ASTClass::Block(interfaces));
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
-        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block, false)));
+        assert_eq!(
+            p.next_ast(),
+            create_node!(ASTClass::Declare(id, block, false))
+        );
     }
 
     #[test]
@@ -94,7 +97,10 @@ mod declare {
         let block = create_node!(ASTClass::Block(interfaces));
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
 
-        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block, false)));
+        assert_eq!(
+            p.next_ast(),
+            create_node!(ASTClass::Declare(id, block, false))
+        );
     }
 
     #[test]
@@ -114,7 +120,10 @@ mod declare {
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
         let block = create_node!(ASTClass::Block(interfaces));
 
-        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block, false)));
+        assert_eq!(
+            p.next_ast(),
+            create_node!(ASTClass::Declare(id, block, false))
+        );
     }
 
     /*
@@ -192,7 +201,10 @@ mod declare {
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
         let block = create_node!(ASTClass::Block(interfaces));
 
-        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block, false)));
+        assert_eq!(
+            p.next_ast(),
+            create_node!(ASTClass::Declare(id, block, false))
+        );
     }
 
     #[test]
@@ -220,7 +232,10 @@ mod declare {
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
         let block = create_node!(ASTClass::Block(interfaces));
 
-        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block, false)));
+        assert_eq!(
+            p.next_ast(),
+            create_node!(ASTClass::Declare(id, block, false))
+        );
     }
 
     #[test]
@@ -400,12 +415,11 @@ mod declare {
         let mut p = Parser::new(&mut l);
 
         let declare = create_node!(ASTClass::Declare(
-                create_node!(ASTClass::Identifire("ok".to_string())),
-                create_node!(ASTClass::Block(vec![])),
-                true
-                ));
+            create_node!(ASTClass::Identifire("ok".to_string())),
+            create_node!(ASTClass::Block(vec![])),
+            true
+        ));
         assert_eq!(p.next_ast(), declare)
-
     }
 
 }
@@ -1207,7 +1221,8 @@ mod module {
     #[test]
     fn mem_04() {
         let mut b =
-            "module test {mem a[12] = {1'b1, 1'b0, 1'b0, 1'b1}, b[3][4] = {4'b1110};}".as_bytes();
+            "module test {mem a[12] = {1'b1, 1'b0, 1'b0, 1'b1}, b[3][4] = {4'b1110};}"
+                .as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
         let mem = create_node!(ASTClass::Mem(vec![
@@ -2073,9 +2088,9 @@ mod nsl_struct {
         let mut p = Parser::new(&mut l);
 
         let st = create_node!(ASTClass::Struct(
-                create_node!(ASTClass::Identifire("this_is_a_pen".to_string())),
-                vec![],
-                ));
+            create_node!(ASTClass::Identifire("this_is_a_pen".to_string())),
+            vec![],
+        ));
 
         assert_eq!(p.next_ast(), st);
     }
@@ -2084,16 +2099,18 @@ mod nsl_struct {
     fn zero_bit_port_00() {
         let mut b = "struct this_is_a_pen {
                 hello;
-            };".as_bytes();
+            };"
+        .as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
         let st = create_node!(ASTClass::Struct(
-                create_node!(ASTClass::Identifire("this_is_a_pen".to_string())),
-                vec![
-                (create_node!(ASTClass::Identifire("hello".to_string())), None)
-                ],
-                ));
+            create_node!(ASTClass::Identifire("this_is_a_pen".to_string())),
+            vec![(
+                create_node!(ASTClass::Identifire("hello".to_string())),
+                None
+            )],
+        ));
 
         assert_eq!(p.next_ast(), st);
     }
@@ -2102,19 +2119,19 @@ mod nsl_struct {
     fn with_port_00() {
         let mut b = "struct this_is_a_pen {
                 hello[2];
-            };".as_bytes();
+            };"
+        .as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
         let st = create_node!(ASTClass::Struct(
-                create_node!(ASTClass::Identifire("this_is_a_pen".to_string())),
-                vec![
-                    (create_node!(ASTClass::Identifire("hello".to_string())),
-                     Some(create_node!(ASTClass::Number("2".to_string())))),
-                ]
-                ));
+            create_node!(ASTClass::Identifire("this_is_a_pen".to_string())),
+            vec![(
+                create_node!(ASTClass::Identifire("hello".to_string())),
+                Some(create_node!(ASTClass::Number("2".to_string())))
+            ),]
+        ));
 
         assert_eq!(p.next_ast(), st);
     }
 }
-

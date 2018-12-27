@@ -26,8 +26,9 @@ impl<'a, 'b> Generator<'a, 'b> {
                 _ => {
                     let mut block_content = ast.generate();
                     let head = block_content.pop_front().unwrap();
-                    let result = block_content.iter().fold(
-                        head, |prev, s| format!("{}\n{}", prev, s));
+                    let result = block_content
+                        .iter()
+                        .fold(head, |prev, s| format!("{}\n{}", prev, s));
                     try!(self.writer.write(format!("{}\n", result).as_bytes()));
                 }
             }

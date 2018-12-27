@@ -6,7 +6,7 @@ use token::*;
 
 pub struct Parser<'a> {
     lexer: &'a mut Lexer<'a>,
-    comments: LinkedList<Box<ASTNode>>
+    comments: LinkedList<Box<ASTNode>>,
 }
 
 #[macro_export]
@@ -50,16 +50,16 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn next_token(&mut self, skip_nl: bool) -> Token
-    {
+    fn next_token(&mut self, skip_nl: bool) -> Token {
         loop {
             let token = self.lexer.next(skip_nl);
-            match token.class
-            {
+            match token.class {
                 TokenClass::CPPStyleComment(comment) => {
-                    self.comments.push_back(
-                        create_node!(
-                            ASTClass::CPPStyleComment(comment, token.position)));
+                    self.comments
+                        .push_back(create_node!(ASTClass::CPPStyleComment(
+                            comment,
+                            token.position
+                        )));
                 }
                 TokenClass::CStyleComment(comments) => {
                     not_implemented!();
@@ -109,9 +109,7 @@ impl<'a> Parser<'a> {
         let is_simulation = if s_token.class == TokenClass::Symbol(Symbol::Simulation) {
             self.lexer.next(true);
             true
-        }
-        else
-        {
+        } else {
             false
         };
         self.check_opening_brace();
@@ -148,10 +146,7 @@ impl<'a> Parser<'a> {
                 TokenClass::Symbol(Symbol::ClosingBrace) => {
                     self.lexer.next(true);
                     self.check_semicolon();
-                    return create_node!(ASTClass::Struct(
-                            id_node,
-                            struct_contents
-                            ));
+                    return create_node!(ASTClass::Struct(id_node, struct_contents));
                 }
                 TokenClass::Identifire(id) => {
                     let (member_id, width) = self.get_id_and_width();
