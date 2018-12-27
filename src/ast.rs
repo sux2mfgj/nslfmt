@@ -127,11 +127,12 @@ pub enum ASTClass {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ASTNode {
     pub class: ASTClass,
+    pub position: usize,
 }
 
 impl ASTNode {
-    pub fn new(class: ASTClass) -> ASTNode {
-        ASTNode { class: class }
+    pub fn new(class: ASTClass, position: usize) -> ASTNode {
+        ASTNode { class: class, position: position }
     }
 
     pub fn generate(&self) -> LinkedList<String> {

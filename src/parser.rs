@@ -1,15 +1,18 @@
+use std::collections::LinkedList;
+
 use ast::*;
 use lexer::*;
 use token::*;
 
 pub struct Parser<'a> {
     lexer: &'a mut Lexer<'a>,
+    comments: LinkedList<Box<ASTNode>>
 }
 
 #[macro_export]
 macro_rules! create_node {
-    ($n:expr) => {
-        Box::new(ASTNode::new($n))
+    ($n:expr, $p:ident) => {
+        Box::new(ASTNode::new($n, $p))
     };
 }
 
@@ -27,7 +30,10 @@ macro_rules! unexpected_token {
 
 impl<'a> Parser<'a> {
     pub fn new(lexer: &'a mut Lexer<'a>) -> Parser<'a> {
-        Parser { lexer: lexer }
+        Parser {
+            lexer: lexer,
+            comments: LinkedList::new(),
+        }
     }
 
     pub fn next_ast(&mut self) -> Box<ASTNode> {
@@ -37,15 +43,30 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::Declare) => self.declare_ast(),
             TokenClass::Symbol(Symbol::Module) => self.module_ast(),
             TokenClass::Symbol(Symbol::Struct) => self.struct_ast(),
-            TokenClass::CPPStyleComment(comment) => {
-                create_node!(ASTClass::CPPStyleComment(comment))
-            }
-            TokenClass::CStyleComment(list) => {
-                create_node!(ASTClass::CStyleComment(list))
-            }
             TokenClass::EndOfProgram => create_node!(ASTClass::EndOfProgram),
             _ => {
                 unexpected_token!(token);
+            }
+        }
+    }
+
+    fn next_token(&mut self, skip_nl: bool) -> Token
+    {
+        loop {
+            let token = self.lexer.next(skip_nl);
+            match token.class
+            {
+                TokenClass::CPPStyleComment(comment) => {
+                    self.comments.push_back(
+                        create_node!(
+                            ASTClass::CPPStyleComment(comment, token.position)));
+                }
+                TokenClass::CStyleComment(comments) => {
+                    not_implemented!();
+                }
+                _ => {
+                    return token;
+                }
             }
         }
     }
