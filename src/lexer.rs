@@ -427,7 +427,7 @@ impl<'a> Lexer<'a> {
                             number.push_str(&format!("'{}{}", c_next, self.get_number()));
                             return TokenClass::Number(number);
                         } else {
-                            panic!("unexptected character {}", c_next);
+                            panic!("unexptected character {}: in line {}", c_next, self.line);
                         }
                     }
                 }
