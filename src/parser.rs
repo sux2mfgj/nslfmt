@@ -112,13 +112,19 @@ impl<'a> Parser<'a> {
         self.check_opening_brace();
         let mut struct_contents: Vec<(Box<ASTNode>, Option<Box<ASTNode>>)> = vec![];
         loop {
-            let t = self.lexer.next(true);
+            let t = self.lexer.peek(true);
             match t.class {
                 TokenClass::Symbol(Symbol::ClosingBrace) => {
+                    self.lexer.next(true);
+                    self.check_semicolon();
                     return create_node!(ASTClass::Struct(
                             id_node,
                             struct_contents
                             ));
+                }
+                TokenClass::Identifire(id) => {
+                    let (member_id, width) = self.get_id_and_width();
+                    struct_contents.push((member_id, width));
                 }
                 _ => {
                     panic!();

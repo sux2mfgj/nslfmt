@@ -2032,13 +2032,50 @@ mod nsl_struct {
 
     #[test]
     fn nothing() {
-        let mut b = "struct this_is_a_pen {}".as_bytes();
+        let mut b = "struct this_is_a_pen {};".as_bytes();
         let mut l = Lexer::new(&mut b);
         let mut p = Parser::new(&mut l);
 
         let st = create_node!(ASTClass::Struct(
                 create_node!(ASTClass::Identifire("this_is_a_pen".to_string())),
                 vec![],
+                ));
+
+        assert_eq!(p.next_ast(), st);
+    }
+
+    #[test]
+    fn zero_bit_port_00() {
+        let mut b = "struct this_is_a_pen {
+                hello;
+            };".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let st = create_node!(ASTClass::Struct(
+                create_node!(ASTClass::Identifire("this_is_a_pen".to_string())),
+                vec![
+                (create_node!(ASTClass::Identifire("hello".to_string())), None)
+                ],
+                ));
+
+        assert_eq!(p.next_ast(), st);
+    }
+
+    #[test]
+    fn with_port_00() {
+        let mut b = "struct this_is_a_pen {
+                hello[2];
+            };".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let st = create_node!(ASTClass::Struct(
+                create_node!(ASTClass::Identifire("this_is_a_pen".to_string())),
+                vec![
+                    (create_node!(ASTClass::Identifire("hello".to_string())),
+                     Some(create_node!(ASTClass::Number("2".to_string())))),
+                ]
                 ));
 
         assert_eq!(p.next_ast(), st);
