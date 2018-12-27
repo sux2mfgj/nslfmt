@@ -232,6 +232,10 @@ impl<'a> Lexer<'a> {
                                     self.iter.next();
                                     return Token::from((Operator::GreaterEq, self.line, self.current_position));
                                 }
+                                '>' => {
+                                    self.iter.next();
+                                    return Token::from((Operator::ShiftRight, self.line, self.current_position));
+                                }
                                 _ => {
                                     return Token::from((
                                         Operator::GreaterThan,
@@ -249,6 +253,10 @@ impl<'a> Lexer<'a> {
                                 '=' => {
                                     self.iter.next();
                                     return Token::from((Operator::LessEq, self.line, self.current_position));
+                                }
+                                '<' => {
+                                    self.iter.next();
+                                    return Token::from((Operator::ShiftLeft, self.line, self.current_position));
                                 }
                                 _ => {
                                     return Token::from((Operator::LessThan, self.line, self.current_position));

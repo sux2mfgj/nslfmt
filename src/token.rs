@@ -58,8 +58,8 @@ pub enum Operator {
     Minus,    // -
     Asterisk, // *
     Slash,    // /
-    //ShiftLeft,  // <<
-    //ShiftRight, // >>
+    ShiftLeft,  // <<
+    ShiftRight, // >>
     And,      // &
     Pipe,     // |
     LogicAnd, // &&
@@ -99,6 +99,8 @@ impl fmt::Display for Operator {
             Operator::LessThan => write!(f, "<"),
             Operator::GreaterThan => write!(f, ">"),
             Operator::NotEqual => write!(f, "!="),
+            Operator::ShiftLeft => write!(f, "<<"),
+            Operator::ShiftRight => write!(f, ">>"),
         }
     }
 }
