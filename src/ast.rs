@@ -19,6 +19,7 @@ pub enum ASTClass {
     Identifire(String),
     Number(String),
     String(String),
+    Simulation,
     BitSlice(Box<ASTNode>, Option<Box<ASTNode>>),
     Operator(token::Operator),
     UnaryOperator(token::UnaryOperator),
@@ -32,7 +33,7 @@ pub enum ASTClass {
      */
     Block(Vec<Box<ASTNode>>),
     // identifire, block
-    Declare(Box<ASTNode>, Box<ASTNode>),
+    Declare(Box<ASTNode>, Box<ASTNode>, bool),
     // <id(struct name)>, (<id(member name)>, <number(bit width)>)
     Struct(Box<ASTNode>, Vec<(Box<ASTNode>, Option<Box<ASTNode>>)>),
 
@@ -136,8 +137,15 @@ impl ASTNode {
     pub fn generate(&self) -> LinkedList<String> {
         let mut list = LinkedList::new();
         match self.class {
-            ASTClass::Declare(ref id, ref block) => {
-                list.push_back(format!("declare {}", id));
+            ASTClass::Declare(ref id, ref block, ref is_sim) => {
+                if *is_sim
+                {
+                    list.push_back(format!("declare {} simulation", id));
+                }
+                else
+                {
+                    list.push_back(format!("declare {}", id));
+                }
                 list.append(&mut block.generate());
             }
             ASTClass::Module(ref id, ref block) => {
@@ -454,6 +462,9 @@ impl ASTNode {
             }
             ASTClass::EndOfProgram => {
                 not_implemented!();
+            }
+            ASTClass::Simulation => {
+                list.push_back("simulation".to_string());
             }
         }
         list

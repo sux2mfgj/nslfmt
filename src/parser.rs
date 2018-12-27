@@ -84,6 +84,15 @@ impl<'a> Parser<'a> {
     fn declare_ast(&mut self) -> Box<ASTNode> {
         // <identifire>
         let id_node = self.generate_id_node();
+        let s_token = self.lexer.peek(true);
+        let is_simulation = if s_token.class == TokenClass::Symbol(Symbol::Simulation) {
+            self.lexer.next(true);
+            true
+        }
+        else
+        {
+            false
+        };
         self.check_opening_brace();
         let mut contents_in_block = vec![];
         loop {
@@ -93,7 +102,8 @@ impl<'a> Parser<'a> {
                     self.lexer.next(true);
                     return create_node!(ASTClass::Declare(
                         id_node,
-                        create_node!(ASTClass::Block(contents_in_block))
+                        create_node!(ASTClass::Block(contents_in_block)),
+                        is_simulation,
                     ));
                 }
             }

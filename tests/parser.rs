@@ -40,7 +40,8 @@ mod declare {
             p.next_ast(),
             create_node!(ASTClass::Declare(
                 create_node!(ASTClass::Identifire("ok".to_string())),
-                create_node!(ASTClass::Block(vec![]))
+                create_node!(ASTClass::Block(vec![])),
+                false
             ))
         )
     }
@@ -55,7 +56,8 @@ mod declare {
             p.next_ast(),
             create_node!(ASTClass::Declare(
                 create_node!(ASTClass::Identifire("ok".to_string())),
-                create_node!(ASTClass::Block(vec![]))
+                create_node!(ASTClass::Block(vec![])),
+                false
             ))
         );
     }
@@ -74,7 +76,7 @@ mod declare {
 
         let block = create_node!(ASTClass::Block(interfaces));
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
-        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block)));
+        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block, false)));
     }
 
     #[test]
@@ -92,7 +94,7 @@ mod declare {
         let block = create_node!(ASTClass::Block(interfaces));
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
 
-        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block)));
+        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block, false)));
     }
 
     #[test]
@@ -112,7 +114,7 @@ mod declare {
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
         let block = create_node!(ASTClass::Block(interfaces));
 
-        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block)));
+        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block, false)));
     }
 
     /*
@@ -190,7 +192,7 @@ mod declare {
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
         let block = create_node!(ASTClass::Block(interfaces));
 
-        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block)));
+        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block, false)));
     }
 
     #[test]
@@ -218,7 +220,7 @@ mod declare {
         let id = create_node!(ASTClass::Identifire("ok".to_string()));
         let block = create_node!(ASTClass::Block(interfaces));
 
-        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block)));
+        assert_eq!(p.next_ast(), create_node!(ASTClass::Declare(id, block, false)));
     }
 
     #[test]
@@ -241,7 +243,8 @@ mod declare {
             p.next_ast(),
             create_node!(ASTClass::Declare(
                 create_node!(ASTClass::Identifire("ok".to_string())),
-                create_node!(ASTClass::Block(interfaces))
+                create_node!(ASTClass::Block(interfaces)),
+                false
             ))
         );
     }
@@ -271,7 +274,8 @@ mod declare {
             p.next_ast(),
             create_node!(ASTClass::Declare(
                 create_node!(ASTClass::Identifire("ok".to_string())),
-                create_node!(ASTClass::Block(interfaces))
+                create_node!(ASTClass::Block(interfaces)),
+                false
             ))
         );
     }
@@ -303,7 +307,8 @@ mod declare {
             p.next_ast(),
             create_node!(ASTClass::Declare(
                 create_node!(ASTClass::Identifire("ok".to_string())),
-                create_node!(ASTClass::Block(interfaces))
+                create_node!(ASTClass::Block(interfaces)),
+                false
             ))
         );
     }
@@ -335,7 +340,8 @@ mod declare {
             p.next_ast(),
             create_node!(ASTClass::Declare(
                 create_node!(ASTClass::Identifire("ok".to_string())),
-                create_node!(ASTClass::Block(interfaces))
+                create_node!(ASTClass::Block(interfaces)),
+                false
             ))
         );
     }
@@ -381,9 +387,25 @@ mod declare {
             p.next_ast(),
             create_node!(ASTClass::Declare(
                 create_node!(ASTClass::Identifire("hel".to_string())),
-                create_node!(ASTClass::Block(interfaces))
+                create_node!(ASTClass::Block(interfaces)),
+                false
             ))
         );
+    }
+
+    #[test]
+    fn simulation_00() {
+        let mut b = "declare ok simulation {}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let declare = create_node!(ASTClass::Declare(
+                create_node!(ASTClass::Identifire("ok".to_string())),
+                create_node!(ASTClass::Block(vec![])),
+                true
+                ));
+        assert_eq!(p.next_ast(), declare)
+
     }
 
 }
@@ -401,7 +423,8 @@ mod macros {
         let path = create_node!(ASTClass::String("hello.h".to_string()));
         let _id = create_node!(ASTClass::Declare(
             create_node!(ASTClass::Identifire("ok".to_string())),
-            create_node!(ASTClass::Block(Vec::new()))
+            create_node!(ASTClass::Block(Vec::new())),
+            false
         ));
         let include = create_node!(ASTClass::MacroInclude(path));
         assert_eq!(p.next_ast(), include);
@@ -1793,7 +1816,8 @@ mod module {
                 create_node!(ASTClass::Identifire("enable".to_string())),
                 vec![],
                 None
-            ))]))
+            ))])),
+            false
         ));
         let def = create_node!(ASTClass::MacroEndif);
 
@@ -1814,7 +1838,8 @@ mod module {
                 create_node!(ASTClass::Identifire("spike_out".to_string())),
                 vec![],
                 None,
-            ))]))
+            ))])),
+            false
         ));
 
         assert_eq!(p.next_ast(), declare);
@@ -1834,7 +1859,8 @@ mod module {
                 create_node!(ASTClass::Identifire("spike_out".to_string())),
                 vec![],
                 None,
-            ))]))
+            ))])),
+            false
         ));
 
         assert_eq!(p.next_ast(), declare);

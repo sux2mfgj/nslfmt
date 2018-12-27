@@ -366,7 +366,6 @@ impl<'a> Lexer<'a> {
             "undef" => TokenClass::Macro(Macro::Undef),
             "ifdef" => TokenClass::Macro(Macro::Ifdef),
             "ifndef" => TokenClass::Macro(Macro::Ifndef),
-            //             "else" => TokenClass::Macro(Macro::Else),
             "endif" => TokenClass::Macro(Macro::Endif),
             "wire" => TokenClass::Symbol(Symbol::Wire),
             "reg" => TokenClass::Symbol(Symbol::Reg),
@@ -391,6 +390,7 @@ impl<'a> Lexer<'a> {
             "integer" => TokenClass::Symbol(Symbol::Integer),
             "variable" => TokenClass::Symbol(Symbol::Variable),
             "struct" => TokenClass::Symbol(Symbol::Struct),
+            "simulation" => TokenClass::Symbol(Symbol::Simulation),
             //TODO
             _ => TokenClass::Identifire(word),
         }

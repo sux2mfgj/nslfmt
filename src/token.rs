@@ -48,6 +48,7 @@ pub enum Symbol {
     Invoke,      // invoke
     Finish,      // finish
     Goto,        // goto
+    Simulation,  // simulation
                  // TODO
                  // lack some symbols
 }
