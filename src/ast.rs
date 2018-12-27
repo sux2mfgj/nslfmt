@@ -418,20 +418,20 @@ impl ASTNode {
             ASTClass::MacroInclude(ref path) => {
                 list.push_back(format!("#include {}", path));
             }
-            ASTClass::MacroIfdef(ref _id) => {
-                not_implemented!();
+            ASTClass::MacroIfdef(ref id) => {
+                list.push_back(format!("#ifdef {}", id));
             }
-            ASTClass::MacroIfndef(ref _id) => {
-                not_implemented!();
+            ASTClass::MacroIfndef(ref id) => {
+                list.push_back(format!("#ifndef {}", id));
             }
             ASTClass::MacroElse => {
-                not_implemented!();
+                list.push_back(format!("#else"));
             }
             ASTClass::MacroEndif => {
-                not_implemented!();
+                list.push_back(format!("#endif"));
             }
-            ASTClass::MacroUndef(ref _id) => {
-                not_implemented!();
+            ASTClass::MacroUndef(ref id) => {
+                list.push_back(format!("#undef {}", id));
             }
             ASTClass::EndOfProgram => {
                 not_implemented!();
