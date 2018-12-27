@@ -150,6 +150,7 @@ impl<'a> Lexer<'a> {
                         self.iter.next();
                         return Token::from((Symbol::Dot, self.line, self.current_position));
                     }
+
                     '#' => {
                         self.iter.next();
                         return Token::from((Symbol::Sharp, self.line, self.current_position));
@@ -188,6 +189,10 @@ impl<'a> Lexer<'a> {
                             }
                         }
                         return Token::from((Operator::Pipe, self.line, self.current_position));
+                    }
+                    '^' => {
+                        self.iter.next();
+                        return Token::from((Operator::Hat, self.line, self.current_position));
                     }
                     '!' => {
                         self.iter.next();
@@ -420,33 +425,8 @@ impl<'a> Lexer<'a> {
                     self.iter.next();
                     let id = self.get_token_from_char();
                     let t = Token::from((id, self.line, self.current_position));
-
                     number.push_str(&format!("'{}", t));
                     return TokenClass::Number(number);
-//                     let c_next = self.iter.next().unwrap();
-//                     if let Some(&c_next_next) = self.iter.peek() {
-
-//                         if ((c_next == 'x') | (c_next == 'b') | (c_next == 'h') | (c_next == 'd')) && c_next_next.is_digit(16)
-//                         {
-//                             number.push_str(&format!("'{}{}", c_next, self.get_number()));
-//                             return TokenClass::Number(number);
-//                         }
-//                         else {
-//                             panic!("unexptected character '{}', '{}': in line {}", c_next, c_next_next.is_numeric(), self.line);
-//                         }
-//                     }
-//                     if let Some(c_next) = self.iter.next() {
-//                         if (c_next == 'x')
-//                             | (c_next == 'b')
-//                             | (c_next == 'h')
-//                             | (c_next == 'd')
-//                         {
-//                             number.push_str(&format!("'{}{}", c_next, self.get_number()));
-//                             return TokenClass::Number(number);
-//                         } else {
-//                             panic!("unexptected character {}: in line {}", c_next, self.line);
-//                         }
-//                     }
                 }
                 'x' | 'b' => {
                     self.iter.next();

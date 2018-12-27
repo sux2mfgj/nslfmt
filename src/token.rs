@@ -64,7 +64,7 @@ pub enum Operator {
     Pipe,     // |
     LogicAnd, // &&
     LogicOr,    // ||
-    //Hat,        // ^
+    Hat,        // ^
     //Tilde,      // ~
     Equal,       // ==
     GreaterEq,   // >=
@@ -89,6 +89,7 @@ impl fmt::Display for Operator {
             Operator::Asterisk => write!(f, "*"),
             Operator::Slash => write!(f, "/"),
             Operator::And => write!(f, "&"),
+            Operator::Hat => write!(f, "^"),
             Operator::Pipe => write!(f, "|"),
             Operator::LogicAnd => write!(f, "&&"),
             Operator::LogicOr => write!(f, "||"),
