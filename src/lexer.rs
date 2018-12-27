@@ -180,6 +180,13 @@ impl<'a> Lexer<'a> {
                     }
                     '|' => {
                         self.iter.next();
+                        if let Some(&cc) = self.iter.peek() {
+                            if cc == '|' {
+                                self.iter.next();
+                                return Token::from(
+                                    (Operator::LogicOr, self.line, self.current_position));
+                            }
+                        }
                         return Token::from((Operator::Pipe, self.line, self.current_position));
                     }
                     '!' => {

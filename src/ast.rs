@@ -376,7 +376,7 @@ impl ASTNode {
                 list.append(&mut block.generate());
             }
             ASTClass::Return(ref value) => {
-                list.push_back(format!("return {}", value));
+                list.push_back(format!("return {}", get_top!(value)));
             }
             ASTClass::Goto(ref id) => {
                 list.push_back(format!("goto {}", id));
