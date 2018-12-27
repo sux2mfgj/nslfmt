@@ -195,7 +195,8 @@ impl ASTNode {
             }
             ASTClass::Expression(ref operand1, ref operator, ref operand2) => {
                 list.push_back(format!(
-                    "({} {} {})",
+//                     "({} {} {})",
+                    "{} {} {}",
                     get_top!(operand1),
                     operator,
                     get_top!(operand2)
@@ -365,7 +366,7 @@ impl ASTNode {
                 list.push_back(format!("{} = {}", get_top!(id), get_top!(expr)));
             }
             ASTClass::RegAssign(ref id, ref expr) => {
-                list.push_back(format!("{} := {}", id, expr));
+                list.push_back(format!("{} := {}", id, get_top!(expr)));
             }
             ASTClass::Func(ref id, ref func, ref block) => {
                 if let Some(fname) = func {
@@ -386,7 +387,7 @@ impl ASTNode {
                 list.append(&mut block.generate());
             }
             ASTClass::If(ref expr, ref if_block, ref else_block) => {
-                list.push_back(format!("if {}", get_top!(expr)));
+                list.push_back(format!("if ({})", get_top!(expr)));
                 list.append(&mut if_block.generate());
                 if let Some(block) = else_block {
                     list.push_back(format!("else"));

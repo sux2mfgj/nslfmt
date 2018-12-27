@@ -85,7 +85,7 @@ fn aware_indent_03() {
     let ans =
 "declare hello
 {
-    input ok[(OK / 2)];
+    input ok[OK / 2];
 }
 ".to_string();
     assert_eq!(out, ans);
@@ -393,9 +393,9 @@ fn any_01() {
 {
     any
     {
-        (a == b):
+        a == b:
         {
-            d = (d + e);
+            d = d + e;
         }
     }
 }
@@ -456,5 +456,87 @@ fn module_01() {
 }
 "
     .to_string();
+    assert_eq!(out, ans);
+}
+
+#[test]
+fn expression_00() {
+    let mut b = "module hello {
+            if (a == b) {
+
+            }
+
+        }".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let p = Parser::new(&mut l);
+    let mut io = Cursor::new(Vec::new());
+    {
+        let mut g = Generator::new(p, &mut io);
+        g.output_node().unwrap();
+    }
+    let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+    let ans =
+"module hello
+{
+    if (a == b)
+    {
+    }
+}
+"
+    .to_string();
+    assert_eq!(out, ans);
+}
+
+#[test]
+fn expression_01() {
+    let mut b = "module hello {
+            if (x > 0 || x <= 10) {
+
+            }
+
+        }".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let p = Parser::new(&mut l);
+    let mut io = Cursor::new(Vec::new());
+    {
+        let mut g = Generator::new(p, &mut io);
+        g.output_node().unwrap();
+    }
+    let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+    let ans =
+"module hello
+{
+    if (x > 0 || x <= 10)
+    {
+    }
+}
+".to_string();
+    assert_eq!(out, ans);
+}
+
+#[test]
+fn expression_02() {
+    let mut b = "module hello {
+            if (a + b - c) {
+
+            }
+
+        }".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    let p = Parser::new(&mut l);
+    let mut io = Cursor::new(Vec::new());
+    {
+        let mut g = Generator::new(p, &mut io);
+        g.output_node().unwrap();
+    }
+    let out = String::from_utf8(io.get_ref().to_vec()).unwrap();
+    let ans =
+"module hello
+{
+    if (a + b - c)
+    {
+    }
+}
+".to_string();
     assert_eq!(out, ans);
 }
