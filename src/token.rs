@@ -147,43 +147,45 @@ pub enum TokenClass {
 pub struct Token {
     pub class: TokenClass,
     pub line: usize,
+    pub position: usize,
 }
 
-impl From<(TokenClass, usize)> for Token {
-    fn from(s: (TokenClass, usize)) -> Token {
-        Token::new(s.0, s.1)
+impl From<(TokenClass, usize, usize)> for Token {
+    fn from(s: (TokenClass, usize, usize)) -> Token {
+        Token::new(s.0, s.1, s.2)
     }
 }
 
-impl From<(Symbol, usize)> for Token {
-    fn from(s: (Symbol, usize)) -> Token {
-        Token::new(TokenClass::Symbol(s.0), s.1)
+impl From<(Symbol, usize, usize)> for Token {
+    fn from(s: (Symbol, usize, usize)) -> Token {
+        Token::new(TokenClass::Symbol(s.0), s.1, s.2)
     }
 }
 
-impl From<(Operator, usize)> for Token {
-    fn from(s: (Operator, usize)) -> Token {
-        Token::new(TokenClass::Operator(s.0), s.1)
+impl From<(Operator, usize, usize)> for Token {
+    fn from(s: (Operator, usize, usize)) -> Token {
+        Token::new(TokenClass::Operator(s.0), s.1, s.2)
     }
 }
 
-impl From<(UnaryOperator, usize)> for Token {
-    fn from(s: (UnaryOperator, usize)) -> Token {
-        Token::new(TokenClass::UnaryOperator(s.0), s.1)
+impl From<(UnaryOperator, usize, usize)> for Token {
+    fn from(s: (UnaryOperator, usize, usize)) -> Token {
+        Token::new(TokenClass::UnaryOperator(s.0), s.1, s.2)
     }
 }
 
-impl From<(Macro, usize)> for Token {
-    fn from(s: (Macro, usize)) -> Token {
-        Token::new(TokenClass::Macro(s.0), s.1)
+impl From<(Macro, usize, usize)> for Token {
+    fn from(s: (Macro, usize, usize)) -> Token {
+        Token::new(TokenClass::Macro(s.0), s.1, s.2)
     }
 }
 
 impl Token {
-    pub fn new(class: TokenClass, line: usize) -> Token {
+    pub fn new(class: TokenClass, line: usize, position: usize) -> Token {
         Token {
             class: class,
             line: line,
+            position: position
         }
     }
 }

@@ -13,6 +13,7 @@ struct CommentResult(String, CommentState);
 //#[derive(Debug, Clone, PartialEq)]
 pub struct Lexer<'a> {
     pub line: usize,
+    pub current_position: usize,
     reader: &'a mut BufRead,
     line_buffer: String,
     iter: Peekable<IntoIter<char>>,
@@ -21,8 +22,11 @@ pub struct Lexer<'a> {
 
 impl<'a> Lexer<'a> {
     pub fn new<T: BufRead>(reader: &'a mut T) -> Lexer<'a> {
+        let init_line = 1;
+        let init_position = 1;
         let mut lex = Lexer {
-            line: 1,
+            line: init_line,
+            current_position: init_position,
             reader: reader,
             line_buffer: "".to_string(),
             iter: ""
@@ -31,7 +35,7 @@ impl<'a> Lexer<'a> {
                 .collect::<Vec<_>>()
                 .into_iter()
                 .peekable(),
-            next_token: Token::from((TokenClass::Newline, 1)),
+            next_token: Token::from((TokenClass::Newline, init_line, init_position)),
         };
         lex.next(false);
         lex
@@ -69,7 +73,7 @@ impl<'a> Lexer<'a> {
             match self.reader.read_until(b'\n', &mut buf) {
                 Ok(size) => {
                     if size == 0 {
-                        return Some(Token::from((TokenClass::EndOfProgram, self.line)));
+                        return Some(Token::from((TokenClass::EndOfProgram, self.line, self.current_position)));
                     }
                 }
                 Err(e) => panic!("{}", e),
@@ -95,88 +99,88 @@ impl<'a> Lexer<'a> {
                 match c {
                     'a'...'z' | 'A'...'Z' | '_' => {
                         let t = self.get_token_from_char();
-                        return Token::from((t, self.line));
+                        return Token::from((t, self.line, self.current_position));
                     }
                     // TODO
                     '0'...'9' => {
                         let t = self.get_number_token();
-                        return Token::from((t, self.line));
+                        return Token::from((t, self.line, self.current_position));
                     }
                     '{' => {
                         self.iter.next();
-                        return Token::from((Symbol::OpeningBrace, self.line));
+                        return Token::from((Symbol::OpeningBrace, self.line, self.current_position));
                     }
                     '}' => {
                         self.iter.next();
-                        return Token::from((Symbol::ClosingBrace, self.line));
+                        return Token::from((Symbol::ClosingBrace, self.line, self.current_position));
                     }
                     '(' => {
                         self.iter.next();
-                        return Token::from((Symbol::LeftParen, self.line));
+                        return Token::from((Symbol::LeftParen, self.line, self.current_position));
                     }
                     ')' => {
                         self.iter.next();
-                        return Token::from((Symbol::RightParen, self.line));
+                        return Token::from((Symbol::RightParen, self.line, self.current_position));
                     }
                     '[' => {
                         self.iter.next();
-                        return Token::from((Symbol::LeftSquareBracket, self.line));
+                        return Token::from((Symbol::LeftSquareBracket, self.line, self.current_position));
                     }
                     ']' => {
                         self.iter.next();
-                        return Token::from((Symbol::RightSquareBracket, self.line));
+                        return Token::from((Symbol::RightSquareBracket, self.line, self.current_position));
                     }
                     ';' => {
                         self.iter.next();
-                        return Token::from((Symbol::Semicolon, self.line));
+                        return Token::from((Symbol::Semicolon, self.line, self.current_position));
                     }
                     ':' => {
                         self.iter.next();
                         if let Some('=') = self.iter.peek() {
                             self.iter.next();
-                            return Token::from((Symbol::RegAssign, self.line));
+                            return Token::from((Symbol::RegAssign, self.line, self.current_position));
                         }
-                        return Token::from((Symbol::Colon, self.line));
+                        return Token::from((Symbol::Colon, self.line, self.current_position));
                     }
                     ',' => {
                         self.iter.next();
-                        return Token::from((Symbol::Comma, self.line));
+                        return Token::from((Symbol::Comma, self.line, self.current_position));
                     }
                     '.' => {
                         self.iter.next();
-                        return Token::from((Symbol::Dot, self.line));
+                        return Token::from((Symbol::Dot, self.line, self.current_position));
                     }
                     '#' => {
                         self.iter.next();
-                        return Token::from((Symbol::Sharp, self.line));
+                        return Token::from((Symbol::Sharp, self.line, self.current_position));
                     }
                     '*' => {
                         self.iter.next();
-                        return Token::from((Operator::Asterisk, self.line));
+                        return Token::from((Operator::Asterisk, self.line, self.current_position));
                     }
                     '+' => {
                         self.iter.next();
                         if let Some(&c_next) = self.iter.peek() {
                             if c_next == '+' {
                                 self.iter.next();
-                                return Token::from((UnaryOperator::Increment, self.line));
+                                return Token::from((UnaryOperator::Increment, self.line, self.current_position));
                             }
                         }
-                        return Token::from((Operator::Plus, self.line));
+                        return Token::from((Operator::Plus, self.line, self.current_position));
                     }
                     '-' => {
                         self.iter.next();
                         if let Some(&c_next) = self.iter.peek() {
                             if c_next == '-' {
                                 self.iter.next();
-                                return Token::from((UnaryOperator::Decrement, self.line));
+                                return Token::from((UnaryOperator::Decrement, self.line, self.current_position));
                             }
                         }
-                        return Token::from((Operator::Minus, self.line));
+                        return Token::from((Operator::Minus, self.line, self.current_position));
                     }
                     '|' => {
                         self.iter.next();
-                        return Token::from((Operator::Pipe, self.line));
+                        return Token::from((Operator::Pipe, self.line, self.current_position));
                     }
                     '!' => {
                         self.iter.next();
@@ -184,15 +188,15 @@ impl<'a> Lexer<'a> {
                             match cc {
                                 '=' => {
                                     self.iter.next();
-                                    return Token::from((Operator::NotEqual, self.line));
+                                    return Token::from((Operator::NotEqual, self.line, self.current_position));
                                 }
-                                _ => return Token::from((UnaryOperator::Not, self.line)),
+                                _ => return Token::from((UnaryOperator::Not, self.line, self.current_position)),
                             }
                         }
                     }
                     '\'' => {
                         self.iter.next();
-                        return Token::from((Symbol::SingleQuote, self.line));
+                        return Token::from((Symbol::SingleQuote, self.line, self.current_position));
                     }
                     '=' => {
                         self.iter.next();
@@ -200,10 +204,10 @@ impl<'a> Lexer<'a> {
                             match equal {
                                 '=' => {
                                     self.iter.next();
-                                    return Token::from((Operator::Equal, self.line));
+                                    return Token::from((Operator::Equal, self.line, self.current_position));
                                 }
                                 _ => {
-                                    return Token::from((Symbol::Equal, self.line));
+                                    return Token::from((Symbol::Equal, self.line, self.current_position));
                                 }
                             }
                         }
@@ -214,12 +218,13 @@ impl<'a> Lexer<'a> {
                             match eq {
                                 '=' => {
                                     self.iter.next();
-                                    return Token::from((Operator::GreaterEq, self.line));
+                                    return Token::from((Operator::GreaterEq, self.line, self.current_position));
                                 }
                                 _ => {
                                     return Token::from((
                                         Operator::GreaterThan,
                                         self.line,
+                                        self.current_position
                                     ));
                                 }
                             }
@@ -231,10 +236,10 @@ impl<'a> Lexer<'a> {
                             match eq {
                                 '=' => {
                                     self.iter.next();
-                                    return Token::from((Operator::LessEq, self.line));
+                                    return Token::from((Operator::LessEq, self.line, self.current_position));
                                 }
                                 _ => {
-                                    return Token::from((Operator::LessThan, self.line));
+                                    return Token::from((Operator::LessThan, self.line, self.current_position));
                                 }
                             }
                         }
@@ -245,10 +250,10 @@ impl<'a> Lexer<'a> {
                             match and {
                                 '&' => {
                                     self.iter.next();
-                                    return Token::from((Operator::LogicAnd, self.line));
+                                    return Token::from((Operator::LogicAnd, self.line, self.current_position));
                                 }
                                 _ => {
-                                    return Token::from((Operator::And, self.line));
+                                    return Token::from((Operator::And, self.line, self.current_position));
                                 }
                             }
                         }
@@ -264,6 +269,7 @@ impl<'a> Lexer<'a> {
                                     return Token::from((
                                         TokenClass::CPPStyleComment(comment),
                                         self.line,
+                                        self.current_position
                                     ));
                                 }
                                 // multi-line comment
@@ -274,9 +280,10 @@ impl<'a> Lexer<'a> {
                                     return Token::from((
                                         TokenClass::CStyleComment(comment_list),
                                         self.line,
+                                        self.current_position,
                                     ));
                                 }
-                                _ => return Token::from((Operator::Slash, self.line)),
+                                _ => return Token::from((Operator::Slash, self.line, self.current_position)),
                             }
                         } else {
                             panic!("panic");
@@ -296,13 +303,13 @@ impl<'a> Lexer<'a> {
                                 panic!("error");
                             }
                         }
-                        return Token::from((TokenClass::String(name), self.line));
+                        return Token::from((TokenClass::String(name), self.line, self.current_position));
                     }
                     '\n' => {
                         let before_line = self.line;
                         self.line += 1;
                         self.iter.next();
-                        return Token::from((TokenClass::Newline, before_line));
+                        return Token::from((TokenClass::Newline, before_line, self.current_position));
                     }
                     ' ' | '\t' => {
                         self.iter.next();
