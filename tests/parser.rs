@@ -1992,4 +1992,36 @@ mod module {
         ));
         assert_eq!(p.next_ast(), module);
     }
+
+    /*
+    #[test]
+    fn expression_00() {
+        let mut b = "module hello {
+                hello(ok.google());
+            }".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let module = create_node!(ASTClass::Module(
+                create_node!(ASTClass::Identifire("hello".to_string())),
+                create_node!(ASTClass::Block(
+                        vec![
+                            create_node!(ASTClass::FuncCall(
+                                    create_node!(ASTClass::Identifire("hello".to_string())),
+                                    vec![
+                                    create_node!(ASTClass::FuncCall(
+                                            create_node!(ASTClass::Identifire("ok".to_string())),
+                                            vec![],
+                                            Some(create_node!(ASTClass::Identifire("google".to_string())))
+                                            ))
+                                    ],
+                                    None,
+                                    ))
+                        ]
+                        ))
+                ));
+
+        assert_eq!(p.next_ast(), module);
+    }
+    */
 }

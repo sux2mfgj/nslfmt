@@ -210,7 +210,7 @@ impl ASTNode {
             ASTClass::FuncCall(ref id, ref args, ref second_some) => {
                 let arg_str = args
                     .iter()
-                    .map(|id| format!("{}", id))
+                    .map(|id| format!("{}", get_top!(id)))
                     .collect::<Vec<String>>()
                     .join(", ");
 

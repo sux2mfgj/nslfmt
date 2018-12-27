@@ -686,7 +686,16 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::Dot) => {
                 self.lexer.next(true);
                 let port_id = self.generate_id_node();
-                create_node!(ASTClass::ModulePort(left, port_id))
+                // e.g test.ok()
+                if TokenClass::Symbol(Symbol::LeftParen) == self.lexer.peek(true).class {
+                    self.lexer.next(true);
+                    let args = self.generate_args_vec();
+                    create_node!(ASTClass::FuncCall(left, args, Some(port_id)))
+                }
+                // e.g test.ok
+                else {
+                    create_node!(ASTClass::ModulePort(left, port_id))
+                }
             }
             _ => left,
         };
@@ -715,18 +724,22 @@ impl<'a> Parser<'a> {
     fn generate_args_vec(&mut self) -> Vec<Box<ASTNode>> {
         let mut args = vec![];
         loop {
-            let token = self.lexer.next(true);
+            let token = self.lexer.peek(true);
             match token.class {
                 TokenClass::Symbol(Symbol::RightParen) => {
+                    self.lexer.next(true);
                     break;
                 }
                 TokenClass::Symbol(Symbol::Comma) => {
+                    self.lexer.next(true);
                     continue;
                 }
                 TokenClass::Identifire(id_str) => {
-                    args.push(create_node!(ASTClass::Identifire(id_str)));
+                    let expr = self.expression_ast();
+                    args.push(expr);
                 }
                 TokenClass::Number(num) => {
+                    self.lexer.next(true);
                     args.push(create_node!(ASTClass::Number(num)));
                 }
                 _ => {
