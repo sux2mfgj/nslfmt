@@ -2025,3 +2025,23 @@ mod module {
     }
     */
 }
+
+#[cfg(test)]
+mod nsl_struct {
+    use super::*;
+
+    #[test]
+    fn nothing() {
+        let mut b = "struct this_is_a_pen {}".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let st = create_node!(ASTClass::Struct(
+                create_node!(ASTClass::Identifire("this_is_a_pen".to_string())),
+                vec![],
+                ));
+
+        assert_eq!(p.next_ast(), st);
+    }
+}
+

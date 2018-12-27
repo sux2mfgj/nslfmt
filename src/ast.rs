@@ -31,9 +31,10 @@ pub enum ASTClass {
      *      }
      */
     Block(Vec<Box<ASTNode>>),
-    // ----- Declare ------
     // identifire, block
     Declare(Box<ASTNode>, Box<ASTNode>),
+    // <id(struct name)>, (<id(member name)>, <number(bit width)>)
+    Struct(Box<ASTNode>, Vec<(Box<ASTNode>, Option<Box<ASTNode>>)>),
 
     // identifire, inputs, output
     FuncIn(Box<ASTNode>, Vec<Box<ASTNode>>, Option<Box<ASTNode>>),
@@ -142,6 +143,24 @@ impl ASTNode {
             ASTClass::Module(ref id, ref block) => {
                 list.push_back(format!("module {}", id));
                 list.append(&mut block.generate());
+            }
+            ASTClass::Struct(ref id, ref member_info) => {
+                list.push_back(format!("struct {}", id));
+                let mut struct_members = LinkedList::new();
+                for c in member_info
+                {
+                    if let Some(ref width) = c.1
+                    {
+                        struct_members.push_back(format!("{}[{}]", c.0, width));
+                    }
+                    else {
+                        struct_members.push_back(format!("{}", c.0));
+                    }
+                }
+                list.push_back("{".to_string());
+                list.append(&mut struct_members.iter().map(|c| format!("    {}", c)).collect());
+                list.push_back("}".to_string());
+
             }
             ASTClass::Block(ref contents) => {
                 for c in contents {

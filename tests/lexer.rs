@@ -1474,3 +1474,10 @@ fn post_decrement_00() {
     );
     assert_eq!(l.next(true), Token::from((UnaryOperator::Decrement, 1, 1)));
 }
+
+#[test]
+fn struct_00() {
+    let mut b = "struct".as_bytes();
+    let mut l = Lexer::new(&mut b);
+    assert_eq!(l.next(true), Token::from((Symbol::Struct, 1, 1)));
+}

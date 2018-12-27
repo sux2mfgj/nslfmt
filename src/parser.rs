@@ -36,6 +36,7 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::Sharp) => self.macro_ast(),
             TokenClass::Symbol(Symbol::Declare) => self.declare_ast(),
             TokenClass::Symbol(Symbol::Module) => self.module_ast(),
+            TokenClass::Symbol(Symbol::Struct) => self.struct_ast(),
             TokenClass::CPPStyleComment(comment) => {
                 create_node!(ASTClass::CPPStyleComment(comment))
             }
@@ -104,6 +105,26 @@ impl<'a> Parser<'a> {
     fn module_ast(&mut self) -> Box<ASTNode> {
         let id_node = self.generate_id_node();
         create_node!(ASTClass::Module(id_node, self.module_block_ast()))
+    }
+
+    fn struct_ast(&mut self) -> Box<ASTNode> {
+        let id_node = self.generate_id_node();
+        self.check_opening_brace();
+        let mut struct_contents: Vec<(Box<ASTNode>, Option<Box<ASTNode>>)> = vec![];
+        loop {
+            let t = self.lexer.next(true);
+            match t.class {
+                TokenClass::Symbol(Symbol::ClosingBrace) => {
+                    return create_node!(ASTClass::Struct(
+                            id_node,
+                            struct_contents
+                            ));
+                }
+                _ => {
+                    panic!();
+                }
+            }
+        }
     }
 
     fn module_block_ast(&mut self) -> Box<ASTNode> {
