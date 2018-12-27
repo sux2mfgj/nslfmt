@@ -54,6 +54,10 @@ impl<'a> Lexer<'a> {
         }
 
         let t = self.next_token.clone();
+        if TokenClass::Newline != t.class
+        {
+            self.current_position += 1;
+        }
         self.next_token = self.generate_token();
         t
     }

@@ -568,6 +568,16 @@ mod comment {
 
         assert_eq!(p.next_ast(), multi_line);
     }
+
+    #[test]
+    fn one_line_comment() {
+        let mut b = "// hello".as_bytes();
+        let mut l = Lexer::new(&mut b);
+        let mut p = Parser::new(&mut l);
+
+        let one_line = create_node!(ASTClass::CPPStyleComment(" hello".to_string()));
+        assert_eq!(p.next_ast(), one_line);
+    }
 }
 
 #[cfg(test)]
