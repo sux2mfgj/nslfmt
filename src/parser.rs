@@ -43,7 +43,7 @@ impl<'a> Parser<'a> {
             TokenClass::Symbol(Symbol::Declare) => self.declare_ast(),
             TokenClass::Symbol(Symbol::Module) => self.module_ast(),
             TokenClass::Symbol(Symbol::Struct) => self.struct_ast(),
-            TokenClass::EndOfProgram => create_node!(ASTClass::EndOfProgram),
+            TokenClass::EndOfProgram => create_node!(ASTClass::EndOfProgram, token.position),
             _ => {
                 unexpected_token!(token);
             }
@@ -75,26 +75,26 @@ impl<'a> Parser<'a> {
         let macro_kind_token = self.lexer.next(true);
         match macro_kind_token.class {
             TokenClass::Macro(Macro::Include) => {
-                create_node!(ASTClass::MacroInclude(self.generate_path_node()))
+                create_node!(ASTClass::MacroInclude(self.generate_path_node()), macro_kind_token.token)
             }
             TokenClass::Macro(Macro::Undef) => {
                 let id = self.generate_id_node();
-                create_node!(ASTClass::MacroUndef(id))
+                create_node!(ASTClass::MacroUndef(id), macro_kind_token.token)
             }
             TokenClass::Macro(Macro::Ifdef) => {
                 let id = self.generate_id_node();
-                create_node!(ASTClass::MacroIfdef(id))
+                create_node!(ASTClass::MacroIfdef(id), macro_kind_token.token)
             }
             TokenClass::Macro(Macro::Ifndef) => {
                 let id = self.generate_id_node();
-                create_node!(ASTClass::MacroIfndef(id))
+                create_node!(ASTClass::MacroIfndef(id), macro_kind_token.token)
             }
-            TokenClass::Macro(Macro::Endif) => create_node!(ASTClass::MacroEndif),
-            TokenClass::Symbol(Symbol::Else) => create_node!(ASTClass::MacroElse),
+            TokenClass::Macro(Macro::Endif) => create_node!(ASTClass::MacroEndif, macro_kind_token.token),
+            TokenClass::Symbol(Symbol::Else) => create_node!(ASTClass::MacroElse, macro_kind_token.token),
             TokenClass::Macro(Macro::Define) => {
                 let id = self.generate_id_node();
                 let value = self.generate_string_until_nl();
-                create_node!(ASTClass::MacroDefine(id, value))
+                create_node!(ASTClass::MacroDefine(id, value), macro_kind_token.token)
             }
             _ => {
                 unexpected_token!(macro_kind_token);
@@ -468,7 +468,7 @@ impl<'a> Parser<'a> {
                             self.lexer.next(true);
                             self.check_colon();
                             let block = self.module_block_ast();
-                            any_components.push((create_node!(ASTClass::Else), block));
+                            any_components.push((create_node!(ASTClass::Else, next_t.position), block));
                         }
                         _ => {
                             let ast = self.expression_ast();
@@ -478,7 +478,7 @@ impl<'a> Parser<'a> {
                         }
                     }
                 }
-                Some(create_node!(ASTClass::Any(any_components)))
+                Some(create_node!(ASTClass::Any(any_components)), t.position)
             }
             TokenClass::UnaryOperator(op) => {
                 let id = self.generate_id_node();
@@ -793,7 +793,7 @@ impl<'a> Parser<'a> {
                 }
                 TokenClass::Number(num) => {
                     self.lexer.next(true);
-                    args.push(create_node!(ASTClass::Number(num)));
+                    args.push(create_node!(ASTClass::Number(num), token.position));
                 }
                 _ => {
                     unexpected_token!(token);
@@ -813,7 +813,7 @@ impl<'a> Parser<'a> {
 
             if let TokenClass::Identifire(id_str) = port_id.class {
                 self.check_semicolon();
-                Some(create_node!(ASTClass::Identifire(id_str)))
+                Some(create_node!(ASTClass::Identifire(id_str), port_id.position))
             } else {
                 unexpected_token!(port_id);
             }
@@ -858,7 +858,7 @@ impl<'a> Parser<'a> {
     fn generate_path_node(&mut self) -> Box<ASTNode> {
         let path_token = self.lexer.next(true);
         if let TokenClass::String(id_str) = path_token.class {
-            return create_node!(ASTClass::String(id_str));
+            return create_node!(ASTClass::String(id_str), path_token);
         }
         unexpected_token!(path_token);
     }
